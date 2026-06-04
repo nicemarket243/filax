@@ -9,8 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as EconomieRouteImport } from './routes/economie'
+import { Route as DisciplineRouteImport } from './routes/discipline'
+import { Route as AssuranceRouteImport } from './routes/assurance'
 import { Route as IndexRouteImport } from './routes/index'
 
+const EconomieRoute = EconomieRouteImport.update({
+  id: '/economie',
+  path: '/economie',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisciplineRoute = DisciplineRouteImport.update({
+  id: '/discipline',
+  path: '/discipline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssuranceRoute = AssuranceRouteImport.update({
+  id: '/assurance',
+  path: '/assurance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +37,61 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assurance': typeof AssuranceRoute
+  '/discipline': typeof DisciplineRoute
+  '/economie': typeof EconomieRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assurance': typeof AssuranceRoute
+  '/discipline': typeof DisciplineRoute
+  '/economie': typeof EconomieRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assurance': typeof AssuranceRoute
+  '/discipline': typeof DisciplineRoute
+  '/economie': typeof EconomieRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/assurance' | '/discipline' | '/economie'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/assurance' | '/discipline' | '/economie'
+  id: '__root__' | '/' | '/assurance' | '/discipline' | '/economie'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssuranceRoute: typeof AssuranceRoute
+  DisciplineRoute: typeof DisciplineRoute
+  EconomieRoute: typeof EconomieRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/economie': {
+      id: '/economie'
+      path: '/economie'
+      fullPath: '/economie'
+      preLoaderRoute: typeof EconomieRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discipline': {
+      id: '/discipline'
+      path: '/discipline'
+      fullPath: '/discipline'
+      preLoaderRoute: typeof DisciplineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assurance': {
+      id: '/assurance'
+      path: '/assurance'
+      fullPath: '/assurance'
+      preLoaderRoute: typeof AssuranceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,17 +104,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssuranceRoute: AssuranceRoute,
+  DisciplineRoute: DisciplineRoute,
+  EconomieRoute: EconomieRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
