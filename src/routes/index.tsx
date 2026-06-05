@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Crown, ArrowUp, AudioLines, Target, TrendingUp, ShieldCheck } from "lucide-react";
+import { Crown, Send, AudioLines, Target, TrendingUp, ShieldCheck } from "lucide-react";
 import { FilaxLogo } from "@/components/filax-logo";
 import { RadarGraphic } from "@/components/radar-graphic";
 import { QuoteRotator } from "@/components/quote-rotator";
