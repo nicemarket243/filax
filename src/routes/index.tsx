@@ -77,12 +77,12 @@ function Index() {
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden px-6 pb-12 pt-6">
       {/* Header — logo & Premium alignés sur le même axe horizontal */}
       <header className="flex items-center justify-between">
-        <FilaxLogo className="animate-fade-up" height={28} />
+        <FilaxLogo className="filax-logo-fade animate-fade-up" height={26} />
         <button
           type="button"
-          className="flex items-center gap-1.5 rounded-full bg-brand-gold/[0.06] px-3 py-1.5 text-xs font-semibold text-foreground/90 transition-colors hover:bg-brand-gold/[0.12]"
+          className="flex items-center gap-1 rounded-full bg-brand-gold/[0.06] px-2 py-0.5 text-[0.6rem] font-semibold leading-none text-foreground/90 transition-colors hover:bg-brand-gold/[0.12]"
         >
-          <Crown className="h-3.5 w-3.5 text-brand-gold" />
+          <Crown className="h-2.5 w-2.5 text-brand-gold" />
           Premium
         </button>
       </header>
