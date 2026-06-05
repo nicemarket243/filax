@@ -46,19 +46,19 @@ export function RadarGraphic({ className, active = false }: RadarGraphicProps) {
         aria-hidden="true"
         className="h-full w-full"
       >
-        <circle cx="100" cy="100" r="92" stroke="oklch(0.74 0.2 148 / 0.12)" strokeWidth="1" />
+        <circle cx="100" cy="100" r="92" stroke="oklch(0.72 0.22 140 / 0.12)" strokeWidth="1" />
         <circle
           cx="100"
           cy="100"
           r="70"
-          stroke="oklch(0.74 0.2 148 / 0.2)"
+          stroke="oklch(0.72 0.22 140 / 0.2)"
           strokeWidth="1"
           className="origin-center animate-pulse-ring"
         />
 
         {/* Orbiting accent dots */}
-        <circle cx="190" cy="105" r="4" fill="oklch(0.74 0.2 148 / 0.7)" />
-        <circle cx="64" cy="178" r="3.4" fill="oklch(0.74 0.2 148 / 0.6)" />
+        <circle cx="190" cy="105" r="4" fill="oklch(0.72 0.22 140 / 0.7)" />
+        <circle cx="64" cy="178" r="3.4" fill="oklch(0.72 0.22 140 / 0.6)" />
 
         <g className={active ? "radar-active" : undefined}>
           {dots.map((d, idx) => (
@@ -68,7 +68,7 @@ export function RadarGraphic({ className, active = false }: RadarGraphicProps) {
               cx={d.cx}
               cy={d.cy}
               r={d.r}
-              fill={`oklch(0.74 0.2 148 / ${d.o})`}
+              fill={`oklch(0.72 0.22 140 / ${d.o})`}
               style={{
                 transformBox: "fill-box",
                 transformOrigin: "center",

@@ -63,7 +63,7 @@
   --card-foreground: oklch(0.98 0.003 250);
   --popover: oklch(0.2 0.02 255);
   --popover-foreground: oklch(0.98 0.003 250);
-  --primary: oklch(0.72 0.2 145);
+  --primary: oklch(0.72 0.22 140);
   --primary-foreground: oklch(0.16 0.018 255);
   --secondary: oklch(0.26 0.022 255);
   --secondary-foreground: oklch(0.98 0.003 250);
@@ -75,9 +75,9 @@
   --destructive-foreground: oklch(0.98 0.003 250);
   --border: oklch(0.3 0.02 255);
   --input: oklch(0.3 0.02 255);
-  --ring: oklch(0.72 0.2 145);
+  --ring: oklch(0.72 0.22 140);
 
-  --brand-green: oklch(0.74 0.2 148);
+  --brand-green: oklch(0.72 0.22 140);
   --brand-blue: oklch(0.62 0.19 250);
   --brand-red: oklch(0.64 0.22 22);
   --brand-gold: oklch(0.83 0.16 85);
@@ -104,7 +104,7 @@
   --card-foreground: oklch(0.98 0.003 250);
   --popover: oklch(0.2 0.02 255);
   --popover-foreground: oklch(0.98 0.003 250);
-  --primary: oklch(0.72 0.2 145);
+  --primary: oklch(0.72 0.22 140);
   --primary-foreground: oklch(0.16 0.018 255);
   --secondary: oklch(0.26 0.022 255);
   --secondary-foreground: oklch(0.98 0.003 250);
@@ -116,7 +116,7 @@
   --destructive-foreground: oklch(0.98 0.003 250);
   --border: oklch(0.3 0.02 255);
   --input: oklch(0.3 0.02 255);
-  --ring: oklch(0.72 0.2 145);
+  --ring: oklch(0.72 0.22 140);
 }
 
 @layer base {
@@ -182,4 +182,36 @@
 
 .radar-active .radar-dot {
   animation: filax-radar-wave 1.1s ease-in-out infinite;
+}
+
+/* Command bar — subtle green glow border that breathes on hover / focus */
+@keyframes filax-command-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px oklch(0.72 0.22 140 / 0.28),
+      0 0 16px -6px oklch(0.72 0.22 140 / 0.4),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px oklch(0.72 0.22 140 / 0.6),
+      0 0 26px -4px oklch(0.72 0.22 140 / 0.75),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  }
+}
+
+.command-bar {
+  border-color: oklch(0.72 0.22 140 / 0.22);
+  box-shadow:
+    0 0 0 1px oklch(0.72 0.22 140 / 0.18),
+    0 8px 32px -10px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 0.3s ease;
+}
+
+.command-bar:hover,
+.command-bar:focus-within {
+  border-color: oklch(0.72 0.22 140 / 0.5);
+  animation: filax-command-glow 2.2s ease-in-out infinite;
 }
