@@ -92,8 +92,8 @@ function Index() {
         <RadarGraphic className="h-52 w-52" active={radarActive} />
       </div>
 
-      {/* Hero title — terminé par un point */}
-      <h1 className="mt-6 text-center text-4xl font-extrabold leading-tight tracking-tight text-foreground">
+      {/* Hero title — dégradé gris (bas) vers blanc (haut), terminé par un point */}
+      <h1 className="mt-6 bg-gradient-to-t from-foreground/45 via-foreground/80 to-foreground bg-clip-text text-center text-4xl font-extrabold leading-tight tracking-tight text-transparent">
         Prenez le contrôle
         <br />
         de votre vie.
