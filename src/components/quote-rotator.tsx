@@ -7,28 +7,24 @@ interface Quote {
 
 /**
  * Courtes citations motivantes (finance, discipline, réussite, leadership…).
- * Entièrement en français.
+ * Entièrement en français. Chaque citation tient sur une seule ligne.
  */
 const QUOTES: Quote[] = [
   { text: "La discipline crée la liberté.", author: "Jim Rohn" },
   { text: "La réussite suit la discipline.", author: "Jim Rohn" },
-  { text: "Les petites actions créent les grandes fortunes.", author: "Warren Buffett" },
   { text: "La constance bat le talent.", author: "Anonyme" },
   { text: "La concentration crée les résultats.", author: "Tony Robbins" },
   { text: "La richesse grandit par la patience.", author: "Benjamin Graham" },
-  { text: "N'épargnez pas ce qui reste après avoir dépensé.", author: "Warren Buffett" },
-  { text: "Le risque vient de ne pas savoir ce que l'on fait.", author: "Warren Buffett" },
   { text: "Investis en toi-même d'abord.", author: "Benjamin Franklin" },
   { text: "Une idée exécutée vaut mille intentions.", author: "Anonyme" },
-  { text: "La persévérance transforme l'échec en réussite.", author: "Anonyme" },
   { text: "Le temps est ton meilleur capital.", author: "Anonyme" },
   { text: "Agis aujourd'hui, récolte demain.", author: "Anonyme" },
-  { text: "L'innovation distingue le leader du suiveur.", author: "Steve Jobs" },
   { text: "La liberté économique se construit chaque jour.", author: "Anonyme" },
 ];
 
 export function QuoteRotator({ className }: { className?: string }) {
-  const [index, setIndex] = useState(() => Math.floor(Math.random() * QUOTES.length));
+  // Start deterministically at 0 so SSR and the client render the same markup.
+  const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -55,12 +51,14 @@ export function QuoteRotator({ className }: { className?: string }) {
         className="transition-opacity duration-500 ease-out"
         style={{ opacity: visible ? 1 : 0 }}
       >
-        <blockquote className="text-base font-medium italic leading-relaxed text-foreground/90">
+        <blockquote className="whitespace-nowrap text-[0.8rem] font-medium italic leading-relaxed text-foreground/90">
           « {quote.text} »
         </blockquote>
-        <figcaption className="mt-2 text-xs font-medium tracking-wide text-muted-foreground">
-          — {quote.author} —
+        <figcaption className="mt-1.5 text-xs font-medium tracking-wide text-brand-green">
+          — {quote.author}
         </figcaption>
+        {/* Fine ligne horizontale verte sous l'auteur */}
+        <span className="mx-auto mt-3 block h-px w-24 bg-gradient-to-r from-transparent via-brand-green/70 to-transparent" />
       </div>
     </figure>
   );
