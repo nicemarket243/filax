@@ -114,15 +114,15 @@ function Index() {
         />
         <button
           type="submit"
-          aria-label="Envoyer"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-foreground transition-all hover:bg-white/20 active:scale-95"
+          aria-label="Envoyer le message"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-blue/40 via-brand-green/25 to-brand-red/40 text-foreground shadow-[0_0_14px_-4px_oklch(0.62_0.19_250/0.5)] transition-all hover:brightness-110 active:scale-95"
         >
-          <ArrowUp className="h-[1.05rem] w-[1.05rem]" strokeWidth={2.4} />
+          <Send className="h-[1rem] w-[1rem]" strokeWidth={2.2} />
         </button>
         <button
           type="button"
           aria-label="Commande vocale"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-foreground/70 transition-all hover:bg-white/10 hover:text-foreground"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-red/[0.04] text-foreground/70 transition-all hover:bg-brand-blue/[0.1] hover:text-foreground"
         >
           <AudioLines className="h-[1.05rem] w-[1.05rem]" strokeWidth={2.2} />
         </button>
