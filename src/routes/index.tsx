@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Crown, Send, Mic, Target, TrendingUp, ShieldCheck } from "lucide-react";
+import { Crown, ArrowUp, Mic, Target, TrendingUp, ShieldCheck } from "lucide-react";
 import { FilaxLogo } from "@/components/filax-logo";
 import { RadarGraphic } from "@/components/radar-graphic";
+import { QuoteRotator } from "@/components/quote-rotator";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,49 +26,37 @@ export const Route = createFileRoute("/")({
 });
 
 const cards = [
-  {
-    to: "/discipline",
-    label: "Discipline",
-    icon: Target,
-    accent: "brand-green",
-  },
-  {
-    to: "/economie",
-    label: "Économie",
-    icon: TrendingUp,
-    accent: "brand-blue",
-  },
-  {
-    to: "/assurance",
-    label: "Assurance",
-    icon: ShieldCheck,
-    accent: "brand-red",
-  },
+  { to: "/discipline", label: "Discipline", icon: Target, accent: "brand-green" },
+  { to: "/economie", label: "Économie", icon: TrendingUp, accent: "brand-blue" },
+  { to: "/assurance", label: "Assurance", icon: ShieldCheck, accent: "brand-red" },
 ] as const;
 
 const accentStyles: Record<
   string,
-  { border: string; glow: string; icon: string; ring: string; text: string }
+  { border: string; glow: string; iconWrap: string; icon: string; text: string }
 > = {
   "brand-green": {
-    border: "border-brand-green/40",
-    glow: "shadow-[0_0_28px_-6px_oklch(0.74_0.2_148/0.55)]",
+    border: "border-brand-green/30",
+    glow: "shadow-[0_8px_40px_-12px_oklch(0.74_0.2_148/0.55)]",
+    iconWrap:
+      "border-brand-green/50 bg-gradient-to-br from-brand-green/30 to-brand-green/5 shadow-[0_0_24px_-4px_oklch(0.74_0.2_148/0.7)]",
     icon: "text-brand-green",
-    ring: "border-brand-green/40 bg-brand-green/10",
     text: "text-brand-green",
   },
   "brand-blue": {
-    border: "border-brand-blue/40",
-    glow: "shadow-[0_0_28px_-6px_oklch(0.62_0.19_250/0.55)]",
+    border: "border-brand-blue/30",
+    glow: "shadow-[0_8px_40px_-12px_oklch(0.62_0.19_250/0.55)]",
+    iconWrap:
+      "border-brand-blue/50 bg-gradient-to-br from-brand-blue/30 to-brand-blue/5 shadow-[0_0_24px_-4px_oklch(0.62_0.19_250/0.7)]",
     icon: "text-brand-blue",
-    ring: "border-brand-blue/40 bg-brand-blue/10",
     text: "text-brand-blue",
   },
   "brand-red": {
-    border: "border-brand-red/40",
-    glow: "shadow-[0_0_28px_-6px_oklch(0.64_0.22_22/0.55)]",
+    border: "border-brand-red/30",
+    glow: "shadow-[0_8px_40px_-12px_oklch(0.64_0.22_22/0.55)]",
+    iconWrap:
+      "border-brand-red/50 bg-gradient-to-br from-brand-red/30 to-brand-red/5 shadow-[0_0_24px_-4px_oklch(0.64_0.22_22/0.7)]",
     icon: "text-brand-red",
-    ring: "border-brand-red/40 bg-brand-red/10",
     text: "text-brand-red",
   },
 };
@@ -77,95 +66,89 @@ function Index() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder action for the search command.
-    console.log("FILAX command:", query);
+    console.log("Commande FILAX :", query);
   };
 
   return (
-    <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden px-6 pb-12 pt-7">
-      {/* Header */}
+    <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden px-6 pb-14 pt-10">
+      {/* Header — generous spacing */}
       <header className="flex items-center justify-between">
-        <FilaxLogo className="animate-fade-up" />
+        <FilaxLogo className="animate-fade-up" height={46} />
         <button
           type="button"
-          className="flex items-center gap-2 rounded-full border border-border bg-card/60 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-brand-gold/50 hover:bg-card"
+          className="flex items-center gap-1.5 rounded-full border border-border/70 bg-card/50 px-3 py-1.5 text-xs font-semibold text-foreground/90 backdrop-blur transition-colors hover:border-brand-gold/50 hover:bg-card"
         >
-          <Crown className="h-4 w-4 text-brand-gold" />
+          <Crown className="h-3.5 w-3.5 text-brand-gold" />
           Premium
         </button>
       </header>
 
-      {/* Radar graphic */}
-      <div className="mt-10 flex justify-center">
-        <RadarGraphic className="h-64 w-64" />
+      {/* Radar graphic — pushed down with breathing room */}
+      <div className="mt-20 flex justify-center">
+        <RadarGraphic className="h-60 w-60" />
       </div>
 
-      {/* Hero title */}
-      <h1 className="mt-8 text-center text-4xl font-extrabold leading-tight tracking-tight text-foreground">
+      {/* Hero title — moved lower */}
+      <h1 className="mt-24 text-center text-4xl font-extrabold leading-tight tracking-tight text-foreground">
         Prenez le contrôle
         <br />
         de votre vie
       </h1>
 
-      {/* Search bar */}
+      {/* Command bar — premium glassmorphism */}
       <form
         onSubmit={handleSubmit}
-        className="mt-8 flex items-center gap-2 rounded-3xl border border-border bg-card/60 p-2.5 backdrop-blur"
+        className="group relative mt-10 flex items-center gap-2 rounded-[1.75rem] border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] p-2 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.08)] backdrop-blur-xl transition-colors focus-within:border-brand-green/40"
       >
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Que voulez-vous faire aujourd'hui ?"
-          className="min-w-0 flex-1 bg-transparent px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          className="min-w-0 flex-1 bg-transparent px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/80"
         />
-        <button
-          type="submit"
-          aria-label="Envoyer"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-brand-green/40 bg-brand-green/15 text-brand-green transition-colors hover:bg-brand-green/25"
-        >
-          <Send className="h-5 w-5" />
-        </button>
         <button
           type="button"
           aria-label="Commande vocale"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-foreground/80 transition-all hover:bg-white/10 hover:text-foreground"
         >
-          <Mic className="h-5 w-5" />
+          <Mic className="h-5 w-5" strokeWidth={2.2} />
+        </button>
+        <button
+          type="submit"
+          aria-label="Envoyer"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-green to-[oklch(0.6_0.17_150)] text-primary-foreground shadow-[0_4px_16px_-2px_oklch(0.74_0.2_148/0.6)] transition-all hover:scale-105 active:scale-95"
+        >
+          <ArrowUp className="h-5 w-5" strokeWidth={2.6} />
         </button>
       </form>
 
-      {/* Feature cards */}
-      <div className="mt-7 grid grid-cols-3 gap-3">
+      {/* Feature cards — overlapping icons, lighter proportions */}
+      <div className="mt-16 grid grid-cols-3 gap-3.5">
         {cards.map(({ to, label, icon: Icon, accent }) => {
           const s = accentStyles[accent];
           return (
             <Link
               key={to}
               to={to}
-              className={`group flex flex-col items-center gap-3 rounded-2xl border bg-card/50 p-3 text-center transition-all hover:-translate-y-0.5 ${s.border} ${s.glow}`}
+              className={`group relative flex flex-col items-center justify-end rounded-2xl border bg-gradient-to-b from-card/70 to-card/20 px-2 pb-4 pt-9 text-center backdrop-blur transition-all hover:-translate-y-1 ${s.border} ${s.glow}`}
             >
+              {/* Icon overlapping the top edge (half outside the card) */}
               <span
-                className={`flex h-12 w-12 items-center justify-center rounded-full border ${s.ring}`}
+                className={`absolute -top-6 left-1/2 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border ${s.iconWrap}`}
               >
-                <Icon className={`h-6 w-6 ${s.icon}`} />
+                <Icon className={`h-6 w-6 ${s.icon}`} strokeWidth={2.2} />
               </span>
               <span className="leading-tight">
-                <span className="block text-sm font-bold text-foreground">FILAX</span>
-                <span className={`block text-sm font-semibold ${s.text}`}>{label}</span>
+                <span className="block text-[0.8rem] font-bold text-foreground">FILAX</span>
+                <span className={`block text-[0.8rem] font-semibold ${s.text}`}>{label}</span>
               </span>
             </Link>
           );
         })}
       </div>
 
-      {/* Quote */}
-      <figure className="mt-10 px-2 text-center">
-        <span className="block text-3xl font-serif leading-none text-brand-green">“</span>
-        <blockquote className="mt-1 text-lg font-medium italic text-foreground">
-          "Discipline today, freedom tomorrow."
-        </blockquote>
-        <figcaption className="mt-3 text-sm font-medium text-brand-green">— Jim Rohn</figcaption>
-      </figure>
+      {/* Rotating quote — clean, compact, no decorative marks */}
+      <QuoteRotator className="mt-14" />
     </main>
   );
 }
