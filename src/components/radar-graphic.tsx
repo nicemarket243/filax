@@ -1,14 +1,17 @@
 interface RadarGraphicProps {
   className?: string;
+  /** When true, the dot matrix animates dynamically (voice / text input detected). */
+  active?: boolean;
 }
 
 /**
- * Decorative concentric-circle radar with a green dot matrix at its core,
- * matching the FILAX hero visual.
+ * Decorative concentric-circle radar with a green dot matrix at its core.
+ * Dots are kept subtle (semi-transparent) and ripple with a dynamic wave
+ * animation when `active` is true.
  */
-export function RadarGraphic({ className }: RadarGraphicProps) {
+export function RadarGraphic({ className, active = false }: RadarGraphicProps) {
   // Build a circular dot matrix: dots get larger toward the center.
-  const dots: { cx: number; cy: number; r: number; o: number }[] = [];
+  const dots: { cx: number; cy: number; r: number; o: number; delay: number }[] = [];
   const cols = 9;
   const rows = 9;
   const spacing = 14;
@@ -23,7 +26,14 @@ export function RadarGraphic({ className }: RadarGraphicProps) {
       const dist = Math.sqrt((x - cx0) ** 2 + (y - cy0) ** 2);
       if (dist > maxDist * 0.62) continue;
       const t = 1 - dist / (maxDist * 0.62);
-      dots.push({ cx: x, cy: y, r: 1.4 + t * 3.4, o: 0.35 + t * 0.55 });
+      // Subtle base opacity so the dots stay "peu visibles".
+      dots.push({
+        cx: x,
+        cy: y,
+        r: 1.4 + t * 3.4,
+        o: 0.18 + t * 0.4,
+        delay: dist / 90,
+      });
     }
   }
 
@@ -36,23 +46,37 @@ export function RadarGraphic({ className }: RadarGraphicProps) {
         aria-hidden="true"
         className="h-full w-full"
       >
-        <circle cx="100" cy="100" r="92" stroke="oklch(0.74 0.2 148 / 0.18)" strokeWidth="1" />
+        <circle cx="100" cy="100" r="92" stroke="oklch(0.74 0.2 148 / 0.12)" strokeWidth="1" />
         <circle
           cx="100"
           cy="100"
           r="70"
-          stroke="oklch(0.74 0.2 148 / 0.28)"
+          stroke="oklch(0.74 0.2 148 / 0.2)"
           strokeWidth="1"
           className="origin-center animate-pulse-ring"
         />
 
         {/* Orbiting accent dots */}
-        <circle cx="190" cy="105" r="4" fill="oklch(0.74 0.2 148)" />
-        <circle cx="64" cy="178" r="3.4" fill="oklch(0.74 0.2 148)" />
+        <circle cx="190" cy="105" r="4" fill="oklch(0.74 0.2 148 / 0.7)" />
+        <circle cx="64" cy="178" r="3.4" fill="oklch(0.74 0.2 148 / 0.6)" />
 
-        {dots.map((d, idx) => (
-          <circle key={idx} cx={d.cx} cy={d.cy} r={d.r} fill={`oklch(0.74 0.2 148 / ${d.o})`} />
-        ))}
+        <g className={active ? "radar-active" : undefined}>
+          {dots.map((d, idx) => (
+            <circle
+              key={idx}
+              className="radar-dot"
+              cx={d.cx}
+              cy={d.cy}
+              r={d.r}
+              fill={`oklch(0.74 0.2 148 / ${d.o})`}
+              style={{
+                transformBox: "fill-box",
+                transformOrigin: "center",
+                animationDelay: `${d.delay}s`,
+              }}
+            />
+          ))}
+        </g>
       </svg>
     </div>
   );
