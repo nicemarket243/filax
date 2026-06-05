@@ -163,3 +163,23 @@
 @utility animate-fade-up {
   animation: filax-fade-up 0.7s ease-out both;
 }
+
+/* Dynamic ripple for the AI dot matrix when voice/text input is detected */
+@keyframes filax-radar-wave {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.55);
+    opacity: 1;
+  }
+}
+
+.radar-dot {
+  transition: opacity 0.4s ease;
+}
+
+.radar-active .radar-dot {
+  animation: filax-radar-wave 1.1s ease-in-out infinite;
+}
