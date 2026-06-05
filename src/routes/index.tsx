@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Crown, ArrowUp, AudioLines, Target, TrendingUp, ShieldCheck } from "lucide-react";
+import { Crown, Send, AudioLines, Target, TrendingUp, ShieldCheck } from "lucide-react";
 import { FilaxLogo } from "@/components/filax-logo";
 import { RadarGraphic } from "@/components/radar-graphic";
 import { QuoteRotator } from "@/components/quote-rotator";
@@ -77,12 +77,12 @@ function Index() {
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden px-6 pb-12 pt-6">
       {/* Header — logo & Premium alignés sur le même axe horizontal */}
       <header className="flex items-center justify-between">
-        <FilaxLogo className="animate-fade-up" height={28} />
+        <FilaxLogo className="filax-logo-fade animate-fade-up" height={26} />
         <button
           type="button"
-          className="flex items-center gap-1.5 rounded-full bg-brand-gold/[0.06] px-3 py-1.5 text-xs font-semibold text-foreground/90 transition-colors hover:bg-brand-gold/[0.12]"
+          className="flex items-center gap-1 rounded-full bg-brand-gold/[0.06] px-2 py-0.5 text-[0.6rem] font-semibold leading-none text-foreground/90 transition-colors hover:bg-brand-gold/[0.12]"
         >
-          <Crown className="h-3.5 w-3.5 text-brand-gold" />
+          <Crown className="h-2.5 w-2.5 text-brand-gold" />
           Premium
         </button>
       </header>
@@ -92,8 +92,8 @@ function Index() {
         <RadarGraphic className="h-52 w-52" active={radarActive} />
       </div>
 
-      {/* Hero title — terminé par un point */}
-      <h1 className="mt-6 text-center text-4xl font-extrabold leading-tight tracking-tight text-foreground">
+      {/* Hero title — dégradé gris (bas) vers blanc (haut), terminé par un point */}
+      <h1 className="mt-6 bg-gradient-to-t from-foreground/45 via-foreground/80 to-foreground bg-clip-text text-center text-4xl font-extrabold leading-tight tracking-tight text-transparent">
         Prenez le contrôle
         <br />
         de votre vie.
@@ -114,15 +114,15 @@ function Index() {
         />
         <button
           type="submit"
-          aria-label="Envoyer"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-foreground transition-all hover:bg-white/20 active:scale-95"
+          aria-label="Envoyer le message"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-blue/40 via-brand-green/25 to-brand-red/40 text-foreground shadow-[0_0_14px_-4px_oklch(0.62_0.19_250/0.5)] transition-all hover:brightness-110 active:scale-95"
         >
-          <ArrowUp className="h-[1.05rem] w-[1.05rem]" strokeWidth={2.4} />
+          <Send className="h-[1rem] w-[1rem]" strokeWidth={2.2} />
         </button>
         <button
           type="button"
           aria-label="Commande vocale"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-foreground/70 transition-all hover:bg-white/10 hover:text-foreground"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-red/[0.04] text-foreground/70 transition-all hover:bg-brand-blue/[0.1] hover:text-foreground"
         >
           <AudioLines className="h-[1.05rem] w-[1.05rem]" strokeWidth={2.2} />
         </button>
