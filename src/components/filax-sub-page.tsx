@@ -1,6 +1,6 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft, type LucideIcon } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
 import { FilaxLogo } from "@/components/filax-logo";
+import { BackButton } from "@/components/back-button";
 
 interface FilaxSubPageProps {
   label: string;
@@ -22,15 +22,10 @@ export function FilaxSubPage({
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-6 pb-12 pt-7">
       <header className="flex items-center justify-between">
-        <Link
-          to="/"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/60 text-foreground transition-colors hover:bg-card"
-          aria-label="Retour"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
+        <BackButton fallbackTo="/" />
         <FilaxLogo />
       </header>
+
 
       <div className="mt-16 flex flex-col items-center text-center animate-fade-up">
         <span
