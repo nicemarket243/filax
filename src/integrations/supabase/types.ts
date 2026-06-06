@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          birth_city: string | null
+          birth_date: string | null
+          created_at: string
+          email: string | null
+          first_name: string | null
+          id: string
+          id_document_path: string | null
+          id_document_type: string | null
+          kyc_status: string
+          kyc_validated_at: string | null
+          last_name: string | null
+          selfie_path: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birth_city?: string | null
+          birth_date?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          id_document_path?: string | null
+          id_document_type?: string | null
+          kyc_status?: string
+          kyc_validated_at?: string | null
+          last_name?: string | null
+          selfie_path?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birth_city?: string | null
+          birth_date?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          id_document_path?: string | null
+          id_document_type?: string | null
+          kyc_status?: string
+          kyc_validated_at?: string | null
+          last_name?: string | null
+          selfie_path?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
