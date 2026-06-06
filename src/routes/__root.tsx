@@ -11,7 +11,6 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -79,13 +78,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { name: "description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/huAzq9cUcQh9YLLeaO9wY0kG83z2/social-images/social-1780717378361-cool.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/huAzq9cUcQh9YLLeaO9wY0kG83z2/social-images/social-1780717378361-cool.webp" },
     ],
     links: [
       {
@@ -121,7 +124,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
-      <Toaster position="top-center" theme="dark" richColors />
     </QueryClientProvider>
   );
 }
