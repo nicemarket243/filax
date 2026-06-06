@@ -75,17 +75,20 @@ function Index() {
 
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden px-6 pb-12 pt-6">
-      {/* Header — logo & Premium alignés sur le même axe horizontal */}
-      <header className="flex items-center justify-between">
-        <FilaxLogo className="filax-logo-fade animate-fade-up" height={26} />
-        <button
-          type="button"
-          className="flex items-center gap-1 rounded-full bg-brand-gold/[0.06] px-2 py-0.5 text-[0.6rem] font-semibold leading-none text-foreground/90 transition-colors hover:bg-brand-gold/[0.12]"
+      {/* Header — logo cliquable & Premium alignés sur la même ligne de base */}
+      <header className="flex items-end justify-between">
+        <Link to="/inscription" aria-label="Ouvrir la vérification et l'inscription FILAX">
+          <FilaxLogo className="filax-logo-fade animate-fade-up" height={26} />
+        </Link>
+        <Link
+          to="/premium"
+          className="flex items-center gap-1 rounded-full border border-brand-violet/30 bg-brand-violet/[0.1] px-2 py-0.5 text-[0.6rem] font-semibold leading-none text-foreground/90 shadow-[0_0_14px_-6px_oklch(0.6_0.21_300/0.8)] transition-all hover:bg-brand-violet/20 active:scale-95"
         >
-          <Crown className="h-2.5 w-2.5 text-brand-gold" />
+          <Crown className="h-2.5 w-2.5 text-brand-violet" />
           Premium
-        </button>
+        </Link>
       </header>
+
 
       {/* Sphère IA descendue vers le titre — grand espace d'aération en haut */}
       <div className="mt-24 flex justify-center">
