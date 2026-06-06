@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as EconomieRouteImport } from './routes/economie'
 import { Route as DisciplineRouteImport } from './routes/discipline'
 import { Route as AssuranceRouteImport } from './routes/assurance'
 import { Route as IndexRouteImport } from './routes/index'
 
+const InscriptionRoute = InscriptionRouteImport.update({
+  id: '/inscription',
+  path: '/inscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EconomieRoute = EconomieRouteImport.update({
   id: '/economie',
   path: '/economie',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/assurance': typeof AssuranceRoute
   '/discipline': typeof DisciplineRoute
   '/economie': typeof EconomieRoute
+  '/inscription': typeof InscriptionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assurance': typeof AssuranceRoute
   '/discipline': typeof DisciplineRoute
   '/economie': typeof EconomieRoute
+  '/inscription': typeof InscriptionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,20 @@ export interface FileRoutesById {
   '/assurance': typeof AssuranceRoute
   '/discipline': typeof DisciplineRoute
   '/economie': typeof EconomieRoute
+  '/inscription': typeof InscriptionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/assurance' | '/discipline' | '/economie'
+  fullPaths: '/' | '/assurance' | '/discipline' | '/economie' | '/inscription'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assurance' | '/discipline' | '/economie'
-  id: '__root__' | '/' | '/assurance' | '/discipline' | '/economie'
+  to: '/' | '/assurance' | '/discipline' | '/economie' | '/inscription'
+  id:
+    | '__root__'
+    | '/'
+    | '/assurance'
+    | '/discipline'
+    | '/economie'
+    | '/inscription'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +82,18 @@ export interface RootRouteChildren {
   AssuranceRoute: typeof AssuranceRoute
   DisciplineRoute: typeof DisciplineRoute
   EconomieRoute: typeof EconomieRoute
+  InscriptionRoute: typeof InscriptionRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/inscription': {
+      id: '/inscription'
+      path: '/inscription'
+      fullPath: '/inscription'
+      preLoaderRoute: typeof InscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/economie': {
       id: '/economie'
       path: '/economie'
@@ -107,7 +130,18 @@ const rootRouteChildren: RootRouteChildren = {
   AssuranceRoute: AssuranceRoute,
   DisciplineRoute: DisciplineRoute,
   EconomieRoute: EconomieRoute,
+  InscriptionRoute: InscriptionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
