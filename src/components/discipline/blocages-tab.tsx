@@ -90,10 +90,13 @@ export function BlocagesTab({
 
   const focusRemaining = focusEnd ? Math.max(0, focusEnd - Date.now()) : 0;
   const focusActive = focusEnd !== null && focusRemaining > 0;
-  if (focusEnd !== null && focusRemaining <= 0) {
-    setFocusEnd(null);
-    toast.success("Focus terminé. Bravo 👏");
-  }
+
+  useEffect(() => {
+    if (focusEnd !== null && focusRemaining <= 0) {
+      setFocusEnd(null);
+      toast.success("Focus terminé. Bravo 👏");
+    }
+  }, [focusEnd, focusRemaining]);
 
   return (
     <div className="space-y-6 pb-32">
