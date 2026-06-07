@@ -335,29 +335,33 @@ function InscriptionPage() {
               ))}
             </div>
 
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-8 text-center transition-colors hover:border-brand-green/40">
-              {docFile ? (
-                <>
+            <AddPhotoMenu onFile={handleDocFile} allowPdf>
+              <button
+                type="button"
+                className="flex w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border border-dashed border-white/15 bg-white/[0.05] p-6 text-center transition-colors hover:border-brand-blue/40"
+              >
+                {docPreview ? (
+                  <img src={docPreview} alt="Aperçu du document" className="max-h-40 w-auto rounded-xl object-contain" />
+                ) : docFile ? (
                   <FileCheck2 className="h-8 w-8 text-brand-green" />
-                  <span className="text-xs text-foreground">{docFile.name}</span>
-                  <span className="text-[0.65rem] text-muted-foreground">Toucher pour remplacer</span>
-                </>
-              ) : (
-                <>
+                ) : (
                   <Upload className="h-8 w-8 text-muted-foreground" />
-                  <span className="text-xs text-foreground">Importer depuis la galerie ou les fichiers</span>
-                  <span className="text-[0.65rem] text-muted-foreground">JPG, PNG ou PDF</span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                className="hidden"
-                onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
-              />
-            </label>
+                )}
+                {docFile ? (
+                  <>
+                    <span className="text-xs text-foreground">{docFile.name}</span>
+                    <span className="text-[0.65rem] text-muted-foreground">Toucher pour modifier la photo</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-xs font-semibold text-foreground">Ajouter une photo</span>
+                    <span className="text-[0.65rem] text-muted-foreground">Appareil photo · Galerie · Fichiers</span>
+                  </>
+                )}
+              </button>
+            </AddPhotoMenu>
 
-            <Button onClick={handleDocumentUpload} disabled={loading} className="w-full bg-brand-green text-background hover:bg-brand-green/90">
+            <Button onClick={handleDocumentUpload} disabled={loading} className="w-full bg-brand-blue text-foreground hover:bg-brand-blue/90">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continuer"}
             </Button>
           </div>
