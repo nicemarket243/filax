@@ -77,6 +77,12 @@ function InscriptionPage() {
   // KYC document
   const [docType, setDocType] = useState<string>("passport");
   const [docFile, setDocFile] = useState<File | null>(null);
+  const [docPreview, setDocPreview] = useState<string | null>(null);
+
+  const handleDocFile = (file: File) => {
+    setDocFile(file);
+    setDocPreview(file.type.startsWith("image/") ? URL.createObjectURL(file) : null);
+  };
 
   // Resume an existing session (e.g. came back from the email link)
   useEffect(() => {
