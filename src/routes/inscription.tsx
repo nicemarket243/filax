@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { FilaxLogo } from "@/components/filax-logo";
 import { BackButton } from "@/components/back-button";
+import { AddPhotoMenu } from "@/components/add-photo-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,6 +77,12 @@ function InscriptionPage() {
   // KYC document
   const [docType, setDocType] = useState<string>("passport");
   const [docFile, setDocFile] = useState<File | null>(null);
+  const [docPreview, setDocPreview] = useState<string | null>(null);
+
+  const handleDocFile = (file: File) => {
+    setDocFile(file);
+    setDocPreview(file.type.startsWith("image/") ? URL.createObjectURL(file) : null);
+  };
 
   // Resume an existing session (e.g. came back from the email link)
   useEffect(() => {
@@ -328,29 +335,33 @@ function InscriptionPage() {
               ))}
             </div>
 
-            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-8 text-center transition-colors hover:border-brand-green/40">
-              {docFile ? (
-                <>
+            <AddPhotoMenu onFile={handleDocFile} allowPdf>
+              <button
+                type="button"
+                className="flex w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border border-dashed border-white/15 bg-white/[0.05] p-6 text-center transition-colors hover:border-brand-blue/40"
+              >
+                {docPreview ? (
+                  <img src={docPreview} alt="Aperçu du document" className="max-h-40 w-auto rounded-xl object-contain" />
+                ) : docFile ? (
                   <FileCheck2 className="h-8 w-8 text-brand-green" />
-                  <span className="text-xs text-foreground">{docFile.name}</span>
-                  <span className="text-[0.65rem] text-muted-foreground">Toucher pour remplacer</span>
-                </>
-              ) : (
-                <>
+                ) : (
                   <Upload className="h-8 w-8 text-muted-foreground" />
-                  <span className="text-xs text-foreground">Importer depuis la galerie ou les fichiers</span>
-                  <span className="text-[0.65rem] text-muted-foreground">JPG, PNG ou PDF</span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                className="hidden"
-                onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
-              />
-            </label>
+                )}
+                {docFile ? (
+                  <>
+                    <span className="text-xs text-foreground">{docFile.name}</span>
+                    <span className="text-[0.65rem] text-muted-foreground">Toucher pour modifier la photo</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-xs font-semibold text-foreground">Ajouter une photo</span>
+                    <span className="text-[0.65rem] text-muted-foreground">Appareil photo · Galerie · Fichiers</span>
+                  </>
+                )}
+              </button>
+            </AddPhotoMenu>
 
-            <Button onClick={handleDocumentUpload} disabled={loading} className="w-full bg-brand-green text-background hover:bg-brand-green/90">
+            <Button onClick={handleDocumentUpload} disabled={loading} className="w-full bg-brand-blue text-foreground hover:bg-brand-blue/90">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continuer"}
             </Button>
           </div>
@@ -433,6 +444,7 @@ function BiometricCapture({
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [captured, setCaptured] = useState<{ blob: Blob; url: string } | null>(null);
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -442,6 +454,7 @@ function BiometricCapture({
 
   const start = useCallback(async () => {
     setError(null);
+    setCaptured(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
@@ -473,7 +486,7 @@ function BiometricCapture({
       (blob) => {
         if (blob) {
           stop();
-          onCapture(blob);
+          setCaptured({ blob, url: URL.createObjectURL(blob) });
         }
       },
       "image/jpeg",
@@ -484,8 +497,12 @@ function BiometricCapture({
   return (
     <div className="space-y-4">
       <div className="relative mx-auto aspect-square w-56 overflow-hidden rounded-full border-2 border-brand-violet/40 bg-black/40 shadow-[0_0_40px_-8px_oklch(0.6_0.21_300/0.6)]">
-        <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
-        {!streaming && (
+        {captured ? (
+          <img src={captured.url} alt="Visage capturé" className="h-full w-full object-cover" />
+        ) : (
+          <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
+        )}
+        {!streaming && !captured && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
             <ScanFace className="h-10 w-10" />
             <span className="text-[0.7rem]">Scanner facial</span>
@@ -494,17 +511,35 @@ function BiometricCapture({
         {streaming && (
           <div className="pointer-events-none absolute inset-0 animate-pulse-ring rounded-full border-2 border-brand-violet/30" />
         )}
+        {captured && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-green/90 px-2.5 py-0.5 text-[0.6rem] font-semibold text-background">
+            Visage capturé
+          </div>
+        )}
       </div>
 
       {error && <p className="text-center text-[0.72rem] text-brand-red">{error}</p>}
 
-      {!streaming ? (
+      {captured ? (
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" onClick={start} className="border-white/10 bg-white/[0.05]">
+            <Camera className="mr-2 h-4 w-4" /> Reprendre
+          </Button>
+          <Button
+            onClick={() => onCapture(captured.blob)}
+            disabled={loading}
+            className="bg-brand-green text-background hover:bg-brand-green/90"
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Valider le scan"}
+          </Button>
+        </div>
+      ) : !streaming ? (
         <Button onClick={start} className="w-full bg-brand-violet text-foreground hover:bg-brand-violet/90">
           <Camera className="mr-2 h-4 w-4" /> Activer le scanner facial
         </Button>
       ) : (
         <Button onClick={capture} disabled={loading} className="w-full bg-brand-green text-background hover:bg-brand-green/90">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Capturer & vérifier"}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Capturer mon visage"}
         </Button>
       )}
     </div>
