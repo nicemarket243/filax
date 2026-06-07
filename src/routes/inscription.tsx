@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { FilaxLogo } from "@/components/filax-logo";
 import { BackButton } from "@/components/back-button";
+import { AddPhotoMenu } from "@/components/add-photo-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
