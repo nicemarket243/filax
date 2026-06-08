@@ -2,6 +2,9 @@
 @source "../src";
 @import "tw-animate-css";
 
+/* Safelist dynamically-composed brand-color utilities used in FILAX Économie cards */
+@source inline("{bg,text,from,via,to,border}-brand-{green,blue,gold,red,violet}{,/10,/15,/20,/30,/40,/60,/90}");
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
