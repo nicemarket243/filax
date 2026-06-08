@@ -29,7 +29,6 @@ export function AnalyseTab({ data }: AnalyseTabProps) {
   // Balance evolution (derived from transactions, USD only, reverse-cumulative)
   const evolution = useMemo(() => {
     const usdTx = data.transactions.filter((t) => t.currency === "USD").slice().sort((a, b) => a.at - b.at);
-    let running = totalUsd;
     const deltas = usdTx.map((t) => (t.type === "depot" ? t.amount : -t.amount));
     const total = deltas.reduce((s, d) => s + d, 0);
     let start = totalUsd - total;
@@ -38,7 +37,6 @@ export function AnalyseTab({ data }: AnalyseTabProps) {
       start += deltas[i];
       pts.push({ name: new Date(t.at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }), solde: Math.round(start) });
     });
-    void running;
     return pts;
   }, [data.transactions, totalUsd]);
 
