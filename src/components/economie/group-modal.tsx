@@ -43,7 +43,7 @@ export function GroupModal({ open, onOpenChange, onConfirm }: GroupModalProps) {
       description: description.trim() || undefined,
       target: t,
       icon,
-      members: [{ id: crypto.randomUUID(), name: "Vous", paid: true, amount: 0 }],
+      members: [{ id: crypto.randomUUID(), name: "Vous", paid: true, amount: 0, goal: t > 0 ? Math.round(t / 5) : 1000, verified: true, avatar: memberAvatar("Vous-Filax") }],
     });
     toast.success(`Groupe « ${name} » créé`);
     close(false);
