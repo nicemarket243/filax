@@ -164,7 +164,7 @@ function GroupDetailDialog({
   const add = () => {
     if (!memberName.trim()) return toast.error("Nom requis.");
     if (group.members.length >= 100) return toast.error("Maximum 100 membres atteint.");
-    onAddMember(group.id, memberName.trim(), 100);
+    onAddMember(group.id, memberName.trim(), 0);
     toast.success(`${memberName} ajouté · notification envoyée à tous`);
     setMemberName("");
   };
