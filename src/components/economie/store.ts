@@ -46,7 +46,10 @@ export interface GroupMember {
   id: string;
   name: string;
   paid: boolean;
-  amount: number;
+  amount: number; // montant cotisé
+  goal: number; // objectif individuel
+  verified: boolean;
+  avatar?: string; // url photo de profil
 }
 
 export interface Group {
@@ -56,6 +59,11 @@ export interface Group {
   target: number;
   icon: string;
   members: GroupMember[];
+}
+
+/** Avatar de profil déterministe (cercle) basé sur le nom du membre. */
+export function memberAvatar(seed: string): string {
+  return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&radius=50&backgroundType=gradientLinear`;
 }
 
 export interface EconomieData {
