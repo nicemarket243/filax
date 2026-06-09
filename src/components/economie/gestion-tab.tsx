@@ -228,25 +228,62 @@ function GroupDetailDialog({
               </button>
 
               <div>
-                <p className="mb-2 text-[0.72rem] font-bold text-foreground">Cotisations</p>
-                <div className="space-y-1.5">
-                  {group.members.map((m) => (
-                    <div key={m.id} className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.06] text-xs font-bold text-foreground">
-                        {m.name.slice(0, 1).toUpperCase()}
-                      </span>
-                      <span className="flex-1 text-[0.78rem] font-semibold text-foreground">{m.name}</span>
-                      <span className="text-[0.72rem] text-muted-foreground">{formatMoney(m.amount, "USD")}</span>
-                      <button
-                        onClick={() => onToggleMember(group.id, m.id)}
-                        className={`flex h-7 w-7 items-center justify-center rounded-lg ${
-                          m.paid ? "bg-brand-green/20 text-brand-green" : "bg-brand-red/15 text-brand-red"
-                        }`}
-                      >
-                        {m.paid ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  ))}
+                <p className="mb-2 text-[0.72rem] font-bold text-foreground">Membres & cotisations</p>
+                <div className="space-y-2">
+                  {group.members.map((m) => {
+                    const pct = m.goal > 0 ? Math.min(100, Math.round((m.amount / m.goal) * 100)) : 0;
+                    return (
+                      <div key={m.id} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+                        <div className="flex items-center gap-2.5">
+                          {/* Photo de profil (cercle parfait) */}
+                          <span className="relative shrink-0">
+                            <img
+                              src={m.avatar}
+                              alt={m.name}
+                              className="h-9 w-9 rounded-full bg-white/[0.06] object-cover"
+                              loading="lazy"
+                            />
+                            {/* Pastille statut payé / en retard */}
+                            <span
+                              className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card ${
+                                m.paid ? "bg-brand-green" : "bg-brand-red"
+                              }`}
+                            />
+                          </span>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1">
+                              <span className="truncate text-[0.8rem] font-semibold text-foreground">{m.name}</span>
+                              {/* Vérification bleue : cercle bleu + check blanc */}
+                              {m.verified && (
+                                <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-brand-blue">
+                                  <Check className="h-2 w-2 text-white" strokeWidth={3.5} />
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[0.66rem] text-muted-foreground">
+                              {formatMoney(m.amount, "USD")} / {formatMoney(m.goal, "USD")}
+                            </span>
+                          </div>
+
+                          <button
+                            onClick={() => onToggleMember(group.id, m.id)}
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
+                              m.paid ? "bg-brand-green/20 text-brand-green" : "bg-brand-red/15 text-brand-red"
+                            }`}
+                            title={m.paid ? "À jour" : "En retard"}
+                          >
+                            {m.paid ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                          </button>
+                        </div>
+
+                        {/* Barre de progression verte vers l'objectif individuel */}
+                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                          <div className="h-full rounded-full bg-brand-green transition-all" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </>
