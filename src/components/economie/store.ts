@@ -46,7 +46,10 @@ export interface GroupMember {
   id: string;
   name: string;
   paid: boolean;
-  amount: number;
+  amount: number; // montant cotisé
+  goal: number; // objectif individuel
+  verified: boolean;
+  avatar?: string; // url photo de profil
 }
 
 export interface Group {
@@ -56,6 +59,11 @@ export interface Group {
   target: number;
   icon: string;
   members: GroupMember[];
+}
+
+/** Avatar de profil déterministe (cercle) basé sur le nom du membre. */
+export function memberAvatar(seed: string): string {
+  return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&radius=50&backgroundType=gradientLinear`;
 }
 
 export interface EconomieData {
@@ -101,10 +109,10 @@ const SEED: EconomieData = {
       target: 5000,
       icon: "👨‍👩‍👧",
       members: [
-        { id: "m1", name: "Vous", paid: true, amount: 100 },
-        { id: "m2", name: "Grace", paid: true, amount: 100 },
-        { id: "m3", name: "Jonas", paid: false, amount: 100 },
-        { id: "m4", name: "Sarah", paid: true, amount: 100 },
+        { id: "m1", name: "Vous", paid: true, amount: 400, goal: 1250, verified: true, avatar: memberAvatar("Vous-Filax") },
+        { id: "m2", name: "Grace Mukendi", paid: true, amount: 900, goal: 1250, verified: true, avatar: memberAvatar("Grace") },
+        { id: "m3", name: "Jonas Ilunga", paid: false, amount: 350, goal: 1250, verified: false, avatar: memberAvatar("Jonas") },
+        { id: "m4", name: "Sarah Kabeya", paid: true, amount: 1100, goal: 1250, verified: true, avatar: memberAvatar("Sarah") },
       ],
     },
   ],
@@ -236,7 +244,13 @@ export function useEconomieStore() {
         ...d,
         groups: d.groups.map((g) =>
           g.id === groupId
-            ? { ...g, members: [...g.members, { id: crypto.randomUUID(), name, paid: false, amount }] }
+            ? {
+                ...g,
+                members: [
+                  ...g.members,
+                  { id: crypto.randomUUID(), name, paid: false, amount, goal: amount || 1000, verified: false, avatar: memberAvatar(name) },
+                ],
+              }
             : g,
         ),
       })),

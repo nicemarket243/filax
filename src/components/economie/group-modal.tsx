@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { GOAL_ICONS, type Group } from "./store";
+import { GOAL_ICONS, memberAvatar, type Group } from "./store";
 
 interface GroupModalProps {
   open: boolean;
@@ -43,7 +43,7 @@ export function GroupModal({ open, onOpenChange, onConfirm }: GroupModalProps) {
       description: description.trim() || undefined,
       target: t,
       icon,
-      members: [{ id: crypto.randomUUID(), name: "Vous", paid: true, amount: 0 }],
+      members: [{ id: crypto.randomUUID(), name: "Vous", paid: true, amount: 0, goal: t > 0 ? Math.round(t / 5) : 1000, verified: true, avatar: memberAvatar("Vous-Filax") }],
     });
     toast.success(`Groupe « ${name} » créé`);
     close(false);
