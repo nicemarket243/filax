@@ -244,7 +244,13 @@ export function useEconomieStore() {
         ...d,
         groups: d.groups.map((g) =>
           g.id === groupId
-            ? { ...g, members: [...g.members, { id: crypto.randomUUID(), name, paid: false, amount }] }
+            ? {
+                ...g,
+                members: [
+                  ...g.members,
+                  { id: crypto.randomUUID(), name, paid: false, amount, goal: amount || 1000, verified: false, avatar: memberAvatar(name) },
+                ],
+              }
             : g,
         ),
       })),
