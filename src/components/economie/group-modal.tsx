@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { GOAL_ICONS, type Group } from "./store";
+import { GOAL_ICONS, memberAvatar, type Group } from "./store";
 
 interface GroupModalProps {
   open: boolean;
