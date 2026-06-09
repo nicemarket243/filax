@@ -72,7 +72,7 @@ export function SinistreTab({ data, onDeclare }: SinistreTabProps) {
           disabled={eligible.length === 0}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-red py-4 text-[0.86rem] font-bold text-white shadow-[0_10px_30px_-12px_oklch(0.64_0.22_22/0.7)] transition-all active:scale-[0.98] disabled:opacity-50"
         >
-          <AlertTriangle className="h-4.5 w-4.5" /> Déclarer une perte / vol
+          <AlertTriangle className="h-5 w-5" /> Déclarer une perte / vol
         </button>
       </div>
     );

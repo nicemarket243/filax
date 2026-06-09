@@ -52,7 +52,7 @@ export function AccueilTab({ data, onAssurer }: AccueilTabProps) {
         onClick={onAssurer}
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-green py-4 text-[0.82rem] font-bold text-background shadow-[0_10px_30px_-12px_oklch(0.72_0.22_140/0.7)] transition-all active:scale-[0.98]"
       >
-        <Plus className="h-4.5 w-4.5" strokeWidth={2.5} /> Assurer un appareil
+        <Plus className="h-5 w-5" strokeWidth={2.5} /> Assurer un appareil
       </button>
 
       <section>
