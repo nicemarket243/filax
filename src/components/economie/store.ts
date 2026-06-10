@@ -50,6 +50,13 @@ export interface GroupMember {
   goal: number; // objectif individuel
   verified: boolean;
   avatar?: string; // url photo de profil
+  lastActivity?: number; // timestamp du dernier dépôt / action
+  liked?: boolean; // validation/like admin
+}
+
+export interface GroupPoint {
+  at: number; // timestamp
+  total: number; // total collecté à cet instant
 }
 
 export interface Group {
@@ -59,11 +66,12 @@ export interface Group {
   target: number;
   icon: string;
   members: GroupMember[];
+  history?: GroupPoint[]; // évolution des cotisations dans le temps
 }
 
-/** Avatar de profil déterministe (cercle) basé sur le nom du membre. */
+/** Portrait réaliste déterministe (cercle) basé sur le nom du membre. */
 export function memberAvatar(seed: string): string {
-  return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&radius=50&backgroundType=gradientLinear`;
+  return `https://i.pravatar.cc/160?u=${encodeURIComponent(seed)}`;
 }
 
 export interface EconomieData {
@@ -109,10 +117,23 @@ const SEED: EconomieData = {
       target: 5000,
       icon: "👨‍👩‍👧",
       members: [
-        { id: "m1", name: "Vous", paid: true, amount: 400, goal: 1250, verified: true, avatar: memberAvatar("Vous-Filax") },
-        { id: "m2", name: "Grace Mukendi", paid: true, amount: 900, goal: 1250, verified: true, avatar: memberAvatar("Grace") },
-        { id: "m3", name: "Jonas Ilunga", paid: false, amount: 350, goal: 1250, verified: false, avatar: memberAvatar("Jonas") },
-        { id: "m4", name: "Sarah Kabeya", paid: true, amount: 1100, goal: 1250, verified: true, avatar: memberAvatar("Sarah") },
+        { id: "m1", name: "Vous", paid: true, amount: 400, goal: 1250, verified: true, lastActivity: now - 6 * DAY, avatar: memberAvatar("Vous-Filax") },
+        { id: "m2", name: "Grace Mukendi", paid: true, amount: 900, goal: 1250, verified: true, lastActivity: now - 1 * DAY, liked: true, avatar: memberAvatar("Grace") },
+        { id: "m3", name: "Jonas Ilunga", paid: false, amount: 350, goal: 1250, verified: false, lastActivity: now - 9 * DAY, avatar: memberAvatar("Jonas") },
+        { id: "m4", name: "Sarah Kabeya", paid: true, amount: 1100, goal: 1250, verified: true, lastActivity: now - 3 * DAY, avatar: memberAvatar("Sarah") },
+        { id: "m5", name: "David Tshimanga", paid: true, amount: 700, goal: 1250, verified: false, lastActivity: now - 4 * DAY, avatar: memberAvatar("David") },
+        { id: "m6", name: "Esther Mwamba", paid: false, amount: 200, goal: 1250, verified: false, lastActivity: now - 11 * DAY, avatar: memberAvatar("Esther") },
+        { id: "m7", name: "Patrick Lukusa", paid: true, amount: 1250, goal: 1250, verified: true, lastActivity: now - 7 * DAY, avatar: memberAvatar("Patrick") },
+      ],
+      history: [
+        { at: now - 30 * DAY, total: 1200 },
+        { at: now - 24 * DAY, total: 1200 },
+        { at: now - 18 * DAY, total: 2300 },
+        { at: now - 12 * DAY, total: 2300 },
+        { at: now - 9 * DAY, total: 2650 },
+        { at: now - 6 * DAY, total: 3050 },
+        { at: now - 3 * DAY, total: 4150 },
+        { at: now - 1 * DAY, total: 5050 },
       ],
     },
   ],
@@ -257,6 +278,41 @@ export function useEconomieStore() {
     [save],
   );
 
+  // Enregistre une cotisation d'un membre : monte le montant, marque payé,
+  // horodate l'activité et alimente la courbe de tendance du groupe.
+  const recordContribution = useCallback(
+    (groupId: string, memberId: string, amount: number) =>
+      save((d) => ({
+        ...d,
+        groups: d.groups.map((g) => {
+          if (g.id !== groupId) return g;
+          const members = g.members.map((m) =>
+            m.id === memberId
+              ? { ...m, amount: m.amount + amount, paid: true, lastActivity: Date.now(), liked: false }
+              : m,
+          );
+          const total = members.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0);
+          const history = [...(g.history ?? []), { at: Date.now(), total }].slice(-40);
+          return { ...g, members, history };
+        }),
+      })),
+    [save],
+  );
+
+  // Validation / like admin d'une cotisation récente.
+  const toggleMemberLike = useCallback(
+    (groupId: string, memberId: string) =>
+      save((d) => ({
+        ...d,
+        groups: d.groups.map((g) =>
+          g.id === groupId
+            ? { ...g, members: g.members.map((m) => (m.id === memberId ? { ...m, liked: !m.liked, verified: true } : m)) }
+            : g,
+        ),
+      })),
+    [save],
+  );
+
   return {
     data,
     ready,
@@ -269,6 +325,8 @@ export function useEconomieStore() {
     addGroup,
     toggleMemberPaid,
     addMember,
+    recordContribution,
+    toggleMemberLike,
   } as const;
 }
 

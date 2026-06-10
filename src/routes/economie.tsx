@@ -88,6 +88,8 @@ function EconomiePage() {
             onFundGoal={store.fundGoal}
             onToggleMember={store.toggleMemberPaid}
             onAddMember={store.addMember}
+            onRecordContribution={store.recordContribution}
+            onToggleLike={store.toggleMemberLike}
           />
         )}
       </div>
