@@ -82,13 +82,23 @@
   --ring: oklch(0.72 0.22 140);
 
   --brand-green: oklch(0.72 0.22 140);
-  --brand-blue: oklch(0.62 0.19 250);
+  /* Magnétide — deep electric blue that fuses into the dark background */
+  --brand-blue: oklch(0.62 0.23 248);
   --brand-red: oklch(0.64 0.22 22);
   --brand-gold: oklch(0.83 0.16 85);
   --brand-violet: oklch(0.6 0.21 300);
 
+  /* Magnétide gradient: electric azure → deep blue → fades into black */
+  --gradient-magnetide: linear-gradient(
+    140deg,
+    oklch(0.68 0.21 242) 0%,
+    oklch(0.5 0.21 252) 45%,
+    oklch(0.28 0.13 258) 78%,
+    oklch(0.17 0.04 260) 100%
+  );
+
   --chart-1: oklch(0.74 0.2 148);
-  --chart-2: oklch(0.62 0.19 250);
+  --chart-2: oklch(0.62 0.23 248);
   --chart-3: oklch(0.64 0.22 22);
   --chart-4: oklch(0.83 0.16 85);
   --chart-5: oklch(0.7 0.018 255);
