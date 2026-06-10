@@ -50,6 +50,13 @@ export interface GroupMember {
   goal: number; // objectif individuel
   verified: boolean;
   avatar?: string; // url photo de profil
+  lastActivity?: number; // timestamp du dernier dépôt / action
+  liked?: boolean; // validation/like admin
+}
+
+export interface GroupPoint {
+  at: number; // timestamp
+  total: number; // total collecté à cet instant
 }
 
 export interface Group {
@@ -59,6 +66,7 @@ export interface Group {
   target: number;
   icon: string;
   members: GroupMember[];
+  history?: GroupPoint[]; // évolution des cotisations dans le temps
 }
 
 /** Avatar de profil déterministe (cercle) basé sur le nom du membre. */
