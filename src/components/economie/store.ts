@@ -69,9 +69,9 @@ export interface Group {
   history?: GroupPoint[]; // évolution des cotisations dans le temps
 }
 
-/** Avatar de profil déterministe (cercle) basé sur le nom du membre. */
+/** Portrait réaliste déterministe (cercle) basé sur le nom du membre. */
 export function memberAvatar(seed: string): string {
-  return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&radius=50&backgroundType=gradientLinear`;
+  return `https://i.pravatar.cc/160?u=${encodeURIComponent(seed)}`;
 }
 
 export interface EconomieData {
