@@ -291,3 +291,29 @@
     #000 70%
   );
 }
+
+/* ===== Magnétide — signature blue gradient + tap reaction ===== */
+@utility bg-magnetide {
+  background-image: var(--gradient-magnetide);
+}
+
+.magnetide {
+  background-image: var(--gradient-magnetide);
+  color: oklch(0.99 0.003 250);
+}
+
+/* Tap/press reaction: deep blue glow that fuses into the dark surface */
+.magnetide-tap {
+  transition:
+    box-shadow 0.25s ease,
+    background-color 0.25s ease,
+    transform 0.12s ease;
+}
+.magnetide-tap:active {
+  transform: scale(0.97);
+  background-image: var(--gradient-magnetide);
+  box-shadow:
+    0 0 0 1px oklch(0.62 0.23 248 / 0.5),
+    0 8px 32px -8px oklch(0.5 0.21 252 / 0.7),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+}
