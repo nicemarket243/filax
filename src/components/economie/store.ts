@@ -278,6 +278,41 @@ export function useEconomieStore() {
     [save],
   );
 
+  // Enregistre une cotisation d'un membre : monte le montant, marque payé,
+  // horodate l'activité et alimente la courbe de tendance du groupe.
+  const recordContribution = useCallback(
+    (groupId: string, memberId: string, amount: number) =>
+      save((d) => ({
+        ...d,
+        groups: d.groups.map((g) => {
+          if (g.id !== groupId) return g;
+          const members = g.members.map((m) =>
+            m.id === memberId
+              ? { ...m, amount: m.amount + amount, paid: true, lastActivity: Date.now(), liked: false }
+              : m,
+          );
+          const total = members.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0);
+          const history = [...(g.history ?? []), { at: Date.now(), total }].slice(-40);
+          return { ...g, members, history };
+        }),
+      })),
+    [save],
+  );
+
+  // Validation / like admin d'une cotisation récente.
+  const toggleMemberLike = useCallback(
+    (groupId: string, memberId: string) =>
+      save((d) => ({
+        ...d,
+        groups: d.groups.map((g) =>
+          g.id === groupId
+            ? { ...g, members: g.members.map((m) => (m.id === memberId ? { ...m, liked: !m.liked, verified: true } : m)) }
+            : g,
+        ),
+      })),
+    [save],
+  );
+
   return {
     data,
     ready,
@@ -290,6 +325,8 @@ export function useEconomieStore() {
     addGroup,
     toggleMemberPaid,
     addMember,
+    recordContribution,
+    toggleMemberLike,
   } as const;
 }
 
