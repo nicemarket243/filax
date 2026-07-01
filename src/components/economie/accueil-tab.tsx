@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { ArrowDownToLine, ArrowUpFromLine, Target, Lock, ChevronRight, Plus } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, Lock, ChevronRight, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { BalanceCard } from "./balance-card";
+import { Coffre } from "./coffre";
 import {
   type EconomieData,
   type Account,
@@ -18,7 +18,7 @@ interface AccueilTabProps {
   onRename: (id: string, name: string) => void;
   onDeposit: () => void;
   onWithdraw: () => void;
-  onCreateGoal: () => void;
+  onTransfer: () => void;
   onLock: (acc: Account) => void;
 }
 
@@ -29,16 +29,14 @@ export function AccueilTab({
   onRename,
   onDeposit,
   onWithdraw,
-  onCreateGoal,
+  onTransfer,
   onLock,
 }: AccueilTabProps) {
   const accounts = data.accounts;
   const account = accounts[activeIndex] ?? accounts[0];
-  const [showAll, setShowAll] = useState(false);
 
   const cycle = () => setActiveIndex((activeIndex + 1) % accounts.length);
   const recent = data.transactions.slice(0, 5);
-  const topGoals = data.goals.slice(0, 2);
 
   return (
     <div className="space-y-6">
@@ -52,28 +50,22 @@ export function AccueilTab({
         <ActionBtn label="Retrait" onClick={onWithdraw} className="border border-white/15 bg-white/[0.04] text-foreground hover:bg-white/[0.08]">
           <ArrowUpFromLine className="h-5 w-5" />
         </ActionBtn>
-        <ActionBtn label="Objectif" onClick={onCreateGoal} className="bg-brand-blue text-white hover:bg-brand-blue/90">
-          <Target className="h-5 w-5" />
+        <ActionBtn label="Transfert" onClick={onTransfer} className="bg-brand-violet text-white hover:bg-brand-violet/90">
+          <ArrowLeftRight className="h-5 w-5" />
         </ActionBtn>
       </div>
 
-      {/* ACCOUNTS */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-foreground">Mes comptes</h2>
-          <button onClick={() => setShowAll((s) => !s)} className="text-[0.72rem] font-semibold text-brand-green">
-            {showAll ? "Réduire" : "Tout voir"}
-          </button>
-        </div>
+      {/* COFFRE — MES COMPTES */}
+      <Coffre title="Mes comptes" count={accounts.length}>
         <div className="space-y-2">
-          {(showAll ? accounts : accounts.slice(0, 3)).map((a, i) => {
+          {accounts.map((a) => {
             const idx = accounts.indexOf(a);
             const locked = isLocked(a);
             return (
               <div
                 key={a.id}
-                className={`flex items-center gap-3 rounded-2xl border p-3 transition-all ${
-                  idx === activeIndex ? "border-brand-green/40 bg-brand-green/[0.06]" : "border-white/10 bg-white/[0.03]"
+                className={`flex items-center gap-3 rounded-2xl p-3 transition-all ${
+                  idx === activeIndex ? "bg-brand-green/[0.08]" : "bg-white/[0.03]"
                 }`}
               >
                 <button onClick={() => setActiveIndex(idx)} className="flex flex-1 items-center gap-3 text-left">
@@ -97,18 +89,15 @@ export function AccueilTab({
             );
           })}
         </div>
-      </section>
+      </Coffre>
 
-      {/* GOALS */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-foreground">Objectifs</h2>
-        </div>
+      {/* COFFRE — OBJECTIFS */}
+      <Coffre title="Objectifs" count={data.goals.length}>
         <div className="space-y-2.5">
-          {topGoals.map((g) => {
+          {data.goals.map((g) => {
             const pct = Math.min(100, Math.round((g.saved / g.target) * 100));
             return (
-              <div key={g.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <div key={g.id} className="rounded-2xl bg-white/[0.03] p-4">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <span className="text-lg">{g.icon}</span> {g.name}
@@ -126,17 +115,16 @@ export function AccueilTab({
             );
           })}
         </div>
-      </section>
+      </Coffre>
 
-      {/* RECENT ACTIVITY */}
-      <section>
-        <h2 className="mb-3 text-sm font-bold text-foreground">Activité récente</h2>
+      {/* COFFRE — ACTIVITÉS RÉCENTES */}
+      <Coffre title="Activités récentes" count={data.transactions.length}>
         <div className="space-y-1.5">
           {recent.map((t) => {
             const acc = accounts.find((a) => a.id === t.accountId);
             const dep = t.type === "depot";
             return (
-              <div key={t.id} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+              <div key={t.id} className="flex items-center gap-3 rounded-xl bg-white/[0.02] px-3 py-2.5">
                 <span
                   className={`flex h-9 w-9 items-center justify-center rounded-lg ${
                     dep ? "bg-brand-green/15 text-brand-green" : "bg-brand-red/15 text-brand-red"
@@ -160,7 +148,7 @@ export function AccueilTab({
             );
           })}
         </div>
-      </section>
+      </Coffre>
 
       <Link
         to="/assurance"
