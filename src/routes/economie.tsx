@@ -12,6 +12,7 @@ import { WithdrawModal } from "@/components/economie/withdraw-modal";
 import { LockModal } from "@/components/economie/lock-modal";
 import { GoalModal } from "@/components/economie/goal-modal";
 import { GroupModal } from "@/components/economie/group-modal";
+import { TransferModal } from "@/components/economie/transfer-modal";
 
 export const Route = createFileRoute("/economie")({
   head: () => ({
