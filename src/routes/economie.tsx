@@ -114,6 +114,13 @@ function EconomiePage() {
       <LockModal open={!!lockAccount} onOpenChange={(o) => !o && setLockAccount(null)} account={lockAccount} onConfirm={store.lockAccount} />
       <GoalModal open={goalOpen} onOpenChange={setGoalOpen} onConfirm={store.addGoal} />
       <GroupModal open={groupOpen} onOpenChange={setGroupOpen} onConfirm={store.addGroup} />
+      <TransferModal
+        open={transferOpen}
+        onOpenChange={setTransferOpen}
+        accounts={store.data.accounts}
+        defaultAccountId={activeAccount?.id ?? ""}
+        onConfirm={store.withdraw}
+      />
 
       {/* FLOATING BOTTOM NAV */}
       <nav className="fixed bottom-5 left-1/2 z-40 flex w-[calc(100%-2.5rem)] max-w-sm -translate-x-1/2 items-center justify-around rounded-full border border-white/10 bg-card/80 p-1.5 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
