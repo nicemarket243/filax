@@ -12,6 +12,7 @@ import { WithdrawModal } from "@/components/economie/withdraw-modal";
 import { LockModal } from "@/components/economie/lock-modal";
 import { GoalModal } from "@/components/economie/goal-modal";
 import { GroupModal } from "@/components/economie/group-modal";
+import { TransferModal } from "@/components/economie/transfer-modal";
 
 export const Route = createFileRoute("/economie")({
   head: () => ({
@@ -48,6 +49,7 @@ function EconomiePage() {
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [goalOpen, setGoalOpen] = useState(false);
   const [groupOpen, setGroupOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const [lockAccount, setLockAccount] = useState<Account | null>(null);
 
   const activeAccount = store.data.accounts[activeIndex] ?? store.data.accounts[0];
@@ -75,7 +77,7 @@ function EconomiePage() {
             onRename={store.renameAccount}
             onDeposit={() => setDepositOpen(true)}
             onWithdraw={() => setWithdrawOpen(true)}
-            onCreateGoal={() => setGoalOpen(true)}
+            onTransfer={() => setTransferOpen(true)}
             onLock={(acc) => setLockAccount(acc)}
           />
         )}
@@ -112,6 +114,13 @@ function EconomiePage() {
       <LockModal open={!!lockAccount} onOpenChange={(o) => !o && setLockAccount(null)} account={lockAccount} onConfirm={store.lockAccount} />
       <GoalModal open={goalOpen} onOpenChange={setGoalOpen} onConfirm={store.addGoal} />
       <GroupModal open={groupOpen} onOpenChange={setGroupOpen} onConfirm={store.addGroup} />
+      <TransferModal
+        open={transferOpen}
+        onOpenChange={setTransferOpen}
+        accounts={store.data.accounts}
+        defaultAccountId={activeAccount?.id ?? ""}
+        onConfirm={store.withdraw}
+      />
 
       {/* FLOATING BOTTOM NAV */}
       <nav className="fixed bottom-5 left-1/2 z-40 flex w-[calc(100%-2.5rem)] max-w-sm -translate-x-1/2 items-center justify-around rounded-full border border-white/10 bg-card/80 p-1.5 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
