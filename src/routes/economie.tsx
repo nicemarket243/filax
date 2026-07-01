@@ -77,7 +77,7 @@ function EconomiePage() {
             onRename={store.renameAccount}
             onDeposit={() => setDepositOpen(true)}
             onWithdraw={() => setWithdrawOpen(true)}
-            onCreateGoal={() => setGoalOpen(true)}
+            onTransfer={() => setTransferOpen(true)}
             onLock={(acc) => setLockAccount(acc)}
           />
         )}
