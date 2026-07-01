@@ -49,6 +49,7 @@ function EconomiePage() {
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [goalOpen, setGoalOpen] = useState(false);
   const [groupOpen, setGroupOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const [lockAccount, setLockAccount] = useState<Account | null>(null);
 
   const activeAccount = store.data.accounts[activeIndex] ?? store.data.accounts[0];
