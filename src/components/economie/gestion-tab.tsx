@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { QRCode } from "./qr-code";
+import { Coffre } from "./coffre";
 import {
   type EconomieData,
   type Group,
