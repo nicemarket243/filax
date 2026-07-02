@@ -40,7 +40,7 @@ export function BalanceCard({ account, onRename, onCycle, index, total }: Balanc
     >
       {/* reflets verre */}
       <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/[0.07] blur-3xl" />
-      <div className={`pointer-events-none absolute -bottom-14 -left-8 h-40 w-40 rounded-full bg-${account.color}/20 blur-3xl`} />
+      <div className={`pointer-events-none absolute -bottom-14 -left-8 h-40 w-40 rounded-full bg-${account.color}/[0.08] blur-3xl`} />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.06]" />
 
       {/* Haut : icône objet + nom (petit) à gauche · logo FILAX à droite */}
