@@ -62,20 +62,15 @@ export function GestionTab({
 
   return (
     <div className="space-y-6">
-      {/* GOALS */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
-            <Target className="h-4 w-4 text-brand-blue" /> Objectifs financiers
-          </h2>
+      {/* GOALS — tiroir unique */}
+      <Coffre title="Objectifs financiers" count={data.goals.length} defaultOpen>
+        <div className="space-y-2.5">
           <button
             onClick={onCreateGoal}
-            className="magnetide-tap flex items-center gap-1 rounded-full bg-brand-blue/15 px-3 py-1.5 text-[0.7rem] font-bold text-brand-blue"
+            className="magnetide-tap flex w-full items-center justify-center gap-1 rounded-xl bg-brand-blue/15 py-2.5 text-[0.72rem] font-bold text-brand-blue"
           >
-            <Plus className="h-3.5 w-3.5" /> Créer
+            <Plus className="h-3.5 w-3.5" /> Créer un objectif
           </button>
-        </div>
-        <div className="space-y-2.5">
           {data.goals.map((g) => {
             const pct = Math.min(100, Math.round((g.saved / g.target) * 100));
             const done = pct >= 100;
@@ -124,22 +119,17 @@ export function GestionTab({
             );
           })}
         </div>
-      </section>
+      </Coffre>
 
-      {/* GROUPS */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
-            <Users className="h-4 w-4 text-brand-violet" /> Groupes d'épargne
-          </h2>
+      {/* GROUPS — tiroir unique */}
+      <Coffre title="Groupes d'épargne" count={data.groups.length} defaultOpen>
+        <div className="space-y-2.5">
           <button
             onClick={onCreateGroup}
-            className="magnetide-tap flex items-center gap-1 rounded-full bg-brand-violet/15 px-3 py-1.5 text-[0.7rem] font-bold text-brand-violet"
+            className="magnetide-tap flex w-full items-center justify-center gap-1 rounded-xl bg-brand-violet/15 py-2.5 text-[0.72rem] font-bold text-brand-violet"
           >
-            <Plus className="h-3.5 w-3.5" /> Créer
+            <Plus className="h-3.5 w-3.5" /> Créer un groupe
           </button>
-        </div>
-        <div className="space-y-2.5">
           {data.groups.map((grp) => {
             const total = grp.members.filter((m) => m.paid).reduce((s, m) => s + m.amount, 0);
             const pct = grp.target > 0 ? Math.min(100, Math.round((total / grp.target) * 100)) : 0;
@@ -168,7 +158,8 @@ export function GestionTab({
             );
           })}
         </div>
-      </section>
+      </Coffre>
+
 
       <GroupDetailDialog
         group={activeGroup}
