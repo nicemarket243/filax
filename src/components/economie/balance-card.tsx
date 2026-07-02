@@ -36,11 +36,11 @@ export function BalanceCard({ account, onRename, onCycle, index, total }: Balanc
   return (
     <div
       onDoubleClick={onCycle}
-      className={`relative mx-auto aspect-[1.7/1] w-full max-w-[340px] overflow-hidden rounded-[1.5rem] border border-brand-gold/25 p-5 shadow-[0_18px_50px_-22px_rgba(0,0,0,0.9)] transition-transform active:scale-[0.985] bg-gradient-to-br from-${account.color}/35 via-card/95 to-black`}
+      className={`relative mx-auto aspect-[1.7/1] w-full max-w-[340px] overflow-hidden rounded-[1.5rem] border border-brand-gold/25 p-5 shadow-[0_18px_50px_-22px_rgba(0,0,0,0.9)] transition-transform active:scale-[0.985] bg-gradient-to-br from-${account.color}/[0.08] via-card to-card`}
     >
       {/* reflets verre */}
       <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/[0.07] blur-3xl" />
-      <div className={`pointer-events-none absolute -bottom-14 -left-8 h-40 w-40 rounded-full bg-${account.color}/20 blur-3xl`} />
+      <div className={`pointer-events-none absolute -bottom-14 -left-8 h-40 w-40 rounded-full bg-${account.color}/[0.08] blur-3xl`} />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.06]" />
 
       {/* Haut : icône objet + nom (petit) à gauche · logo FILAX à droite */}

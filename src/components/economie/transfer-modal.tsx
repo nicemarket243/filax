@@ -10,6 +10,7 @@ import {
   Smartphone,
   CreditCard,
   Landmark,
+  Lock,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -41,14 +42,17 @@ interface Recipient {
   prenom: string;
   zone: Zone;
   seed: string;
+  country: string; // pays du destinataire
+  flag: string; // drapeau emoji
+  currency: string; // devise autorisée pour ce pays
 }
 
 /** Annuaire Filax de démonstration pour la validation en temps réel. */
 const DIRECTORY: Recipient[] = [
-  { id: "FLX-GRACE01", nom: "Mukendi", postnom: "Kabeya", prenom: "Grace", zone: "afrique", seed: "Grace" },
-  { id: "FLX-JONAS02", nom: "Ilunga", postnom: "Tshibang", prenom: "Jonas", zone: "afrique", seed: "Jonas" },
-  { id: "FLX-JEAN03", nom: "Dupont", postnom: "Bernard", prenom: "Jean", zone: "europe", seed: "Jean" },
-  { id: "FLX-SARA04", nom: "Johnson", postnom: "Lee", prenom: "Sarah", zone: "amerique", seed: "Sarah" },
+  { id: "FLX-GRACE01", nom: "Mukendi", postnom: "Kabeya", prenom: "Grace", zone: "afrique", seed: "Grace", country: "RD Congo", flag: "🇨🇩", currency: "USD" },
+  { id: "FLX-JONAS02", nom: "Ilunga", postnom: "Tshibang", prenom: "Jonas", zone: "afrique", seed: "Jonas", country: "RD Congo", flag: "🇨🇩", currency: "USD" },
+  { id: "FLX-JEAN03", nom: "Dupont", postnom: "Bernard", prenom: "Jean", zone: "europe", seed: "Jean", country: "France", flag: "🇫🇷", currency: "EUR" },
+  { id: "FLX-SARA04", nom: "Johnson", postnom: "Lee", prenom: "Sarah", zone: "amerique", seed: "Sarah", country: "Canada", flag: "🇨🇦", currency: "CAD" },
 ];
 
 const ZONE_BRIDGE: Record<Zone, { label: string; method: TxMethod; icon: typeof Smartphone; detail: string }> = {
@@ -63,6 +67,7 @@ export function TransferModal({ open, onOpenChange, accounts, defaultAccountId, 
   const [stage, setStage] = useState<Stage>("form");
   const [accountId, setAccountId] = useState(defaultAccountId);
   const [query, setQuery] = useState("");
+  const [validated, setValidated] = useState(false);
   const [amount, setAmount] = useState("");
   const [pin, setPin] = useState("");
   const [reference, setReference] = useState("");
@@ -70,18 +75,21 @@ export function TransferModal({ open, onOpenChange, accounts, defaultAccountId, 
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0];
   const numAmount = parseFloat(amount.replace(",", ".")) || 0;
 
-  // Validation en temps réel du bénéficiaire dès la saisie de l'ID.
-  const recipient = useMemo(() => {
+  // Correspondance de l'ID saisi (candidat), matérialisée seulement après validation.
+  const candidate = useMemo(() => {
     const q = query.trim().toUpperCase();
     if (q.length < 4) return null;
     return DIRECTORY.find((r) => r.id.toUpperCase() === q || r.id.toUpperCase().startsWith(q)) ?? null;
   }, [query]);
 
+  // Le bénéficiaire n'est reconnu qu'après validation par « Entrée » ou scan.
+  const recipient = validated ? candidate : null;
   const bridge = recipient ? ZONE_BRIDGE[recipient.zone] : null;
 
   const reset = () => {
     setStage("form");
     setQuery("");
+    setValidated(false);
     setAmount("");
     setPin("");
     setReference("");
@@ -92,8 +100,18 @@ export function TransferModal({ open, onOpenChange, accounts, defaultAccountId, 
     if (!o) setTimeout(reset, 220);
   };
 
+  // Valide l'ID : détecte le pays et auto-configure la devise autorisée.
+  const validate = (r: Recipient | null) => {
+    if (!r) return toast.error("Bénéficiaire introuvable. Vérifiez l'ID Filax.");
+    setValidated(true);
+    // Sélection automatique d'un compte source dans la devise autorisée si disponible.
+    const match = accounts.find((a) => a.currency === r.currency);
+    if (match) setAccountId(match.id);
+    toast.success(`${r.prenom} ${r.nom} validé`, { description: `${r.flag} ${r.country} · devise ${r.currency}` });
+  };
+
   const submit = () => {
-    if (!recipient) return toast.error("Bénéficiaire introuvable. Vérifiez l'ID Filax.");
+    if (!recipient) return toast.error("Validez d'abord le bénéficiaire (touche Entrée).");
     if (numAmount <= 0) return toast.error("Entrez un montant valide.");
     if (numAmount > (account?.balance ?? 0)) return toast.error("Solde insuffisant sur ce compte.");
     if (pin.length < 4) return toast.error("Entrez votre code PIN (4 à 5 chiffres).");
@@ -108,8 +126,11 @@ export function TransferModal({ open, onOpenChange, accounts, defaultAccountId, 
   const scanFound = () => {
     const r = DIRECTORY[0];
     setQuery(r.id);
+    setValidated(true);
+    const match = accounts.find((a) => a.currency === r.currency);
+    if (match) setAccountId(match.id);
     setStage("form");
-    toast.success("QR scanné", { description: `${r.prenom} ${r.nom} identifié.` });
+    toast.success("QR scanné", { description: `${r.prenom} ${r.nom} · ${r.flag} ${r.country}` });
   };
 
   return (
@@ -129,11 +150,29 @@ export function TransferModal({ open, onOpenChange, accounts, defaultAccountId, 
               {/* POINT A — Identification du bénéficiaire */}
               <div className="space-y-1.5">
                 <Label className="text-[0.72rem] text-muted-foreground">Bénéficiaire</Label>
+
+                {/* Drapeau (gauche) + nom du pays (droite) apparaissent après validation */}
+                {recipient && (
+                  <div className="flex items-center justify-between rounded-xl bg-white/[0.05] px-3 py-2 backdrop-blur-xl animate-fade-up">
+                    <span className="text-2xl leading-none">{recipient.flag}</span>
+                    <span className="text-sm font-bold text-foreground">{recipient.country}</span>
+                  </div>
+                )}
+
                 <div className="relative">
                   <Input
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Entrer l'ID Filax ou Scanner QR"
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      setValidated(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        validate(candidate);
+                      }
+                    }}
+                    placeholder="Entrer l'ID Filax puis Entrée, ou Scanner QR"
                     className="pr-11"
                   />
                   <button
@@ -145,8 +184,10 @@ export function TransferModal({ open, onOpenChange, accounts, defaultAccountId, 
                   </button>
                 </div>
 
-                {query.trim().length >= 4 && !recipient && (
-                  <p className="px-1 text-[0.7rem] text-brand-red">Aucun bénéficiaire trouvé pour cet ID.</p>
+                {query.trim().length >= 4 && !validated && (
+                  <p className="px-1 text-[0.7rem] text-muted-foreground">
+                    {candidate ? "Appuyez sur Entrée pour valider ce bénéficiaire." : "Aucun bénéficiaire trouvé pour cet ID."}
+                  </p>
                 )}
 
                 {recipient && (
@@ -175,17 +216,11 @@ export function TransferModal({ open, onOpenChange, accounts, defaultAccountId, 
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-[0.72rem] text-muted-foreground">Devise</Label>
-                  <select
-                    value={accountId}
-                    onChange={(e) => setAccountId(e.target.value)}
-                    className="h-11 rounded-xl bg-white/[0.05] px-3 text-sm text-foreground outline-none backdrop-blur-xl focus:ring-2 focus:ring-brand-violet/40"
-                  >
-                    {accounts.map((a) => (
-                      <option key={a.id} value={a.id} className="bg-card">
-                        {a.currency}
-                      </option>
-                    ))}
-                  </select>
+                  {/* Devise auto-configurée : seule la devise autorisée du pays est proposée */}
+                  <div className="flex h-11 items-center gap-1.5 rounded-xl bg-white/[0.05] px-3 text-sm font-bold text-foreground backdrop-blur-xl">
+                    <Lock className="h-3.5 w-3.5 text-brand-violet" />
+                    {recipient ? recipient.currency : "—"}
+                  </div>
                 </div>
               </div>
               <p className="-mt-1 px-1 text-[0.66rem] text-muted-foreground">
@@ -267,7 +302,8 @@ export function TransferModal({ open, onOpenChange, accounts, defaultAccountId, 
               <p className="text-2xl font-extrabold text-brand-green">−{formatMoney(numAmount, account?.currency ?? "USD")}</p>
               <div className="w-full space-y-1.5 rounded-2xl bg-white/[0.04] p-4 text-left text-[0.72rem] backdrop-blur-xl">
                 <Row k="Bénéficiaire" v={`${recipient?.prenom} ${recipient?.nom}`} />
-                <Row k="Zone" v={bridge?.label ?? ""} />
+                <Row k="Pays" v={`${recipient?.flag ?? ""} ${recipient?.country ?? ""}`} />
+                <Row k="Devise" v={recipient?.currency ?? ""} />
                 <Row k="Méthode" v={bridge?.method === "mobile" ? "Mobile Money" : "Carte / Virement"} />
                 <Row k="Date" v={new Date().toLocaleString("fr-FR")} />
                 <Row k="Référence" v={reference} mono />
