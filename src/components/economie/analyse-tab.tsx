@@ -165,33 +165,39 @@ export function AnalyseTab({ data }: AnalyseTabProps) {
         </div>
       </section>
 
-      {/* FULL HISTORY */}
-      <section>
-        <h2 className="mb-3 text-sm font-bold text-foreground">Historique complet</h2>
-        <div className="space-y-1.5">
-          {data.transactions.map((t) => {
-            const acc = data.accounts.find((a) => a.id === t.accountId);
-            const dep = t.type === "depot";
-            return (
-              <div key={t.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[0.8rem] font-semibold text-foreground">
-                    {dep ? "Dépôt" : "Retrait"} · {METHOD_LABEL[t.method]}
-                  </span>
-                  <span className={`text-sm font-bold ${dep ? "text-brand-green" : "text-brand-red"}`}>
-                    {dep ? "+" : "−"}
-                    {formatMoney(t.amount, t.currency)}
-                  </span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-[0.64rem] text-muted-foreground">
-                  <span>{acc?.name} · {formatDateTime(t.at)}</span>
-                  <span className="font-mono text-brand-gold">{t.reference}</span>
-                </div>
-              </div>
-            );
-          })}
+      {/* FULL HISTORY — tiroir « Coffre » */}
+      <Coffre title="Historique complet" count={`${history.length} mois`}>
+        <div className="space-y-4">
+          {history.map((month) => (
+            <div key={month.label} className="space-y-1.5">
+              <p className="px-1 text-[0.66rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                {month.label} · {month.items.length}
+              </p>
+              {month.items.map((t) => {
+                const acc = data.accounts.find((a) => a.id === t.accountId);
+                const dep = t.type === "depot";
+                return (
+                  <div key={t.id} className="rounded-xl bg-white/[0.02] p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[0.8rem] font-semibold text-foreground">
+                        {dep ? "Dépôt" : "Retrait"} · {METHOD_LABEL[t.method]}
+                      </span>
+                      <span className={`text-sm font-bold ${dep ? "text-brand-green" : "text-brand-red"}`}>
+                        {dep ? "+" : "−"}
+                        {formatMoney(t.amount, t.currency)}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-[0.64rem] text-muted-foreground">
+                      <span>{acc?.name} · {formatDateTime(t.at)}</span>
+                      <span className="font-mono text-brand-gold">{t.reference}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
-      </section>
+      </Coffre>
     </div>
   );
 }
