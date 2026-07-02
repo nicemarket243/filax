@@ -1,5 +1,4 @@
-import { ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, Lock, ChevronRight, Plus } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, Lock } from "lucide-react";
 import { BalanceCard } from "./balance-card";
 import { Coffre } from "./coffre";
 import {
