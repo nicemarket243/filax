@@ -148,16 +148,6 @@ export function AccueilTab({
           })}
         </div>
       </Coffre>
-
-      <Link
-        to="/assurance"
-        className="flex items-center justify-between rounded-2xl border border-white/10 bg-gradient-to-r from-brand-violet/15 to-transparent p-4"
-      >
-        <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <Plus className="h-4 w-4 text-brand-violet" /> Protéger mon épargne
-        </span>
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-      </Link>
     </div>
   );
 }
