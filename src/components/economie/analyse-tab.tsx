@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { Flame, TrendingUp, CalendarCheck, Trophy, FileText, Copy, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { Coffre } from "./coffre";
 import { type EconomieData, formatMoney, formatDateTime, METHOD_LABEL } from "./store";
 
 interface AnalyseTabProps {
