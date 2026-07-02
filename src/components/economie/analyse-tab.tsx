@@ -55,6 +55,29 @@ export function AnalyseTab({ data }: AnalyseTabProps) {
     return Object.values(map);
   }, [data.transactions]);
 
+  // Regroupement de l'historique par mois pour le tiroir « Historique complet ».
+  const history = useMemo(() => {
+    const map: Record<string, { label: string; ts: number; items: typeof data.transactions }> = {};
+    data.transactions
+      .slice()
+      .sort((a, b) => b.at - a.at)
+      .forEach((t) => {
+        const d = new Date(t.at);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        if (!map[key]) {
+          map[key] = {
+            label: d.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }),
+            ts: t.at,
+            items: [],
+          };
+        }
+        map[key].items.push(t);
+      });
+    return Object.values(map).sort((a, b) => b.ts - a.ts);
+  }, [data.transactions]);
+
+
+
   const proof = () => toast.success("Preuve de fonds générée", { description: "Document PDF officiel prêt." });
   const copyProof = () => {
     navigator.clipboard?.writeText(`FILAX — Solde certifié : ${formatMoney(totalUsd, "USD")}`);
