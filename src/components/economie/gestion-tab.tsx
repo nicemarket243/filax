@@ -77,7 +77,7 @@ export function GestionTab({
               <div key={g.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2.5">
-                    <span className={`flex h-11 w-11 items-center justify-center rounded-xl bg-${g.color}/15 text-xl`}>{g.icon}</span>
+                    <span style={{ background: `color-mix(in oklch, var(--${g.color}) 15%, transparent)` }} className="flex h-11 w-11 items-center justify-center rounded-xl text-xl">{g.icon}</span>
                     <div>
                       <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                         {g.name}
