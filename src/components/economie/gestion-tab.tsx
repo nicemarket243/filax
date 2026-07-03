@@ -92,7 +92,7 @@ export function GestionTab({
                 </div>
                 {g.description && <p className="mt-2 text-[0.7rem] text-muted-foreground">{g.description}</p>}
                 <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/[0.06]">
-                  <div className={`h-full rounded-full bg-${g.color} transition-all`} style={{ width: `${pct}%` }} />
+                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: `var(--${g.color})` }} />
                 </div>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-[0.72rem] text-muted-foreground">
