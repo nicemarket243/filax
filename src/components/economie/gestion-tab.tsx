@@ -62,7 +62,7 @@ export function GestionTab({
   return (
     <div className="space-y-6">
       {/* GOALS — tiroir unique */}
-      <Coffre title="Objectifs financiers" count={data.goals.length} defaultOpen>
+      <Coffre title="Objectifs financiers" count={data.goals.length}>
         <div className="space-y-2.5">
           <button
             onClick={onCreateGoal}
@@ -77,7 +77,7 @@ export function GestionTab({
               <div key={g.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2.5">
-                    <span className={`flex h-11 w-11 items-center justify-center rounded-xl bg-${g.color}/15 text-xl`}>{g.icon}</span>
+                    <span style={{ background: `color-mix(in oklch, var(--${g.color}) 15%, transparent)` }} className="flex h-11 w-11 items-center justify-center rounded-xl text-xl">{g.icon}</span>
                     <div>
                       <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                         {g.name}
@@ -88,11 +88,11 @@ export function GestionTab({
                       </p>
                     </div>
                   </div>
-                  <span className={`text-sm font-bold text-${g.color}`}>{pct}%</span>
+                  <span style={{ color: `var(--${g.color})` }} className="text-sm font-bold">{pct}%</span>
                 </div>
                 {g.description && <p className="mt-2 text-[0.7rem] text-muted-foreground">{g.description}</p>}
                 <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/[0.06]">
-                  <div className={`h-full rounded-full bg-${g.color} transition-all`} style={{ width: `${pct}%` }} />
+                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: `var(--${g.color})` }} />
                 </div>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-[0.72rem] text-muted-foreground">
@@ -121,7 +121,7 @@ export function GestionTab({
       </Coffre>
 
       {/* GROUPS — tiroir unique */}
-      <Coffre title="Groupes d'épargne" count={data.groups.length} defaultOpen>
+      <Coffre title="Groupes d'épargne" count={data.groups.length}>
         <div className="space-y-2.5">
           <button
             onClick={onCreateGroup}
