@@ -1,26 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-
-interface Quote {
-  text: string;
-  author: string;
-}
+import { QUOTES } from "./quotes-data";
 
 /**
- * Courtes citations motivantes (finance, discipline, réussite, leadership…).
- * Entièrement en français. Chaque citation tient sur une seule ligne.
+ * Flux "Dynamic Inspiration" — ~1900 citations uniques (finance, banque,
+ * motivation, économie, sagesse, business, entrepreneuriat, réussite).
+ * Rotation haute fréquence toutes les 3 secondes, en boucle infinie,
+ * avec un fondu très léger pour éviter l'effet saccadé.
  */
-const QUOTES: Quote[] = [
-  { text: "La discipline crée la liberté.", author: "Jim Rohn" },
-  { text: "La réussite suit la discipline.", author: "Jim Rohn" },
-  { text: "La constance bat le talent.", author: "Anonyme" },
-  { text: "La concentration crée les résultats.", author: "Tony Robbins" },
-  { text: "La richesse grandit par la patience.", author: "Benjamin Graham" },
-  { text: "Investis en toi-même d'abord.", author: "Benjamin Franklin" },
-  { text: "Une idée exécutée vaut mille intentions.", author: "Anonyme" },
-  { text: "Le temps est ton meilleur capital.", author: "Anonyme" },
-  { text: "Agis aujourd'hui, récolte demain.", author: "Anonyme" },
-  { text: "La liberté économique se construit chaque jour.", author: "Anonyme" },
-];
+const ROTATION_MS = 3000;
+const FADE_MS = 250;
 
 export function QuoteRotator({ className }: { className?: string }) {
   // Start deterministically at 0 so SSR and the client render the same markup.
@@ -30,13 +18,13 @@ export function QuoteRotator({ className }: { className?: string }) {
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
-      // Fade out, swap, fade back in.
+      // Fondu léger : disparaît, permute, réapparaît.
       setVisible(false);
       setTimeout(() => {
         setIndex((i) => (i + 1) % QUOTES.length);
         setVisible(true);
-      }, 500);
-    }, 30000);
+      }, FADE_MS);
+    }, ROTATION_MS);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -48,8 +36,8 @@ export function QuoteRotator({ className }: { className?: string }) {
   return (
     <figure className={`text-center ${className ?? ""}`}>
       <div
-        className="transition-opacity duration-500 ease-out"
-        style={{ opacity: visible ? 1 : 0 }}
+        className="transition-opacity ease-out"
+        style={{ opacity: visible ? 1 : 0, transitionDuration: `${FADE_MS}ms` }}
       >
         <blockquote className="whitespace-nowrap text-[0.8rem] font-medium italic leading-relaxed text-foreground/90">
           « {quote.text} »

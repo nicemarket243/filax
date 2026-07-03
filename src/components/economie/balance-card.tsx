@@ -39,14 +39,14 @@ export function BalanceCard({ account, onRename, onCycle, index, total }: Balanc
     <div
       onDoubleClick={onCycle}
       style={{
-        background: `linear-gradient(135deg, color-mix(in oklch, ${tint} 7%, var(--card)) 0%, var(--card) 55%, var(--card) 100%)`,
+        background: `linear-gradient(135deg, color-mix(in oklch, ${tint} 16%, var(--card)) 0%, color-mix(in oklch, ${tint} 6%, var(--card)) 55%, var(--card) 100%)`,
       }}
-      className="relative mx-auto aspect-[1.7/1] w-full max-w-[340px] overflow-hidden rounded-[1.5rem] border border-brand-gold/25 p-5 shadow-[0_18px_50px_-22px_rgba(0,0,0,0.9)] transition-transform active:scale-[0.985]"
+      className="relative mx-auto aspect-[1.7/1] w-full max-w-[340px] overflow-hidden rounded-[1.5rem] p-5 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.85)] transition-transform active:scale-[0.985]"
     >
       {/* reflets verre */}
       <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/[0.07] blur-3xl" />
       <div
-        style={{ background: `color-mix(in oklch, ${tint} 12%, transparent)` }}
+        style={{ background: `color-mix(in oklch, ${tint} 22%, transparent)` }}
         className="pointer-events-none absolute -bottom-14 -left-8 h-40 w-40 rounded-full blur-3xl"
       />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-white/[0.06]" />
@@ -54,7 +54,7 @@ export function BalanceCard({ account, onRename, onCycle, index, total }: Balanc
       {/* Haut : icône objet + nom (petit) à gauche · logo FILAX à droite */}
       <div className="relative flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-base backdrop-blur">
+          <span className="text-lg leading-none">
             {account.icon}
           </span>
           {editing ? (
