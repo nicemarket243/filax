@@ -121,7 +121,7 @@ export function GestionTab({
       </Coffre>
 
       {/* GROUPS — tiroir unique */}
-      <Coffre title="Groupes d'épargne" count={data.groups.length} defaultOpen>
+      <Coffre title="Groupes d'épargne" count={data.groups.length}>
         <div className="space-y-2.5">
           <button
             onClick={onCreateGroup}
