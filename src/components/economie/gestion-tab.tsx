@@ -62,7 +62,7 @@ export function GestionTab({
   return (
     <div className="space-y-6">
       {/* GOALS — tiroir unique */}
-      <Coffre title="Objectifs financiers" count={data.goals.length} defaultOpen>
+      <Coffre title="Objectifs financiers" count={data.goals.length}>
         <div className="space-y-2.5">
           <button
             onClick={onCreateGoal}
