@@ -88,7 +88,7 @@ export function GestionTab({
                       </p>
                     </div>
                   </div>
-                  <span className={`text-sm font-bold text-${g.color}`}>{pct}%</span>
+                  <span style={{ color: `var(--${g.color})` }} className="text-sm font-bold">{pct}%</span>
                 </div>
                 {g.description && <p className="mt-2 text-[0.7rem] text-muted-foreground">{g.description}</p>}
                 <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/[0.06]">
