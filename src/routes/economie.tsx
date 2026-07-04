@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Home, BarChart3, Settings } from "lucide-react";
-import { FilaxLogo } from "@/components/filax-logo";
+
 import { BackButton } from "@/components/back-button";
 import { useEconomieStore, type Account } from "@/components/economie/store";
 import { AccueilTab } from "@/components/economie/accueil-tab";
