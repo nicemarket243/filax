@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Lock, Trophy, CalendarClock } from "lucide-react";
+import { Lock, Swords, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 
 import { BackButton } from "@/components/back-button";
@@ -9,7 +9,7 @@ import {
   remainingMs,
 } from "@/components/discipline/store";
 import { BlocagesTab } from "@/components/discipline/blocages-tab";
-import { ParisTab } from "@/components/discipline/paris-tab";
+import { DuelTab } from "@/components/discipline/duel-tab";
 import { ProgrammesTab } from "@/components/discipline/programmes-tab";
 import type { ParsedIntent } from "@/hooks/use-voice-command";
 
@@ -19,23 +19,23 @@ export const Route = createFileRoute("/discipline")({
       { title: "FILAX Discipline" },
       {
         name: "description",
-        content: "FILAX Discipline : blocages, paris sur soi et programmes pilotés par l'IA.",
+        content: "FILAX Discipline : blocages, duels de productivité et programmes pilotés par l'IA.",
       },
       { property: "og:title", content: "FILAX Discipline" },
       {
         property: "og:description",
-        content: "Blocages d'applications, paris sur soi et programmes intelligents.",
+        content: "Blocages d'applications, duels de productivité et programmes intelligents.",
       },
     ],
   }),
   component: DisciplinePage,
 });
 
-type Tab = "blocages" | "paris" | "programmes";
+type Tab = "blocages" | "duel" | "programmes";
 
 const TABS: { key: Tab; label: string; icon: typeof Lock; color: string }[] = [
   { key: "blocages", label: "Blocages", icon: Lock, color: "text-brand-green" },
-  { key: "paris", label: "Paris", icon: Trophy, color: "text-brand-gold" },
+  { key: "duel", label: "Duel", icon: Swords, color: "text-brand-green" },
   { key: "programmes", label: "Programmes", icon: CalendarClock, color: "text-brand-violet" },
 ];
 
