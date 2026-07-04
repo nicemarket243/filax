@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Home, ShieldPlus, AlertTriangle } from "lucide-react";
-import { FilaxLogo } from "@/components/filax-logo";
+
 import { BackButton } from "@/components/back-button";
 import { useAssuranceStore } from "@/components/assurance/store";
 import { AccueilTab } from "@/components/assurance/accueil-tab";
