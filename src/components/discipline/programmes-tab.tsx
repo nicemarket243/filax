@@ -108,8 +108,8 @@ export function ProgrammesTab({
       toast.error("Renseignez un titre et une date/heure.");
       return;
     }
-    addProgram({ title: title.trim(), category, at: new Date(datetime).getTime(), reminders: [30, 10] });
-    toast.success("Programme créé", { description: "Rappels automatiques activés." });
+    addProgram({ title: title.trim(), category, at: new Date(datetime).getTime(), reminders: SMART_REMINDERS });
+    toast.success("Programme créé", { description: "Rappels intelligents dégressifs activés." });
     setOpen(false);
     setTitle("");
     setDatetime("");
