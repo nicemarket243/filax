@@ -44,7 +44,7 @@ function DisciplinePage() {
   const [tab, setTab] = useState<Tab>("blocages");
   const [pendingAi, setPendingAi] = useState<string>("");
 
-  const activeBet = store.data.bets.find((b) => remainingMs(b.startedAt, b.durationDays) > 0);
+  const activeBlock = store.data.blocks.find((b) => remainingMs(b.startedAt, b.durationDays) > 0);
 
   const handleVoiceIntent = (intent: ParsedIntent) => {
     if (intent.module === "blocages") {
@@ -54,14 +54,14 @@ function DisciplinePage() {
         description: `${intent.durationDays ?? 30} jours`,
       });
     } else if (intent.module === "paris") {
-      store.addBet({
-        title: "Pari vocal",
-        amount: intent.amount ?? 20,
-        durationDays: intent.durationDays ?? 30,
-        risk: "Moyen",
+      store.addDuel({
+        title: "Défi vocal",
+        opponent: "Ami",
+        stake: intent.amount ?? 20,
+        durationDays: intent.durationDays ?? 3,
       });
-      setTab("paris");
-      toast.success(`IA → Pari de ${intent.amount ?? 20}$ créé`);
+      setTab("duel");
+      toast.success(`IA → Duel de ${intent.amount ?? 20}$ créé`);
     } else if (intent.module === "programmes") {
       setPendingAi(intent.title);
       setTab("programmes");
