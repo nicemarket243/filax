@@ -48,6 +48,9 @@ const CATEGORIES: { value: Program["category"]; icon: typeof Briefcase; color: s
 
 const DAYS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
 
+/** Rappels intelligents dégressifs : 6h, 3h, 1h avant, puis l'heure J. */
+const SMART_REMINDERS = [360, 180, 60, 0];
+
 /** Parses a natural-language sentence into a program (date + category). */
 function aiParse(text: string): { title: string; category: Program["category"]; at: number } {
   const t = text.toLowerCase();
