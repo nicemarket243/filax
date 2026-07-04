@@ -94,14 +94,15 @@ function DisciplinePage() {
             updateBlock={store.updateBlock}
             removeBlock={store.removeBlock}
             onVoiceIntent={handleVoiceIntent}
-            activeBetTitle={activeBet?.title}
+            activeBetTitle={activeBlock?.name}
           />
         )}
-        {tab === "paris" && (
-          <ParisTab
+        {tab === "duel" && (
+          <DuelTab
             data={store.data}
-            addBet={store.addBet}
-            updateBet={store.updateBet}
+            addDuel={store.addDuel}
+            updateDuel={store.updateDuel}
+            removeDuel={store.removeDuel}
             onVoiceIntent={handleVoiceIntent}
           />
         )}
