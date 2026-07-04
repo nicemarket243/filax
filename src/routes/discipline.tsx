@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Lock, Trophy, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
-import { FilaxLogo } from "@/components/filax-logo";
+
 import { BackButton } from "@/components/back-button";
 import {
   useDisciplineStore,
