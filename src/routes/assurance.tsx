@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Home, ShieldPlus, AlertTriangle } from "lucide-react";
-import { FilaxLogo } from "@/components/filax-logo";
+
 import { BackButton } from "@/components/back-button";
 import { useAssuranceStore } from "@/components/assurance/store";
 import { AccueilTab } from "@/components/assurance/accueil-tab";
@@ -42,7 +42,7 @@ function AssurancePage() {
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <header className="flex items-center justify-between">
         <BackButton fallbackTo="/" />
-        <FilaxLogo className="filax-logo-fade" height={22} />
+        
       </header>
 
       <div className="mt-5 text-center">

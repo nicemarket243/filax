@@ -21,7 +21,7 @@ export function VoiceButton({ onIntent, className, compact, label = "Parler à l
     onIntent(intent);
   });
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (listening) {
       stop();
       return;
@@ -31,6 +31,19 @@ export function VoiceButton({ onIntent, className, compact, label = "Parler à l
         description: "Essayez Chrome ou Safari récent.",
       });
       return;
+    }
+    // Sollicite explicitement l'autorisation micro avant d'écouter.
+    if (typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Libère immédiatement : la reconnaissance vocale rouvre son propre flux.
+        stream.getTracks().forEach((t) => t.stop());
+      } catch {
+        toast.error("Accès au micro refusé", {
+          description: "Autorisez le microphone dans les réglages pour parler à l'IA.",
+        });
+        return;
+      }
     }
     const ok = start();
     if (ok) toast("À l'écoute…", { description: "Dites par exemple : « Bloque TikTok pendant 30 jours »." });

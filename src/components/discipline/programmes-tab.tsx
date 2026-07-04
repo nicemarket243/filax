@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CalendarClock,
   Plus,
@@ -47,6 +47,9 @@ const CATEGORIES: { value: Program["category"]; icon: typeof Briefcase; color: s
 ];
 
 const DAYS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+
+/** Rappels intelligents dégressifs : 6h, 3h, 1h avant, puis l'heure J. */
+const SMART_REMINDERS = [360, 180, 60, 0];
 
 /** Parses a natural-language sentence into a program (date + category). */
 function aiParse(text: string): { title: string; category: Program["category"]; at: number } {
@@ -103,13 +106,47 @@ export function ProgrammesTab({
   // Tunnel mode
   const [tunnel, setTunnel] = useState<Program | null>(null);
 
+  // Smart Scheduler : planifie les rappels dégressifs via notifications système.
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+
+    const now = Date.now();
+    data.programs.forEach((p) => {
+      p.reminders.forEach((min) => {
+        const fireAt = p.at - min * 60 * 1000;
+        const delay = fireAt - now;
+        if (delay <= 0 || delay > 1000 * 60 * 60 * 24) return; // fenêtre 24h
+        const id = setTimeout(() => {
+          const label = min === 0 ? "C'est l'heure !" : `Dans ${min >= 60 ? `${min / 60}h` : `${min} min`}`;
+          if (Notification.permission === "granted") {
+            new Notification(`Filax Discipline · ${p.title}`, { body: label });
+          }
+          toast(`Rappel · ${p.title}`, { description: label });
+        }, delay);
+        timersRef.current.push(id);
+      });
+    });
+
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
+    };
+  }, [data.programs]);
+
+
   const createManual = () => {
     if (!title.trim() || !datetime) {
       toast.error("Renseignez un titre et une date/heure.");
       return;
     }
-    addProgram({ title: title.trim(), category, at: new Date(datetime).getTime(), reminders: [30, 10] });
-    toast.success("Programme créé", { description: "Rappels automatiques activés." });
+    addProgram({ title: title.trim(), category, at: new Date(datetime).getTime(), reminders: SMART_REMINDERS });
+    toast.success("Programme créé", { description: "Rappels intelligents dégressifs activés." });
     setOpen(false);
     setTitle("");
     setDatetime("");
@@ -121,7 +158,7 @@ export function ProgrammesTab({
       return;
     }
     const parsed = aiParse(aiText);
-    addProgram({ ...parsed, reminders: [60, 30, 10] });
+    addProgram({ ...parsed, reminders: SMART_REMINDERS });
     toast.success("Événement créé par l'IA", {
       description: `${parsed.category} · ${new Date(parsed.at).toLocaleString("fr-FR", {
         weekday: "long",

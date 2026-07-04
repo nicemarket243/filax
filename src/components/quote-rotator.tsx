@@ -7,7 +7,7 @@ import { QUOTES } from "./quotes-data";
  * Rotation haute fréquence toutes les 3 secondes, en boucle infinie,
  * avec un fondu très léger pour éviter l'effet saccadé.
  */
-const ROTATION_MS = 3000;
+const ROTATION_MS = 5000;
 const FADE_MS = 250;
 
 export function QuoteRotator({ className }: { className?: string }) {

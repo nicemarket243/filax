@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Lock, Trophy, CalendarClock } from "lucide-react";
+import { Lock, Swords, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
-import { FilaxLogo } from "@/components/filax-logo";
+
 import { BackButton } from "@/components/back-button";
 import {
   useDisciplineStore,
   remainingMs,
 } from "@/components/discipline/store";
 import { BlocagesTab } from "@/components/discipline/blocages-tab";
-import { ParisTab } from "@/components/discipline/paris-tab";
+import { DuelTab } from "@/components/discipline/duel-tab";
 import { ProgrammesTab } from "@/components/discipline/programmes-tab";
 import type { ParsedIntent } from "@/hooks/use-voice-command";
 
@@ -19,23 +19,23 @@ export const Route = createFileRoute("/discipline")({
       { title: "FILAX Discipline" },
       {
         name: "description",
-        content: "FILAX Discipline : blocages, paris sur soi et programmes pilotés par l'IA.",
+        content: "FILAX Discipline : blocages, duels de productivité et programmes pilotés par l'IA.",
       },
       { property: "og:title", content: "FILAX Discipline" },
       {
         property: "og:description",
-        content: "Blocages d'applications, paris sur soi et programmes intelligents.",
+        content: "Blocages d'applications, duels de productivité et programmes intelligents.",
       },
     ],
   }),
   component: DisciplinePage,
 });
 
-type Tab = "blocages" | "paris" | "programmes";
+type Tab = "blocages" | "duel" | "programmes";
 
 const TABS: { key: Tab; label: string; icon: typeof Lock; color: string }[] = [
   { key: "blocages", label: "Blocages", icon: Lock, color: "text-brand-green" },
-  { key: "paris", label: "Paris", icon: Trophy, color: "text-brand-gold" },
+  { key: "duel", label: "Duel", icon: Swords, color: "text-brand-green" },
   { key: "programmes", label: "Programmes", icon: CalendarClock, color: "text-brand-violet" },
 ];
 
@@ -44,7 +44,7 @@ function DisciplinePage() {
   const [tab, setTab] = useState<Tab>("blocages");
   const [pendingAi, setPendingAi] = useState<string>("");
 
-  const activeBet = store.data.bets.find((b) => remainingMs(b.startedAt, b.durationDays) > 0);
+  const activeBlock = store.data.blocks.find((b) => remainingMs(b.startedAt, b.durationDays) > 0);
 
   const handleVoiceIntent = (intent: ParsedIntent) => {
     if (intent.module === "blocages") {
@@ -54,14 +54,14 @@ function DisciplinePage() {
         description: `${intent.durationDays ?? 30} jours`,
       });
     } else if (intent.module === "paris") {
-      store.addBet({
-        title: "Pari vocal",
-        amount: intent.amount ?? 20,
-        durationDays: intent.durationDays ?? 30,
-        risk: "Moyen",
+      store.addDuel({
+        title: "Défi vocal",
+        opponent: "Ami",
+        stake: intent.amount ?? 20,
+        durationDays: intent.durationDays ?? 3,
       });
-      setTab("paris");
-      toast.success(`IA → Pari de ${intent.amount ?? 20}$ créé`);
+      setTab("duel");
+      toast.success(`IA → Duel de ${intent.amount ?? 20}$ créé`);
     } else if (intent.module === "programmes") {
       setPendingAi(intent.title);
       setTab("programmes");
@@ -75,7 +75,6 @@ function DisciplinePage() {
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <header className="flex items-center justify-between">
         <BackButton fallbackTo="/" />
-        <FilaxLogo className="filax-logo-fade" height={22} />
       </header>
 
       <div className="mt-6 text-center">
@@ -95,14 +94,15 @@ function DisciplinePage() {
             updateBlock={store.updateBlock}
             removeBlock={store.removeBlock}
             onVoiceIntent={handleVoiceIntent}
-            activeBetTitle={activeBet?.title}
+            activeBetTitle={activeBlock?.name}
           />
         )}
-        {tab === "paris" && (
-          <ParisTab
+        {tab === "duel" && (
+          <DuelTab
             data={store.data}
-            addBet={store.addBet}
-            updateBet={store.updateBet}
+            addDuel={store.addDuel}
+            updateDuel={store.updateDuel}
+            removeDuel={store.removeDuel}
             onVoiceIntent={handleVoiceIntent}
           />
         )}

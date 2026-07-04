@@ -10,7 +10,7 @@ import {
   LineChart,
   Star,
 } from "lucide-react";
-import { FilaxLogo } from "@/components/filax-logo";
+
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { PaymentModal } from "@/components/payment-modal";
@@ -101,7 +101,7 @@ function PremiumPage() {
 
       <header className="relative flex items-center justify-between">
         <BackButton fallbackTo="/" />
-        <FilaxLogo className="filax-logo-fade" height={22} />
+        
       </header>
 
       <div className="relative mt-10 text-center">
