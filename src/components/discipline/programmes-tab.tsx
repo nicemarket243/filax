@@ -121,7 +121,7 @@ export function ProgrammesTab({
       return;
     }
     const parsed = aiParse(aiText);
-    addProgram({ ...parsed, reminders: [60, 30, 10] });
+    addProgram({ ...parsed, reminders: SMART_REMINDERS });
     toast.success("Événement créé par l'IA", {
       description: `${parsed.category} · ${new Date(parsed.at).toLocaleString("fr-FR", {
         weekday: "long",
