@@ -13,7 +13,7 @@ export type OrchestratorModule = "discipline" | "economie" | "assurance" | "unkn
 export interface OrchestratorIntent {
   module: OrchestratorModule;
   action: string;
-  params: Record<string, unknown>;
+  params: Record<string, string | number | boolean | null>;
   sensitive: boolean;
   reply: string;
 }
@@ -102,7 +102,7 @@ function normalize(obj: unknown, raw: string): OrchestratorIntent {
     ? o.module
     : "unknown") as OrchestratorModule;
   const action = typeof o.action === "string" && o.action ? o.action : "navigate";
-  const params = o.params && typeof o.params === "object" ? (o.params as Record<string, unknown>) : {};
+  const params = sanitizeParams(o.params);
   let sensitive = Boolean(o.sensitive);
   // Garde-fou serveur : toute opération financière/sécurité est TOUJOURS sensible.
   if (module === "economie" && ["lock_account", "deposit", "withdraw", "transfer"].includes(action)) sensitive = true;
