@@ -45,6 +45,33 @@ function DisciplinePage() {
   const [tab, setTab] = useState<Tab>("blocages");
   const [pendingAi, setPendingAi] = useState<string>("");
 
+  // Exécute une intention déposée par l'Orchestrateur Central (page d'accueil).
+  useEffect(() => {
+    const intent = takePendingIntent("discipline");
+    if (!intent) return;
+    const p = intent.params;
+    if (intent.action === "block_app") {
+      store.addBlock({ name: str(p.target, "Application"), kind: "app", durationDays: num(p.durationDays, 30) });
+      setTab("blocages");
+      toast.success(`Blocage activé : ${str(p.target, "Application")}`, { description: `${num(p.durationDays, 30)} jours` });
+    } else if (intent.action === "create_duel") {
+      store.addDuel({
+        title: str(p.title, "Défi de productivité"),
+        opponent: str(p.opponent, "Ami"),
+        stake: num(p.stake, 20),
+        durationDays: num(p.durationDays, 3),
+      });
+      setTab("duel");
+      toast.success("Duel créé", { description: str(p.title, "Défi de productivité") });
+    } else if (intent.action === "create_program") {
+      setPendingAi(str(p.title, intent.reply ?? ""));
+      setTab("programmes");
+      toast("Programme", { description: "Complétez les détails de votre programme." });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
   const activeBlock = store.data.blocks.find((b) => remainingMs(b.startedAt, b.durationDays) > 0);
 
   const handleVoiceIntent = (intent: ParsedIntent) => {
