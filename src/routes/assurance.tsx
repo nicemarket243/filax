@@ -7,6 +7,7 @@ import { useAssuranceStore } from "@/components/assurance/store";
 import { AccueilTab } from "@/components/assurance/accueil-tab";
 import { AssurerTab } from "@/components/assurance/assurer-tab";
 import { SinistreTab } from "@/components/assurance/sinistre-tab";
+import { takePendingIntent } from "@/lib/pending-intent";
 
 export const Route = createFileRoute("/assurance")({
   head: () => ({
