@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Lock, Swords, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 
