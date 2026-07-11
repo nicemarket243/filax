@@ -95,6 +95,15 @@ function localFallback(raw: string): OrchestratorIntent {
   return { module: "unknown", action: "none", params: {}, sensitive: false, reply: "Je n'ai pas bien compris. Essayez par exemple : « Verrouille mon compte Mariage » ou « Bloque TikTok pendant 30 jours »." };
 }
 
+function sanitizeParams(input: unknown): Record<string, string | number | boolean | null> {
+  const out: Record<string, string | number | boolean | null> = {};
+  if (!input || typeof input !== "object") return out;
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    if (v === null || typeof v === "string" || typeof v === "number" || typeof v === "boolean") out[k] = v;
+  }
+  return out;
+}
+
 function normalize(obj: unknown, raw: string): OrchestratorIntent {
   if (!obj || typeof obj !== "object") return localFallback(raw);
   const o = obj as Record<string, unknown>;
