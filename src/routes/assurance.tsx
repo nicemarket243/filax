@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Home, ShieldPlus, AlertTriangle } from "lucide-react";
 
 import { BackButton } from "@/components/back-button";
@@ -7,6 +7,7 @@ import { useAssuranceStore } from "@/components/assurance/store";
 import { AccueilTab } from "@/components/assurance/accueil-tab";
 import { AssurerTab } from "@/components/assurance/assurer-tab";
 import { SinistreTab } from "@/components/assurance/sinistre-tab";
+import { takePendingIntent } from "@/lib/pending-intent";
 
 export const Route = createFileRoute("/assurance")({
   head: () => ({
@@ -37,6 +38,16 @@ const TABS: { key: Tab; label: string; icon: typeof Home }[] = [
 function AssurancePage() {
   const store = useAssuranceStore();
   const [tab, setTab] = useState<Tab>("accueil");
+
+  // Exécute une intention déposée par l'Orchestrateur Central (page d'accueil).
+  useEffect(() => {
+    const intent = takePendingIntent("assurance");
+    if (!intent) return;
+    if (intent.action === "assure") setTab("assurer");
+    else if (intent.action === "declare_claim") setTab("sinistre");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">

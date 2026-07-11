@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Home, BarChart3, Settings } from "lucide-react";
 
 import { BackButton } from "@/components/back-button";
@@ -13,6 +14,7 @@ import { LockModal } from "@/components/economie/lock-modal";
 import { GoalModal } from "@/components/economie/goal-modal";
 import { GroupModal } from "@/components/economie/group-modal";
 import { TransferModal } from "@/components/economie/transfer-modal";
+import { takePendingIntent, num, str } from "@/lib/pending-intent";
 
 export const Route = createFileRoute("/economie")({
   head: () => ({
@@ -53,6 +55,38 @@ function EconomiePage() {
   const [lockAccount, setLockAccount] = useState<Account | null>(null);
 
   const activeAccount = store.data.accounts[activeIndex] ?? store.data.accounts[0];
+
+  // Exécute une intention déposée par l'Orchestrateur Central (page d'accueil).
+  useEffect(() => {
+    if (!store.ready) return;
+    const intent = takePendingIntent("economie");
+    if (!intent) return;
+    const p = intent.params;
+    const wanted = str(p.accountName).toLowerCase();
+    const idx = wanted
+      ? store.data.accounts.findIndex((a) => a.name.toLowerCase().includes(wanted) || wanted.includes(a.name.toLowerCase()))
+      : -1;
+    const target = idx >= 0 ? store.data.accounts[idx] : activeAccount;
+    if (idx >= 0) setActiveIndex(idx);
+
+    if (intent.action === "lock_account" && target) {
+      const days = num(p.durationDays, 30);
+      store.lockAccount(target.id, Date.now() + days * 86_400_000);
+      setTab("accueil");
+      toast.success(`${target.name} verrouillé`, { description: `Pendant ${days} jours` });
+    } else if (intent.action === "deposit") {
+      setTab("accueil");
+      setDepositOpen(true);
+    } else if (intent.action === "withdraw") {
+      setTab("accueil");
+      setWithdrawOpen(true);
+    } else if (intent.action === "transfer") {
+      setTab("accueil");
+      setTransferOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.ready]);
+
 
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">

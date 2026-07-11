@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Crown, Send, AudioLines, Target, TrendingUp, ShieldCheck } from "lucide-react";
+import { Crown, Target, TrendingUp, ShieldCheck } from "lucide-react";
 import { FilaxLogo } from "@/components/filax-logo";
 import { RadarGraphic } from "@/components/radar-graphic";
 import { QuoteRotator } from "@/components/quote-rotator";
+import { OrchestratorBar } from "@/components/orchestrator-bar";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,16 +63,9 @@ const accentStyles: Record<
 };
 
 function Index() {
-  const [query, setQuery] = useState("");
-  const [focused, setFocused] = useState(false);
+  // Le radar réagit quand l'orchestrateur est actif (focus, saisie, écoute, réflexion).
+  const [radarActive, setRadarActive] = useState(false);
 
-  // The dot matrix reacts when the user is typing or focused on the command bar.
-  const radarActive = focused || query.trim().length > 0;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Commande FILAX :", query);
-  };
 
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden px-6 pb-12 pt-6">
@@ -102,34 +96,9 @@ function Index() {
         de votre vie.
       </h1>
 
-      {/* Barre de commande — bordure subtile + lueur floue dynamique */}
-      <form
-        onSubmit={handleSubmit}
-        className="command-bar group relative mt-7 flex items-center gap-2 rounded-full p-1.5 backdrop-blur-xl"
-      >
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          placeholder="Dites-nous ce que vous voulez faire."
-          className="min-w-0 flex-1 bg-transparent px-4 text-[0.72rem] text-foreground outline-none placeholder:text-muted-foreground/70"
-        />
-        <button
-          type="submit"
-          aria-label="Envoyer le message"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-blue/40 via-brand-green/25 to-brand-red/40 text-foreground shadow-[0_0_14px_-4px_oklch(0.62_0.19_250/0.5)] transition-all hover:brightness-110 active:scale-95"
-        >
-          <Send className="h-[1rem] w-[1rem]" strokeWidth={2.2} />
-        </button>
-        <button
-          type="button"
-          aria-label="Commande vocale"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-red/[0.04] text-foreground/70 transition-all hover:bg-brand-blue/[0.1] hover:text-foreground"
-        >
-          <AudioLines className="h-[1.05rem] w-[1.05rem]" strokeWidth={2.2} />
-        </button>
-      </form>
+      {/* Orchestrateur Central — barre de commande intelligente (texte + voix + IA) */}
+      <OrchestratorBar onActiveChange={setRadarActive} />
+
 
       {/* Cartes — compactes, icône premium débordant 50% en haut */}
       <div className="mt-12 grid grid-cols-3 gap-3">
