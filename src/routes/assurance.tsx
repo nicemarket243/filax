@@ -39,6 +39,16 @@ function AssurancePage() {
   const store = useAssuranceStore();
   const [tab, setTab] = useState<Tab>("accueil");
 
+  // Exécute une intention déposée par l'Orchestrateur Central (page d'accueil).
+  useEffect(() => {
+    const intent = takePendingIntent("assurance");
+    if (!intent) return;
+    if (intent.action === "assure") setTab("assurer");
+    else if (intent.action === "declare_claim") setTab("sinistre");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <header className="flex items-center justify-between">
