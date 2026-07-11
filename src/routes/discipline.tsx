@@ -12,6 +12,7 @@ import { BlocagesTab } from "@/components/discipline/blocages-tab";
 import { DuelTab } from "@/components/discipline/duel-tab";
 import { ProgrammesTab } from "@/components/discipline/programmes-tab";
 import type { ParsedIntent } from "@/hooks/use-voice-command";
+import { takePendingIntent, num, str } from "@/lib/pending-intent";
 
 export const Route = createFileRoute("/discipline")({
   head: () => ({
