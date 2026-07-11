@@ -63,16 +63,9 @@ const accentStyles: Record<
 };
 
 function Index() {
-  const [query, setQuery] = useState("");
-  const [focused, setFocused] = useState(false);
+  // Le radar réagit quand l'orchestrateur est actif (focus, saisie, écoute, réflexion).
+  const [radarActive, setRadarActive] = useState(false);
 
-  // The dot matrix reacts when the user is typing or focused on the command bar.
-  const radarActive = focused || query.trim().length > 0;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Commande FILAX :", query);
-  };
 
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden px-6 pb-12 pt-6">
