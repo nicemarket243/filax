@@ -64,6 +64,7 @@ const SEED: DisciplineData = {
   blocks: [
     { id: "b1", name: "TikTok", kind: "app", startedAt: Date.now() - 1000 * 60 * 60 * 3, durationDays: 30 },
     { id: "b2", name: "Instagram", kind: "app", startedAt: Date.now() - 1000 * 60 * 60 * 12, durationDays: 7 },
+    { id: "b3", name: "YouTube", kind: "app", startedAt: Date.now() - 1000 * 60 * 60 * 24 * 2, durationDays: 14 },
   ],
   duels: [
     {
