@@ -23,18 +23,39 @@ export interface Duel {
   status: DuelStatus;
 }
 
+export type ProgramCategory =
+  | "Sport"
+  | "Réunion"
+  | "Rendez-vous"
+  | "Sortie"
+  | "Fête"
+  | "Travail"
+  | "Personnel";
+
 export interface Program {
   id: string;
   title: string;
-  category: "Réunion" | "Sport" | "Travail" | "Études";
+  category: ProgramCategory;
   at: number; // timestamp
   reminders: number[]; // minutes before
+}
+
+/** Historique d'un blocage terminé ou levé. */
+export interface BlockHistoryEntry {
+  id: string;
+  name: string;
+  kind: "app" | "site";
+  startedAt: number;
+  endedAt: number;
+  durationDays: number;
+  reason: "completed" | "removed";
 }
 
 export interface DisciplineData {
   blocks: AppBlock[];
   duels: Duel[];
   programs: Program[];
+  history: BlockHistoryEntry[];
 }
 
 const KEY = "filax-discipline-v2";
