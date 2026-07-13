@@ -98,6 +98,24 @@ const SEED: DisciplineData = {
       at: Date.now() + 1000 * 60 * 60 * 5,
       reminders: [360, 180, 60, 0],
     },
+    {
+      id: "pr2",
+      title: "Réunion d'équipe",
+      category: "Réunion",
+      at: Date.now() + 1000 * 60 * 60 * 26,
+      reminders: [360, 180, 60, 0],
+    },
+  ],
+  history: [
+    {
+      id: "h1",
+      name: "Facebook",
+      kind: "app",
+      startedAt: Date.now() - 1000 * 60 * 60 * 24 * 32,
+      endedAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
+      durationDays: 30,
+      reason: "completed",
+    },
   ],
 };
 
