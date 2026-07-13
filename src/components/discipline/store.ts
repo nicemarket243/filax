@@ -23,18 +23,39 @@ export interface Duel {
   status: DuelStatus;
 }
 
+export type ProgramCategory =
+  | "Sport"
+  | "Réunion"
+  | "Rendez-vous"
+  | "Sortie"
+  | "Fête"
+  | "Travail"
+  | "Personnel";
+
 export interface Program {
   id: string;
   title: string;
-  category: "Réunion" | "Sport" | "Travail" | "Études";
+  category: ProgramCategory;
   at: number; // timestamp
   reminders: number[]; // minutes before
+}
+
+/** Historique d'un blocage terminé ou levé. */
+export interface BlockHistoryEntry {
+  id: string;
+  name: string;
+  kind: "app" | "site";
+  startedAt: number;
+  endedAt: number;
+  durationDays: number;
+  reason: "completed" | "removed";
 }
 
 export interface DisciplineData {
   blocks: AppBlock[];
   duels: Duel[];
   programs: Program[];
+  history: BlockHistoryEntry[];
 }
 
 const KEY = "filax-discipline-v2";
@@ -43,6 +64,7 @@ const SEED: DisciplineData = {
   blocks: [
     { id: "b1", name: "TikTok", kind: "app", startedAt: Date.now() - 1000 * 60 * 60 * 3, durationDays: 30 },
     { id: "b2", name: "Instagram", kind: "app", startedAt: Date.now() - 1000 * 60 * 60 * 12, durationDays: 7 },
+    { id: "b3", name: "YouTube", kind: "app", startedAt: Date.now() - 1000 * 60 * 60 * 24 * 2, durationDays: 14 },
   ],
   duels: [
     {
@@ -75,6 +97,24 @@ const SEED: DisciplineData = {
       category: "Sport",
       at: Date.now() + 1000 * 60 * 60 * 5,
       reminders: [360, 180, 60, 0],
+    },
+    {
+      id: "pr2",
+      title: "Réunion d'équipe",
+      category: "Réunion",
+      at: Date.now() + 1000 * 60 * 60 * 26,
+      reminders: [360, 180, 60, 0],
+    },
+  ],
+  history: [
+    {
+      id: "h1",
+      name: "Facebook",
+      kind: "app",
+      startedAt: Date.now() - 1000 * 60 * 60 * 24 * 32,
+      endedAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
+      durationDays: 30,
+      reason: "completed",
     },
   ],
 };
@@ -129,12 +169,31 @@ export function useDisciplineStore() {
   const removeBlock = useCallback(
     (id: string) =>
       setData((d) => {
-        const next = { ...d, blocks: d.blocks.filter((b) => b.id !== id) };
+        const target = d.blocks.find((b) => b.id === id);
+        const entry: BlockHistoryEntry[] = target
+          ? [
+              {
+                id: crypto.randomUUID(),
+                name: target.name,
+                kind: target.kind,
+                startedAt: target.startedAt,
+                endedAt: Date.now(),
+                durationDays: target.durationDays,
+                reason: remainingMs(target.startedAt, target.durationDays) <= 0 ? "completed" : "removed",
+              },
+            ]
+          : [];
+        const next = {
+          ...d,
+          blocks: d.blocks.filter((b) => b.id !== id),
+          history: [...entry, ...d.history],
+        };
         localStorage.setItem(KEY, JSON.stringify(next));
         return next;
       }),
     [],
   );
+
 
   const addDuel = useCallback(
     (b: Omit<Duel, "id" | "startedAt" | "myProgress" | "oppProgress" | "status">) =>

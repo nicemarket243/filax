@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Lock, Swords, CalendarClock } from "lucide-react";
+import { LayoutDashboard, Lock, Swords, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 
 import { BackButton } from "@/components/back-button";
@@ -8,6 +8,7 @@ import {
   useDisciplineStore,
   remainingMs,
 } from "@/components/discipline/store";
+import { DashboardTab } from "@/components/discipline/dashboard-tab";
 import { BlocagesTab } from "@/components/discipline/blocages-tab";
 import { DuelTab } from "@/components/discipline/duel-tab";
 import { ProgrammesTab } from "@/components/discipline/programmes-tab";
@@ -32,17 +33,18 @@ export const Route = createFileRoute("/discipline")({
   component: DisciplinePage,
 });
 
-type Tab = "blocages" | "duel" | "programmes";
+type Tab = "dashboard" | "blocages" | "duel" | "programmes";
 
 const TABS: { key: Tab; label: string; icon: typeof Lock; color: string }[] = [
+  { key: "dashboard", label: "Accueil", icon: LayoutDashboard, color: "text-brand-green" },
   { key: "blocages", label: "Blocages", icon: Lock, color: "text-brand-green" },
-  { key: "duel", label: "Duel", icon: Swords, color: "text-brand-green" },
+  { key: "duel", label: "Défis", icon: Swords, color: "text-brand-gold" },
   { key: "programmes", label: "Programmes", icon: CalendarClock, color: "text-brand-violet" },
 ];
 
 function DisciplinePage() {
   const store = useDisciplineStore();
-  const [tab, setTab] = useState<Tab>("blocages");
+  const [tab, setTab] = useState<Tab>("dashboard");
   const [pendingAi, setPendingAi] = useState<string>("");
 
   // Exécute une intention déposée par l'Orchestrateur Central (page d'accueil).
@@ -115,6 +117,9 @@ function DisciplinePage() {
       </div>
 
       <div className="mt-6 animate-fade-up">
+        {tab === "dashboard" && (
+          <DashboardTab data={store.data} onVoiceIntent={handleVoiceIntent} onNavigate={setTab} />
+        )}
         {tab === "blocages" && (
           <BlocagesTab
             data={store.data}

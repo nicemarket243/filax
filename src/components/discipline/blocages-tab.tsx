@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import {
   Lock,
-  Plus,
   Clock,
   Globe,
   Smartphone,
   ShieldAlert,
   Play,
-  Pencil,
-  Trophy,
-  ListPlus,
-  X,
+  Square,
   Trash2,
+  History,
+  CalendarCheck,
+  Plus,
+  Timer,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -33,7 +33,8 @@ import {
   remainingMs,
 } from "./store";
 import { useTick } from "@/hooks/use-tick";
-import { VoiceButton } from "./voice-button";
+import { CommandBar } from "./command-bar";
+import { DrawerSection } from "./drawer-section";
 import type { ParsedIntent } from "@/hooks/use-voice-command";
 
 const SUGGESTED_APPS = ["TikTok", "Instagram", "Facebook", "Snapchat", "YouTube", "Twitter/X"];
@@ -48,14 +49,39 @@ interface BlocagesTabProps {
   activeBetTitle?: string;
 }
 
-export function BlocagesTab({
-  data,
-  addBlock,
-  updateBlock,
-  removeBlock,
-  onVoiceIntent,
-  activeBetTitle,
-}: BlocagesTabProps) {
+/** Minuteur premium minimaliste : anneau fin, sans halo ni effet lumineux. */
+function FocusRing({ progress, label, time, sub }: { progress: number; label: string; time: string; sub: string }) {
+  const R = 84;
+  const C = 2 * Math.PI * R;
+  const dash = C * Math.min(1, Math.max(0, progress));
+  return (
+    <div className="relative flex h-52 w-52 items-center justify-center">
+      <svg className="h-full w-full -rotate-90" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r={R} fill="none" stroke="oklch(1 0 0 / 0.07)" strokeWidth="4" />
+        <circle
+          cx="100"
+          cy="100"
+          r={R}
+          fill="none"
+          stroke="var(--brand-green)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={`${dash} ${C}`}
+          className="transition-all duration-500"
+        />
+      </svg>
+      <div className="absolute flex flex-col items-center">
+        <span className="text-[0.6rem] font-medium uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
+        <span className="mt-1.5 font-mono text-3xl font-semibold tracking-tight text-foreground tabular-nums">
+          {time}
+        </span>
+        <span className="mt-1 text-[0.62rem] text-muted-foreground">{sub}</span>
+      </div>
+    </div>
+  );
+}
+
+export function BlocagesTab({ data, addBlock, updateBlock, removeBlock, onVoiceIntent }: BlocagesTabProps) {
   useTick(1000);
   const [dialogKind, setDialogKind] = useState<"app" | "site" | null>(null);
   const [name, setName] = useState("");
@@ -63,6 +89,7 @@ export function BlocagesTab({
   const [customH, setCustomH] = useState("");
 
   // Focus session
+  const [focusStart, setFocusStart] = useState<number | null>(null);
   const [focusEnd, setFocusEnd] = useState<number | null>(null);
   const [focusDialog, setFocusDialog] = useState(false);
   const [focusMin, setFocusMin] = useState(45);
@@ -90,73 +117,54 @@ export function BlocagesTab({
 
   const focusRemaining = focusEnd ? Math.max(0, focusEnd - Date.now()) : 0;
   const focusActive = focusEnd !== null && focusRemaining > 0;
+  const focusTotal = focusStart && focusEnd ? focusEnd - focusStart : 1;
+  const focusProgress = focusActive ? 1 - focusRemaining / focusTotal : 0;
 
   useEffect(() => {
     if (focusEnd !== null && focusRemaining <= 0) {
       setFocusEnd(null);
+      setFocusStart(null);
       toast.success("Focus terminé. Bravo 👏");
     }
   }, [focusEnd, focusRemaining]);
 
   return (
-    <div className="space-y-6 pb-32">
-      {/* FOCUS ZONE */}
-      <section className="rounded-3xl border border-white/10 bg-gradient-to-b from-brand-green/[0.08] to-transparent p-6">
+    <div className="space-y-5 pb-32">
+      {/* MINUTEUR PREMIUM MINIMALISTE */}
+      <section className="rounded-3xl bg-white/[0.03] p-6">
         <div className="flex flex-col items-center">
-          <div className="relative flex h-52 w-52 items-center justify-center">
-            <div className="absolute inset-0 animate-pulse-ring rounded-full border-2 border-brand-green/30" />
-            <div className="absolute inset-3 rounded-full border border-brand-blue/20" />
-            <div className="absolute inset-0 rounded-full bg-brand-green/5 shadow-[0_0_60px_-10px_oklch(0.72_0.22_140/0.6)]" />
-            <div className="flex flex-col items-center">
-              <span className="text-[0.62rem] font-semibold uppercase tracking-widest text-brand-green">
-                {focusActive ? "Focus en cours" : "Zone Focus"}
-              </span>
-              <span className="mt-1 font-mono text-3xl font-bold text-foreground">
-                {focusActive ? formatCountdown(focusRemaining) : "00:00:00"}
-              </span>
-              <span className="mt-1 text-[0.62rem] text-muted-foreground">
-                {focusActive ? "Restez concentré" : "Lancez une session"}
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-5 grid w-full grid-cols-2 gap-2">
-            <Button
-              onClick={() => (focusActive ? setFocusEnd(null) : setFocusDialog(true))}
-              className="bg-brand-green text-background hover:bg-brand-green/90"
-            >
-              <Play className="mr-1.5 h-4 w-4" /> {focusActive ? "Arrêter" : "Lancer un Focus"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => toast("Nouvelle tâche", { description: "Ajoutez une tâche à votre session de focus." })}
-              className="border-white/10 bg-white/[0.04]"
-            >
-              <ListPlus className="mr-1.5 h-4 w-4" /> Ajouter une tâche
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() =>
-                toast(activeBetTitle ? "Pari actif" : "Aucun pari", {
-                  description: activeBetTitle ?? "Créez un pari dans l'onglet Paris.",
-                })
+          <FocusRing
+            progress={focusProgress}
+            label={focusActive ? "Focus en cours" : "Zone Focus"}
+            time={focusActive ? formatCountdown(focusRemaining) : "00:00:00"}
+            sub={focusActive ? "Restez concentré" : "Lancez une session"}
+          />
+          <Button
+            onClick={() => {
+              if (focusActive) {
+                setFocusEnd(null);
+                setFocusStart(null);
+              } else {
+                setFocusDialog(true);
               }
-              className="border-white/10 bg-white/[0.04]"
-            >
-              <Trophy className="mr-1.5 h-4 w-4 text-brand-gold" /> Voir mon Pari
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setFocusDialog(true)}
-              className="border-white/10 bg-white/[0.04]"
-            >
-              <Pencil className="mr-1.5 h-4 w-4" /> Modifier
-            </Button>
-          </div>
-
-          <VoiceButton onIntent={onVoiceIntent} className="mt-3 w-full" label="Micro IA — commande vocale" />
+            }}
+            className="mt-5 w-full rounded-2xl bg-brand-green py-5 text-background hover:bg-brand-green/90"
+          >
+            {focusActive ? (
+              <>
+                <Square className="mr-1.5 h-4 w-4" /> Arrêter la session
+              </>
+            ) : (
+              <>
+                <Play className="mr-1.5 h-4 w-4" /> Lancer un Focus
+              </>
+            )}
+          </Button>
         </div>
       </section>
+
+      {/* CARTE COMMANDE IA — compacte : micro + « Dites-moi ce que vous voulez » */}
+      <CommandBar onIntent={onVoiceIntent} />
 
       {/* ADD ACTIONS */}
       <div className="grid grid-cols-2 gap-3">
@@ -174,67 +182,80 @@ export function BlocagesTab({
         </button>
       </div>
 
-      {/* ACTIVE BLOCKS */}
-      <section>
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+      {/* BLOCAGES ACTIFS — chaque app possède son propre tiroir/dashboard */}
+      <section className="space-y-3">
+        <h3 className="flex items-center gap-2 px-1 text-sm font-bold text-foreground">
           <Lock className="h-4 w-4 text-brand-green" /> Blocages actifs ({data.blocks.length})
         </h3>
-        <div className="space-y-3">
-          {data.blocks.length === 0 && (
-            <p className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center text-xs text-muted-foreground">
-              Aucun blocage actif. Ajoutez une app ou un site ci-dessus.
-            </p>
-          )}
-          {data.blocks.map((b) => {
-            const ms = remainingMs(b.startedAt, b.durationDays);
-            const expired = ms <= 0;
-            return (
-              <div
-                key={b.id}
-                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-card/60 p-3.5 backdrop-blur-xl"
-              >
-                <span
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-                    b.kind === "app" ? "bg-brand-green/15 text-brand-green" : "bg-brand-blue/15 text-brand-blue"
-                  }`}
-                >
-                  {b.kind === "app" ? <Smartphone className="h-5 w-5" /> : <Globe className="h-5 w-5" />}
-                </span>
-                <button onClick={() => !expired && setHardLock(b)} className="min-w-0 flex-1 text-left">
-                  <p className="truncate text-sm font-semibold text-foreground">{b.name}</p>
-                  <p className="flex items-center gap-1 text-[0.7rem] text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    {expired ? (
-                      <span className="text-brand-gold">Terminé</span>
-                    ) : (
-                      formatCountdown(ms)
-                    )}
-                  </p>
-                </button>
-                <button
-                  onClick={() => {
-                    updateBlock(b.id, { durationDays: b.durationDays + 1 });
-                    toast.success("Blocage prolongé de 24h");
-                  }}
-                  className="rounded-lg border border-white/10 bg-white/[0.05] px-2 py-1 text-[0.65rem] font-semibold text-foreground/80 active:scale-90"
-                >
-                  +24h
-                </button>
-                <button
-                  onClick={() => {
-                    removeBlock(b.id);
-                    toast("Blocage retiré");
-                  }}
-                  className="text-muted-foreground transition-colors hover:text-brand-red"
-                  aria-label="Retirer"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
+        {data.blocks.length === 0 && (
+          <p className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center text-xs text-muted-foreground">
+            Aucun blocage actif. Ajoutez une app ou un site ci-dessus.
+          </p>
+        )}
+        {data.blocks.map((b) => {
+          const ms = remainingMs(b.startedAt, b.durationDays);
+          const expired = ms <= 0;
+          return (
+            <DrawerSection
+              key={b.id}
+              icon={b.kind === "app" ? <Smartphone className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
+              title={b.name}
+              meta={expired ? "Terminé" : formatCountdown(ms)}
+              iconClass={
+                b.kind === "app" ? "bg-brand-green/12 text-brand-green" : "bg-brand-blue/12 text-brand-blue"
+              }
+            >
+              <AppDashboard
+                block={b}
+                onExtend={() => {
+                  updateBlock(b.id, { durationDays: b.durationDays + 1 });
+                  toast.success("Blocage prolongé de 24h");
+                }}
+                onHardLock={() => !expired && setHardLock(b)}
+                onRemove={() => {
+                  removeBlock(b.id);
+                  toast("Blocage levé");
+                }}
+              />
+            </DrawerSection>
+          );
+        })}
       </section>
+
+      {/* HISTORIQUE — rangé dans un tiroir */}
+      <DrawerSection
+        icon={<History className="h-4 w-4" />}
+        title="Historique des blocages"
+        count={data.history.length}
+        iconClass="bg-white/[0.06] text-muted-foreground"
+      >
+        {data.history.length === 0 ? (
+          <p className="px-1 py-2 text-center text-[0.72rem] text-muted-foreground">
+            Aucun blocage terminé pour le moment.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {data.history.map((h) => (
+              <div key={h.id} className="flex items-center gap-3 rounded-xl bg-white/[0.03] p-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.06] text-muted-foreground">
+                  {h.kind === "app" ? <Smartphone className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">{h.name}</p>
+                  <p className="text-[0.68rem] text-muted-foreground">
+                    {new Date(h.endedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                    {" · "}
+                    {h.reason === "completed" ? "Terminé" : "Levé"}
+                  </p>
+                </div>
+                <span className="text-[0.66rem] text-muted-foreground">
+                  {h.durationDays >= 1 ? `${Math.round(h.durationDays)}j` : `${Math.round(h.durationDays * 24)}h`}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </DrawerSection>
 
       {/* ADD DIALOG */}
       <Dialog open={dialogKind !== null} onOpenChange={(o) => !o && setDialogKind(null)}>
@@ -340,6 +361,7 @@ export function BlocagesTab({
           <DialogFooter>
             <Button
               onClick={() => {
+                setFocusStart(Date.now());
                 setFocusEnd(Date.now() + focusMin * 60 * 1000);
                 setFocusDialog(false);
                 toast.success(`Focus lancé — ${focusMin} minutes`);
@@ -353,9 +375,101 @@ export function BlocagesTab({
       </Dialog>
 
       {/* HARD LOCK OVERLAY */}
-      {hardLock && (
-        <HardLockOverlay block={hardLock} onClose={() => setHardLock(null)} />
-      )}
+      {hardLock && <HardLockOverlay block={hardLock} onClose={() => setHardLock(null)} />}
+    </div>
+  );
+}
+
+/** Dashboard dédié d'une application bloquée. */
+function AppDashboard({
+  block,
+  onExtend,
+  onHardLock,
+  onRemove,
+}: {
+  block: AppBlock;
+  onExtend: () => void;
+  onHardLock: () => void;
+  onRemove: () => void;
+}) {
+  useTick(1000);
+  const ms = remainingMs(block.startedAt, block.durationDays);
+  const expired = ms <= 0;
+  const total = block.durationDays * 24 * 60 * 60 * 1000;
+  const done = Math.min(100, Math.round(((total - ms) / total) * 100));
+  const endDate = new Date(block.startedAt + total);
+
+  return (
+    <div className="space-y-3">
+      {/* Temps restant */}
+      <div className="rounded-xl bg-white/[0.03] p-3.5 text-center">
+        <p className="text-[0.58rem] font-medium uppercase tracking-widest text-muted-foreground">
+          {expired ? "Blocage terminé" : "Temps restant"}
+        </p>
+        <p className="mt-1 font-mono text-2xl font-semibold text-foreground tabular-nums">
+          {expired ? "00:00:00" : formatCountdown(ms)}
+        </p>
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="h-full rounded-full bg-brand-green transition-all" style={{ width: `${done}%` }} />
+        </div>
+      </div>
+
+      {/* Statistiques */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-xl bg-white/[0.03] p-3">
+          <CalendarCheck className="h-4 w-4 text-brand-green" />
+          <p className="mt-1.5 text-[0.6rem] text-muted-foreground">Fin du blocage</p>
+          <p className="text-[0.74rem] font-semibold text-foreground">
+            {endDate.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+          </p>
+        </div>
+        <div className="rounded-xl bg-white/[0.03] p-3">
+          <Timer className="h-4 w-4 text-brand-blue" />
+          <p className="mt-1.5 text-[0.6rem] text-muted-foreground">Durée totale</p>
+          <p className="text-[0.74rem] font-semibold text-foreground">
+            {block.durationDays >= 1
+              ? `${Math.round(block.durationDays)} jour${block.durationDays >= 2 ? "s" : ""}`
+              : `${Math.round(block.durationDays * 24)} h`}
+          </p>
+        </div>
+        <div className="rounded-xl bg-white/[0.03] p-3">
+          <Clock className="h-4 w-4 text-brand-gold" />
+          <p className="mt-1.5 text-[0.6rem] text-muted-foreground">Progression</p>
+          <p className="text-[0.74rem] font-semibold text-foreground">{done}%</p>
+        </div>
+        <div className="rounded-xl bg-white/[0.03] p-3">
+          <CalendarCheck className="h-4 w-4 text-brand-violet" />
+          <p className="mt-1.5 text-[0.6rem] text-muted-foreground">Démarré le</p>
+          <p className="text-[0.74rem] font-semibold text-foreground">
+            {new Date(block.startedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+          </p>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onExtend}
+          className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] py-2 text-[0.72rem] font-semibold text-foreground/90 active:scale-95"
+        >
+          <Plus className="mr-1 inline h-3.5 w-3.5" /> Prolonger 24h
+        </button>
+        {!expired && (
+          <button
+            onClick={onHardLock}
+            className="flex-1 rounded-xl border border-brand-red/30 bg-brand-red/10 py-2 text-[0.72rem] font-semibold text-brand-red active:scale-95"
+          >
+            <ShieldAlert className="mr-1 inline h-3.5 w-3.5" /> Zone de discipline
+          </button>
+        )}
+        <button
+          onClick={onRemove}
+          className="rounded-xl border border-white/10 bg-white/[0.04] p-2 text-muted-foreground hover:text-brand-red active:scale-95"
+          aria-label="Lever le blocage"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -365,25 +479,23 @@ function HardLockOverlay({ block, onClose }: { block: AppBlock; onClose: () => v
   const ms = remainingMs(block.startedAt, block.durationDays);
   return (
     <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background/95 px-8 text-center backdrop-blur-2xl">
-      <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-brand-red/50 bg-brand-red/10 shadow-[0_0_60px_-10px_oklch(0.64_0.22_22/0.7)]">
-        <ShieldAlert className="h-12 w-12 text-brand-red" />
+      <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-brand-red/10">
+        <ShieldAlert className="h-10 w-10 text-brand-red" />
       </div>
       <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-brand-red">ZONE DE DISCIPLINE</h2>
       <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-        <span className="font-semibold text-foreground">{block.name}</span> est bloqué. Impossible de
-        contourner ce blocage pendant la durée engagée.
+        <span className="font-semibold text-foreground">{block.name}</span> est bloqué. Impossible de contourner ce
+        blocage pendant la durée engagée.
       </p>
-      <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.04] px-8 py-5">
-        <p className="text-[0.62rem] font-semibold uppercase tracking-widest text-muted-foreground">
-          Temps restant
-        </p>
-        <p className="mt-1 font-mono text-4xl font-bold text-foreground">{formatCountdown(ms)}</p>
+      <div className="mt-8 rounded-2xl bg-white/[0.04] px-8 py-5">
+        <p className="text-[0.62rem] font-semibold uppercase tracking-widest text-muted-foreground">Temps restant</p>
+        <p className="mt-1 font-mono text-4xl font-semibold text-foreground tabular-nums">{formatCountdown(ms)}</p>
       </div>
       <button
         onClick={onClose}
         className="mt-10 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-5 py-2.5 text-sm font-semibold text-foreground/80 active:scale-95"
       >
-        <X className="h-4 w-4" /> Rester discipliné
+        Rester discipliné
       </button>
     </div>
   );

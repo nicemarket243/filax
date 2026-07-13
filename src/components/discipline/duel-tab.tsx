@@ -7,10 +7,12 @@ import {
   Flame,
   Coins,
   ShieldCheck,
-  ChevronRight,
   Check,
   X,
   UserPlus,
+  Share2,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -33,7 +35,7 @@ import {
   commonPot,
 } from "./store";
 import { useTick } from "@/hooks/use-tick";
-import { VoiceButton } from "./voice-button";
+import { DrawerSection } from "./drawer-section";
 import type { ParsedIntent } from "@/hooks/use-voice-command";
 
 interface DuelTabProps {
@@ -43,6 +45,10 @@ interface DuelTabProps {
   removeDuel: (id: string) => void;
   onVoiceIntent: (intent: ParsedIntent) => void;
 }
+
+const APP_URL = "https://filax.lovable.app/discipline";
+const INVITE_MESSAGE =
+  "Salut ! FILAX t'invite à participer à un défi de discipline avec pari. Accepte le défi et tente de gagner de l'argent.";
 
 /** Barre de progression néon verte, sans bordure. */
 function ProgressBar({ value, tone = "green" }: { value: number; tone?: "green" | "muted" }) {
@@ -56,16 +62,64 @@ function ProgressBar({ value, tone = "green" }: { value: number; tone?: "green" 
             tone === "green"
               ? "linear-gradient(90deg, oklch(0.72 0.22 140), oklch(0.8 0.2 150))"
               : "linear-gradient(90deg, oklch(0.6 0.02 255), oklch(0.7 0.02 255))",
-          boxShadow: tone === "green" ? "0 0 12px -2px oklch(0.72 0.22 140 / 0.7)" : "none",
         }}
       />
     </div>
   );
 }
 
-export function DuelTab({ data, addDuel, updateDuel, removeDuel, onVoiceIntent }: DuelTabProps) {
+function DuelCard({ d, onOpen }: { d: Duel; onOpen: () => void }) {
+  const ms = remainingMs(d.startedAt, d.durationDays);
+  return (
+    <button
+      onClick={onOpen}
+      className="w-full rounded-2xl bg-white/[0.03] p-4 text-left transition-transform active:scale-[0.98]"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-foreground">{d.title}</p>
+          <p className="mt-0.5 flex items-center gap-1 text-[0.7rem] text-muted-foreground">
+            <Flame className="h-3 w-3 text-brand-gold" /> vs {d.opponent} · {d.stake}$ en jeu
+          </p>
+        </div>
+        {d.status === "en_cours" ? (
+          <span className="flex items-center gap-1 whitespace-nowrap rounded-full bg-brand-green/15 px-2 py-1 text-[0.6rem] font-semibold text-brand-green">
+            <Clock className="h-3 w-3" /> {formatCountdown(ms)}
+          </span>
+        ) : (
+          <span
+            className={`whitespace-nowrap rounded-full px-2 py-1 text-[0.6rem] font-semibold ${
+              d.status === "gagne" ? "bg-brand-green/15 text-brand-green" : "bg-brand-red/15 text-brand-red"
+            }`}
+          >
+            {d.status === "gagne" ? "Gagné" : "Perdu"}
+          </span>
+        )}
+      </div>
+      <div className="mt-3 space-y-2">
+        <div>
+          <div className="mb-1 flex justify-between text-[0.62rem] text-muted-foreground">
+            <span>Vous</span>
+            <span>{d.myProgress}%</span>
+          </div>
+          <ProgressBar value={d.myProgress} />
+        </div>
+        <div>
+          <div className="mb-1 flex justify-between text-[0.62rem] text-muted-foreground">
+            <span>{d.opponent}</span>
+            <span>{d.oppProgress}%</span>
+          </div>
+          <ProgressBar value={d.oppProgress} tone="muted" />
+        </div>
+      </div>
+    </button>
+  );
+}
+
+export function DuelTab({ data, addDuel, updateDuel, removeDuel }: DuelTabProps) {
   useTick(1000);
   const [open, setOpen] = useState(false);
+  const [share, setShare] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
@@ -75,7 +129,8 @@ export function DuelTab({ data, addDuel, updateDuel, removeDuel, onVoiceIntent }
 
   const score = reliabilityScore(data.duels);
   const pot = commonPot(data.duels);
-  const activeCount = data.duels.filter((d) => d.status === "en_cours").length;
+  const activeDuels = data.duels.filter((d) => d.status === "en_cours");
+  const finishedDuels = data.duels.filter((d) => d.status !== "en_cours");
 
   const detail = data.duels.find((d) => d.id === detailId) ?? null;
 
@@ -103,118 +158,100 @@ export function DuelTab({ data, addDuel, updateDuel, removeDuel, onVoiceIntent }
     setDetailId(null);
   };
 
+  const shareVia = (channel: "whatsapp" | "messenger" | "sms" | "native") => {
+    const text = `${INVITE_MESSAGE} ${APP_URL}`;
+    if (channel === "native" && typeof navigator !== "undefined" && navigator.share) {
+      navigator
+        .share({ title: "Défi FILAX", text: INVITE_MESSAGE, url: APP_URL })
+        .catch(() => {});
+      return;
+    }
+    let url = "";
+    if (channel === "whatsapp") url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    else if (channel === "messenger") url = `https://www.facebook.com/dialog/send?link=${encodeURIComponent(APP_URL)}&app_id=0&redirect_uri=${encodeURIComponent(APP_URL)}`;
+    else if (channel === "sms") url = `sms:?&body=${encodeURIComponent(text)}`;
+    if (typeof window !== "undefined") window.open(url, "_blank");
+  };
+
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-5 pb-32">
       {/* SCORE DE FIABILITÉ + POT COMMUN */}
       <section className="grid grid-cols-2 gap-3">
-        <div
-          className="rounded-3xl p-4 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.85)]"
-          style={{ background: "linear-gradient(160deg, oklch(0.72 0.22 140 / 0.14), transparent)" }}
-        >
+        <div className="rounded-3xl bg-white/[0.03] p-4">
           <ShieldCheck className="h-5 w-5 text-brand-green" />
           <p className="mt-2 text-2xl font-bold text-foreground">{score}%</p>
           <p className="text-[0.68rem] text-muted-foreground">Score de fiabilité</p>
         </div>
-        <div
-          className="rounded-3xl p-4 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.85)]"
-          style={{ background: "linear-gradient(160deg, oklch(0.8 0.15 90 / 0.14), transparent)" }}
-        >
+        <div className="rounded-3xl bg-white/[0.03] p-4">
           <Coins className="h-5 w-5 text-brand-gold" />
           <p className="mt-2 text-2xl font-bold text-foreground">{pot}$</p>
           <p className="text-[0.68rem] text-muted-foreground">Pot commun du mois</p>
         </div>
       </section>
 
-      {/* PACTE DE DISCIPLINE */}
-      <section
-        className="rounded-3xl p-5 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.85)]"
-        style={{ background: "linear-gradient(160deg, oklch(0.25 0.03 255), oklch(0.16 0.02 255))" }}
-      >
-        <div className="flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-brand-gold" />
-          <h3 className="text-sm font-bold text-foreground">Le Pacte de Discipline</h3>
-        </div>
-        <p className="mt-2 text-[0.72rem] leading-relaxed text-muted-foreground">
-          Chaque duel reverse <span className="font-semibold text-brand-green">5% de l'enjeu</span> dans le pot
-          commun. En fin de mois, les membres au score de fiabilité le plus élevé se partagent la cagnotte.
-          Votre régularité paie.
-        </p>
-      </section>
-
       {/* CREATE */}
       <Button
-        onClick={() => { reset(); setOpen(true); }}
+        onClick={() => {
+          reset();
+          setOpen(true);
+        }}
         className="w-full rounded-2xl bg-brand-green py-6 text-background hover:bg-brand-green/90"
       >
         <Plus className="mr-1.5 h-4 w-4" /> Lancer un Duel de Productivité
       </Button>
-      <VoiceButton onIntent={onVoiceIntent} label="Micro IA — « Défie un ami sur un objectif »" />
 
-      {/* LIST */}
-      <section>
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-          <Swords className="h-4 w-4 text-brand-green" /> Mes duels ({activeCount} en cours)
-        </h3>
-        <div className="space-y-3">
-          {data.duels.length === 0 && (
-            <p className="rounded-2xl bg-white/[0.03] p-5 text-center text-xs text-muted-foreground">
-              Aucun duel. Défiez un ami sur un objectif commun.
+      {/* DÉFIER UN AMI — bouton "+" pour inviter/partager */}
+      <button
+        onClick={() => setShare(true)}
+        className="flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition-all active:scale-[0.98] hover:bg-white/[0.06]"
+      >
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-green/15 text-brand-green">
+          <Plus className="h-4 w-4" />
+        </span>
+        <span className="text-sm font-semibold text-foreground">Défier un ami sur un objectif</span>
+        <Share2 className="ml-auto h-4 w-4 text-muted-foreground" />
+      </button>
+
+      {/* TIROIRS DÉFIS */}
+      <section className="space-y-3">
+        <DrawerSection
+          icon={<Swords className="h-4 w-4" />}
+          title="Défis en cours"
+          count={activeDuels.length}
+          defaultOpen
+          iconClass="bg-brand-green/12 text-brand-green"
+        >
+          {activeDuels.length === 0 ? (
+            <p className="px-1 py-2 text-center text-[0.72rem] text-muted-foreground">
+              Aucun défi en cours. Défiez un ami sur un objectif commun.
             </p>
+          ) : (
+            <div className="space-y-2">
+              {activeDuels.map((d) => (
+                <DuelCard key={d.id} d={d} onOpen={() => setDetailId(d.id)} />
+              ))}
+            </div>
           )}
-          {data.duels.map((d) => {
-            const ms = remainingMs(d.startedAt, d.durationDays);
-            return (
-              <button
-                key={d.id}
-                onClick={() => setDetailId(d.id)}
-                className="w-full rounded-3xl p-4 text-left shadow-[0_18px_40px_-18px_rgba(0,0,0,0.85)] transition-transform active:scale-[0.98]"
-                style={{ background: "linear-gradient(160deg, oklch(0.22 0.02 255), oklch(0.15 0.015 255))" }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">{d.title}</p>
-                    <p className="mt-0.5 flex items-center gap-1 text-[0.7rem] text-muted-foreground">
-                      <Flame className="h-3 w-3 text-brand-gold" /> vs {d.opponent} · {d.stake}$ en jeu
-                    </p>
-                  </div>
-                  {d.status === "en_cours" ? (
-                    <span className="flex items-center gap-1 whitespace-nowrap rounded-full bg-brand-green/15 px-2 py-1 text-[0.6rem] font-semibold text-brand-green">
-                      <Clock className="h-3 w-3" /> {formatCountdown(ms)}
-                    </span>
-                  ) : (
-                    <span
-                      className={`whitespace-nowrap rounded-full px-2 py-1 text-[0.6rem] font-semibold ${
-                        d.status === "gagne" ? "bg-brand-green/15 text-brand-green" : "bg-brand-red/15 text-brand-red"
-                      }`}
-                    >
-                      {d.status === "gagne" ? "Gagné" : "Perdu"}
-                    </span>
-                  )}
-                </div>
+        </DrawerSection>
 
-                <div className="mt-3 space-y-2">
-                  <div>
-                    <div className="mb-1 flex justify-between text-[0.62rem] text-muted-foreground">
-                      <span>Vous</span>
-                      <span>{d.myProgress}%</span>
-                    </div>
-                    <ProgressBar value={d.myProgress} />
-                  </div>
-                  <div>
-                    <div className="mb-1 flex justify-between text-[0.62rem] text-muted-foreground">
-                      <span>{d.opponent}</span>
-                      <span>{d.oppProgress}%</span>
-                    </div>
-                    <ProgressBar value={d.oppProgress} tone="muted" />
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center justify-end gap-1 text-[0.65rem] font-medium text-brand-green">
-                  Voir le détail <ChevronRight className="h-3.5 w-3.5" />
-                </div>
-              </button>
-            );
-          })}
-        </div>
+        <DrawerSection
+          icon={<Trophy className="h-4 w-4" />}
+          title="Défis terminés"
+          count={finishedDuels.length}
+          iconClass="bg-brand-gold/12 text-brand-gold"
+        >
+          {finishedDuels.length === 0 ? (
+            <p className="px-1 py-2 text-center text-[0.72rem] text-muted-foreground">
+              Aucun défi terminé pour le moment.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {finishedDuels.map((d) => (
+                <DuelCard key={d.id} d={d} onOpen={() => setDetailId(d.id)} />
+              ))}
+            </div>
+          )}
+        </DrawerSection>
       </section>
 
       {/* CREATE DIALOG */}
@@ -265,9 +302,7 @@ export function DuelTab({ data, addDuel, updateDuel, removeDuel, onVoiceIntent }
                     key={p.label}
                     onClick={() => setDurDays(p.days)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                      durDays === p.days
-                        ? "bg-brand-green text-background"
-                        : "bg-white/[0.05] text-muted-foreground"
+                      durDays === p.days ? "bg-brand-green text-background" : "bg-white/[0.05] text-muted-foreground"
                     }`}
                   >
                     {p.label}
@@ -279,6 +314,47 @@ export function DuelTab({ data, addDuel, updateDuel, removeDuel, onVoiceIntent }
               Bloquer l'enjeu & lancer
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* SHARE / INVITE DIALOG */}
+      <Dialog open={share} onOpenChange={setShare}>
+        <DialogContent className="max-w-sm rounded-3xl border-white/10 bg-card/95 backdrop-blur-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-brand-green" /> Inviter un ami
+            </DialogTitle>
+            <DialogDescription>Partagez le défi. Votre ami rejoint FILAX et relève le pari.</DialogDescription>
+          </DialogHeader>
+          <div className="rounded-2xl bg-white/[0.03] p-3 text-[0.74rem] italic leading-relaxed text-muted-foreground">
+            « {INVITE_MESSAGE} »
+          </div>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            <button
+              onClick={() => shareVia("whatsapp")}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/[0.04] py-3 text-[0.7rem] font-semibold text-foreground active:scale-95"
+            >
+              <MessageCircle className="h-5 w-5 text-brand-green" /> WhatsApp
+            </button>
+            <button
+              onClick={() => shareVia("messenger")}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/[0.04] py-3 text-[0.7rem] font-semibold text-foreground active:scale-95"
+            >
+              <Send className="h-5 w-5 text-brand-blue" /> Messenger
+            </button>
+            <button
+              onClick={() => shareVia("sms")}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/[0.04] py-3 text-[0.7rem] font-semibold text-foreground active:scale-95"
+            >
+              <MessageCircle className="h-5 w-5 text-brand-gold" /> SMS
+            </button>
+          </div>
+          <Button
+            onClick={() => shareVia("native")}
+            className="mt-2 w-full rounded-xl bg-brand-green text-background hover:bg-brand-green/90"
+          >
+            <Share2 className="mr-1.5 h-4 w-4" /> Autre application…
+          </Button>
         </DialogContent>
       </Dialog>
 
@@ -297,11 +373,7 @@ export function DuelTab({ data, addDuel, updateDuel, removeDuel, onVoiceIntent }
               </DialogHeader>
 
               <div className="space-y-4 pt-2">
-                {/* TIMER */}
-                <div
-                  className="rounded-2xl p-4 text-center shadow-[0_18px_40px_-18px_rgba(0,0,0,0.85)]"
-                  style={{ background: "linear-gradient(160deg, oklch(0.72 0.22 140 / 0.12), transparent)" }}
-                >
+                <div className="rounded-2xl bg-white/[0.03] p-4 text-center">
                   <p className="text-[0.62rem] uppercase tracking-widest text-brand-green">
                     {detail.status === "en_cours" ? "Temps restant" : "Défi terminé"}
                   </p>
@@ -314,7 +386,6 @@ export function DuelTab({ data, addDuel, updateDuel, removeDuel, onVoiceIntent }
                   </p>
                 </div>
 
-                {/* PROGRESSIONS */}
                 <div className="space-y-3">
                   <div>
                     <div className="mb-1 flex justify-between text-xs text-foreground">
