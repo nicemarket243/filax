@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Lock, Swords, CalendarClock } from "lucide-react";
+import { LayoutDashboard, Lock, Swords, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 
 import { BackButton } from "@/components/back-button";
@@ -8,6 +8,7 @@ import {
   useDisciplineStore,
   remainingMs,
 } from "@/components/discipline/store";
+import { DashboardTab } from "@/components/discipline/dashboard-tab";
 import { BlocagesTab } from "@/components/discipline/blocages-tab";
 import { DuelTab } from "@/components/discipline/duel-tab";
 import { ProgrammesTab } from "@/components/discipline/programmes-tab";
