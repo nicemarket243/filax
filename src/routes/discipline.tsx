@@ -33,17 +33,18 @@ export const Route = createFileRoute("/discipline")({
   component: DisciplinePage,
 });
 
-type Tab = "blocages" | "duel" | "programmes";
+type Tab = "dashboard" | "blocages" | "duel" | "programmes";
 
 const TABS: { key: Tab; label: string; icon: typeof Lock; color: string }[] = [
+  { key: "dashboard", label: "Accueil", icon: LayoutDashboard, color: "text-brand-green" },
   { key: "blocages", label: "Blocages", icon: Lock, color: "text-brand-green" },
-  { key: "duel", label: "Duel", icon: Swords, color: "text-brand-green" },
+  { key: "duel", label: "Défis", icon: Swords, color: "text-brand-gold" },
   { key: "programmes", label: "Programmes", icon: CalendarClock, color: "text-brand-violet" },
 ];
 
 function DisciplinePage() {
   const store = useDisciplineStore();
-  const [tab, setTab] = useState<Tab>("blocages");
+  const [tab, setTab] = useState<Tab>("dashboard");
   const [pendingAi, setPendingAi] = useState<string>("");
 
   // Exécute une intention déposée par l'Orchestrateur Central (page d'accueil).
