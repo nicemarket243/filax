@@ -8,7 +8,8 @@ interface DrawerSectionProps {
   /** Small text on the right of the header (before the chevron). */
   meta?: string;
   defaultOpen?: boolean;
-  accent?: string; // tailwind color class for the icon container tint, e.g. "brand-green"
+  /** Full tailwind classes for the icon container, e.g. "bg-brand-green/12 text-brand-green". */
+  iconClass?: string;
   children: ReactNode;
 }
 
@@ -23,7 +24,7 @@ export function DrawerSection({
   count,
   meta,
   defaultOpen = false,
-  accent = "brand-green",
+  iconClass = "bg-brand-green/12 text-brand-green",
   children,
 }: DrawerSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
@@ -34,9 +35,7 @@ export function DrawerSection({
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.04] active:scale-[0.995]"
       >
-        <span
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-${accent}/12 text-${accent}`}
-        >
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconClass}`}>
           {icon}
         </span>
         <span className="min-w-0 flex-1">
@@ -56,3 +55,4 @@ export function DrawerSection({
     </div>
   );
 }
+
