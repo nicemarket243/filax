@@ -117,6 +117,9 @@ function DisciplinePage() {
       </div>
 
       <div className="mt-6 animate-fade-up">
+        {tab === "dashboard" && (
+          <DashboardTab data={store.data} onVoiceIntent={handleVoiceIntent} onNavigate={setTab} />
+        )}
         {tab === "blocages" && (
           <BlocagesTab
             data={store.data}
