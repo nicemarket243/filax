@@ -169,12 +169,31 @@ export function useDisciplineStore() {
   const removeBlock = useCallback(
     (id: string) =>
       setData((d) => {
-        const next = { ...d, blocks: d.blocks.filter((b) => b.id !== id) };
+        const target = d.blocks.find((b) => b.id === id);
+        const entry: BlockHistoryEntry[] = target
+          ? [
+              {
+                id: crypto.randomUUID(),
+                name: target.name,
+                kind: target.kind,
+                startedAt: target.startedAt,
+                endedAt: Date.now(),
+                durationDays: target.durationDays,
+                reason: remainingMs(target.startedAt, target.durationDays) <= 0 ? "completed" : "removed",
+              },
+            ]
+          : [];
+        const next = {
+          ...d,
+          blocks: d.blocks.filter((b) => b.id !== id),
+          history: [...entry, ...d.history],
+        };
         localStorage.setItem(KEY, JSON.stringify(next));
         return next;
       }),
     [],
   );
+
 
   const addDuel = useCallback(
     (b: Omit<Duel, "id" | "startedAt" | "myProgress" | "oppProgress" | "status">) =>
