@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Home, BarChart3, Settings } from "lucide-react";
 
 import { BackButton } from "@/components/back-button";
+import { useTabStack } from "@/hooks/use-tab-stack";
 import { useEconomieStore, type Account } from "@/components/economie/store";
 import { AccueilTab } from "@/components/economie/accueil-tab";
 import { AnalyseTab } from "@/components/economie/analyse-tab";

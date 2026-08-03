@@ -4,6 +4,7 @@ import { LayoutDashboard, Lock, Swords, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 
 import { BackButton } from "@/components/back-button";
+import { useTabStack } from "@/hooks/use-tab-stack";
 import {
   useDisciplineStore,
   remainingMs,

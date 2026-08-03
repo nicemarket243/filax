@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Home, ShieldPlus, AlertTriangle } from "lucide-react";
 
 import { BackButton } from "@/components/back-button";
+import { useTabStack } from "@/hooks/use-tab-stack";
 import { useAssuranceStore } from "@/components/assurance/store";
 import { AccueilTab } from "@/components/assurance/accueil-tab";
 import { AssurerTab } from "@/components/assurance/assurer-tab";
