@@ -44,7 +44,7 @@ const TABS: { key: Tab; label: string; icon: typeof Lock; color: string }[] = [
 
 function DisciplinePage() {
   const store = useDisciplineStore();
-  const [tab, setTab] = useState<Tab>("dashboard");
+  const { tab, setTab, goBackTab, canGoBackTab } = useTabStack<Tab>("dashboard");
   const [pendingAi, setPendingAi] = useState<string>("");
 
   // Exécute une intention déposée par l'Orchestrateur Central (page d'accueil).
@@ -104,7 +104,7 @@ function DisciplinePage() {
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <header className="flex items-center justify-between">
-        <BackButton fallbackTo="/" />
+        <BackButton fallbackTo="/" onBack={canGoBackTab ? goBackTab : undefined} />
       </header>
 
       <div className="mt-6 text-center">

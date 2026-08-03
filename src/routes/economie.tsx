@@ -44,7 +44,7 @@ const TABS: { key: Tab; label: string; icon: typeof Home; color: string }[] = [
 
 function EconomiePage() {
   const store = useEconomieStore();
-  const [tab, setTab] = useState<Tab>("accueil");
+  const { tab, setTab, goBackTab, canGoBackTab } = useTabStack<Tab>("accueil");
   const [activeIndex, setActiveIndex] = useState(0);
 
   const [depositOpen, setDepositOpen] = useState(false);
@@ -91,7 +91,7 @@ function EconomiePage() {
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <header className="flex items-center justify-between">
-        <BackButton fallbackTo="/" />
+        <BackButton fallbackTo="/" onBack={canGoBackTab ? goBackTab : undefined} />
       </header>
 
       <div className="mt-5 text-center">
