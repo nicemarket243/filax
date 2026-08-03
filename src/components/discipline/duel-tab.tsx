@@ -218,7 +218,6 @@ export function DuelTab({ data, addDuel, updateDuel, removeDuel }: DuelTabProps)
           icon={<Swords className="h-4 w-4" />}
           title="Défis en cours"
           count={activeDuels.length}
-          defaultOpen
           iconClass="bg-brand-green/12 text-brand-green"
         >
           {activeDuels.length === 0 ? (

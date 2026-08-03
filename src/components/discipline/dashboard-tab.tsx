@@ -104,7 +104,6 @@ export function DashboardTab({ data, onVoiceIntent, onNavigate }: DashboardTabPr
         icon={<Lock className="h-4 w-4" />}
         title="Derniers blocages"
         count={data.blocks.length}
-        defaultOpen
         iconClass="bg-brand-green/12 text-brand-green"
       >
         {data.blocks.length === 0 ? (

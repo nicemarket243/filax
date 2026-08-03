@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Home, ShieldPlus, AlertTriangle } from "lucide-react";
 
 import { BackButton } from "@/components/back-button";
+import { useTabStack } from "@/hooks/use-tab-stack";
 import { useAssuranceStore } from "@/components/assurance/store";
 import { AccueilTab } from "@/components/assurance/accueil-tab";
 import { AssurerTab } from "@/components/assurance/assurer-tab";
@@ -37,7 +38,7 @@ const TABS: { key: Tab; label: string; icon: typeof Home }[] = [
 
 function AssurancePage() {
   const store = useAssuranceStore();
-  const [tab, setTab] = useState<Tab>("accueil");
+  const { tab, setTab, goBackTab, canGoBackTab } = useTabStack<Tab>("accueil");
 
   // Exécute une intention déposée par l'Orchestrateur Central (page d'accueil).
   useEffect(() => {
@@ -52,7 +53,7 @@ function AssurancePage() {
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <header className="flex items-center justify-between">
-        <BackButton fallbackTo="/" />
+        <BackButton fallbackTo="/" onBack={canGoBackTab ? goBackTab : undefined} />
         
       </header>
 
