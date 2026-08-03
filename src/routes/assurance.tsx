@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Home, ShieldPlus, AlertTriangle } from "lucide-react";
 
 import { BackButton } from "@/components/back-button";
