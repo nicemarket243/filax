@@ -2,13 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { QUOTES } from "./quotes-data";
 
 /**
- * Flux "Dynamic Inspiration" — ~1900 citations uniques (finance, banque,
- * motivation, économie, sagesse, business, entrepreneuriat, réussite).
- * Rotation haute fréquence toutes les 3 secondes, en boucle infinie,
- * avec un fondu très léger pour éviter l'effet saccadé.
+ * Flux "Dynamic Inspiration" — citations courtes (investissement, économie,
+ * richesse, discipline financière, épargne). Rotation toutes les 6 secondes.
  */
-const ROTATION_MS = 5000;
+const ROTATION_MS = 6000;
 const FADE_MS = 250;
+
 
 export function QuoteRotator({ className }: { className?: string }) {
   // Start deterministically at 0 so SSR and the client render the same markup.
