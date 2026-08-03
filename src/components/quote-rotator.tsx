@@ -38,8 +38,9 @@ export function QuoteRotator({ className }: { className?: string }) {
         className="transition-opacity ease-out"
         style={{ opacity: visible ? 1 : 0, transitionDuration: `${FADE_MS}ms` }}
       >
-        <blockquote className="whitespace-nowrap text-[0.8rem] font-medium italic leading-relaxed text-foreground/90">
+        <blockquote className="mx-auto max-w-[22rem] text-balance text-[0.95rem] font-semibold italic leading-snug text-foreground/95">
           « {quote.text} »
+
         </blockquote>
         <figcaption className="mt-1.5 text-xs font-medium tracking-wide text-brand-green">
           — {quote.author}
