@@ -5,22 +5,29 @@ interface BackButtonProps {
   /** Optional explicit fallback route when there is no history to go back to. */
   fallbackTo?: string;
   label?: string;
+  /** Intercepte le retour (ex. revenir à l'onglet précédent du module). */
+  onBack?: () => void;
 }
 
 /**
  * Premium, slightly-curved back arrow used across every FILAX sub-page.
  * Glassmorphism pill, smooth press animation, instant response.
  */
-export function BackButton({ className, fallbackTo = "/", label }: BackButtonProps) {
+export function BackButton({ className, fallbackTo = "/", label, onBack }: BackButtonProps) {
   const router = useRouter();
 
   const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.history.back();
     } else {
       router.navigate({ to: fallbackTo });
     }
   };
+
 
   return (
     <button
