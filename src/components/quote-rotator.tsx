@@ -41,7 +41,7 @@ export function QuoteRotator({ className }: { className?: string }) {
         <blockquote className="mx-auto max-w-full whitespace-nowrap text-[0.7rem] font-medium italic leading-snug text-foreground/95 sm:text-[0.78rem]">
           « {quote.text} »
         </blockquote>
-        <figcaption className="mt-1.5 text-xs font-medium tracking-wide text-brand-green">
+        <figcaption className="mt-1 text-[0.62rem] font-medium tracking-wide text-brand-green">
           — {quote.author}
         </figcaption>
         {/* Fine ligne horizontale verte sous l'auteur */}
