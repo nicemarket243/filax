@@ -142,7 +142,6 @@ export function Modal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        showCloseButton={false}
         className="max-h-[88vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-3xl border-border bg-surface p-5"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
