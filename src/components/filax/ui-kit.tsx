@@ -144,20 +144,11 @@ export function Modal({
       <DialogContent
         className="max-h-[88vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-3xl border-border bg-surface p-5"
       >
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <DialogTitle className="text-base font-bold tracking-tight text-foreground">{title}</DialogTitle>
-            {subtitle && <p className="mt-0.5 text-[0.72rem] text-muted-foreground">{subtitle}</p>}
-          </div>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            aria-label="Fermer"
-            className="press flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
+        <div className="mb-4 pr-6">
+          <DialogTitle className="text-base font-bold tracking-tight text-foreground">{title}</DialogTitle>
+          {subtitle && <p className="mt-0.5 text-[0.72rem] text-muted-foreground">{subtitle}</p>}
         </div>
+
         {children}
       </DialogContent>
     </Dialog>
