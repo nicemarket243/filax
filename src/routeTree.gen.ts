@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AssuranceRouteImport } from './routes/assurance'
 import { Route as DisciplineRouteImport } from './routes/discipline'
 import { Route as EconomieRouteImport } from './routes/economie'
+import { Route as GroupesRouteImport } from './routes/groupes'
 import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as PremiumRouteImport } from './routes/premium'
 
@@ -36,6 +37,11 @@ const EconomieRoute = EconomieRouteImport.update({
   path: '/economie',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroupesRoute = GroupesRouteImport.update({
+  id: '/groupes',
+  path: '/groupes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InscriptionRoute = InscriptionRouteImport.update({
   id: '/inscription',
   path: '/inscription',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/assurance': typeof AssuranceRoute
   '/discipline': typeof DisciplineRoute
   '/economie': typeof EconomieRoute
+  '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/premium': typeof PremiumRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/assurance': typeof AssuranceRoute
   '/discipline': typeof DisciplineRoute
   '/economie': typeof EconomieRoute
+  '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/premium': typeof PremiumRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/assurance': typeof AssuranceRoute
   '/discipline': typeof DisciplineRoute
   '/economie': typeof EconomieRoute
+  '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/premium': typeof PremiumRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/assurance'
     | '/discipline'
     | '/economie'
+    | '/groupes'
     | '/inscription'
     | '/premium'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/assurance'
     | '/discipline'
     | '/economie'
+    | '/groupes'
     | '/inscription'
     | '/premium'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/assurance'
     | '/discipline'
     | '/economie'
+    | '/groupes'
     | '/inscription'
     | '/premium'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   AssuranceRoute: typeof AssuranceRoute
   DisciplineRoute: typeof DisciplineRoute
   EconomieRoute: typeof EconomieRoute
+  GroupesRoute: typeof GroupesRoute
   InscriptionRoute: typeof InscriptionRoute
   PremiumRoute: typeof PremiumRoute
 }
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EconomieRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/groupes': {
+      id: '/groupes'
+      path: '/groupes'
+      fullPath: '/groupes'
+      preLoaderRoute: typeof GroupesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inscription': {
       id: '/inscription'
       path: '/inscription'
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssuranceRoute: AssuranceRoute,
   DisciplineRoute: DisciplineRoute,
   EconomieRoute: EconomieRoute,
+  GroupesRoute: GroupesRoute,
   InscriptionRoute: InscriptionRoute,
   PremiumRoute: PremiumRoute,
 }
