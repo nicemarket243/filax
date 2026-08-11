@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Moon, Sun, X } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PARTNER_BANK, type AccentKey } from "@/lib/filax-store";
 
