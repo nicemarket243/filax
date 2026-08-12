@@ -142,7 +142,7 @@ export function Modal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[88vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-3xl border-border bg-surface p-5"
+        className="max-h-[88vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-3xl border-white/20 bg-surface/85 p-5 backdrop-blur-2xl"
       >
         <div className="mb-4 pr-6">
           <DialogTitle className="text-base font-bold tracking-tight text-foreground">{title}</DialogTitle>
