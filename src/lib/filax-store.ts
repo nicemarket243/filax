@@ -213,10 +213,24 @@ export function useFilax() {
     });
   }, []);
 
-  const pushTx = (d: FilaxData, tx: Omit<Transaction, "id" | "at" | "reference">): FilaxData => ({
-    ...d,
-    transactions: [{ ...tx, id: crypto.randomUUID(), at: Date.now(), reference: ref() }, ...d.transactions],
-  });
+  const pushTx = (d: FilaxData, tx: Omit<Transaction, "id" | "at" | "reference">): FilaxData => {
+    const at = Date.now();
+    return {
+      ...d,
+      transactions: [{ ...tx, id: crypto.randomUUID(), at, reference: ref() }, ...d.transactions],
+      notifications: [
+        {
+          id: crypto.randomUUID(),
+          title: NOTIF_TITLE[tx.type],
+          body: `${tx.label} · ${formatMoney(tx.amount, tx.currency)}`,
+          at,
+          read: false,
+          kind: tx.type,
+        },
+        ...d.notifications,
+      ],
+    };
+  };
 
   const deposit = useCallback(
     (accountId: string, amount: number, method: TxMethod) =>
