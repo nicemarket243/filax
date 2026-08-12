@@ -66,15 +66,33 @@ export interface Profile {
   photo?: string | null;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  body: string;
+  at: number;
+  read: boolean;
+  kind: "depot" | "retrait" | "envoi" | "reception" | "cotisation" | "systeme";
+}
+
 export interface FilaxData {
   profile: Profile;
   accounts: Account[];
   transactions: Transaction[];
   goals: Goal[];
   groups: Group[];
+  notifications: AppNotification[];
 }
 
 export const PARTNER_BANK = "EquityBanque Partenaire";
+
+export const NOTIF_TITLE: Record<TxType, string> = {
+  depot: "Dépôt effectué",
+  retrait: "Retrait effectué",
+  envoi: "Transfert envoyé",
+  reception: "Argent reçu",
+  cotisation: "Cotisation enregistrée",
+};
 
 export const MOBILE_MONEY: { id: TxMethod; label: string; color: AccentKey }[] = [
   { id: "orange", label: "Orange Money", color: "brand-gold" },
@@ -164,6 +182,11 @@ const SEED: FilaxData = {
       ],
     },
   ],
+  notifications: [
+    { id: "n1", title: "Dépôt reçu", body: "500 USD crédités depuis M-Pesa.", at: now - 2 * DAY, read: false, kind: "depot" },
+    { id: "n2", title: "Cotisation reçue", body: "Grace M. a cotisé 120 USD au groupe Mariage.", at: now - 3 * DAY, read: false, kind: "cotisation" },
+    { id: "n3", title: "Sécurité", body: "Nouvelle connexion détectée sur votre compte FILAX.", at: now - 6 * DAY, read: true, kind: "systeme" },
+  ],
 };
 
 function load(): FilaxData {
@@ -198,10 +221,24 @@ export function useFilax() {
     });
   }, []);
 
-  const pushTx = (d: FilaxData, tx: Omit<Transaction, "id" | "at" | "reference">): FilaxData => ({
-    ...d,
-    transactions: [{ ...tx, id: crypto.randomUUID(), at: Date.now(), reference: ref() }, ...d.transactions],
-  });
+  const pushTx = (d: FilaxData, tx: Omit<Transaction, "id" | "at" | "reference">): FilaxData => {
+    const at = Date.now();
+    return {
+      ...d,
+      transactions: [{ ...tx, id: crypto.randomUUID(), at, reference: ref() }, ...d.transactions],
+      notifications: [
+        {
+          id: crypto.randomUUID(),
+          title: NOTIF_TITLE[tx.type],
+          body: `${tx.label} · ${formatMoney(tx.amount, tx.currency)}`,
+          at,
+          read: false,
+          kind: tx.type,
+        },
+        ...d.notifications,
+      ],
+    };
+  };
 
   const deposit = useCallback(
     (accountId: string, amount: number, method: TxMethod) =>
@@ -358,9 +395,18 @@ export function useFilax() {
 
   const updateProfile = useCallback((p: Partial<Profile>) => save((d) => ({ ...d, profile: { ...d.profile, ...p } })), [save]);
 
+  const markNotificationsRead = useCallback(
+    () => save((d) => ({ ...d, notifications: d.notifications.map((n) => ({ ...n, read: true })) })),
+    [save],
+  );
+
+  const clearNotifications = useCallback(() => save((d) => ({ ...d, notifications: [] })), [save]);
+
   return {
     data,
     ready,
+    markNotificationsRead,
+    clearNotifications,
     deposit,
     withdraw,
     transfer,
