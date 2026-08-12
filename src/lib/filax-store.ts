@@ -395,9 +395,18 @@ export function useFilax() {
 
   const updateProfile = useCallback((p: Partial<Profile>) => save((d) => ({ ...d, profile: { ...d.profile, ...p } })), [save]);
 
+  const markNotificationsRead = useCallback(
+    () => save((d) => ({ ...d, notifications: d.notifications.map((n) => ({ ...n, read: true })) })),
+    [save],
+  );
+
+  const clearNotifications = useCallback(() => save((d) => ({ ...d, notifications: [] })), [save]);
+
   return {
     data,
     ready,
+    markNotificationsRead,
+    clearNotifications,
     deposit,
     withdraw,
     transfer,
