@@ -174,6 +174,11 @@ const SEED: FilaxData = {
       ],
     },
   ],
+  notifications: [
+    { id: "n1", title: "Dépôt reçu", body: "500 USD crédités depuis M-Pesa.", at: now - 2 * DAY, read: false, kind: "depot" },
+    { id: "n2", title: "Cotisation reçue", body: "Grace M. a cotisé 120 USD au groupe Mariage.", at: now - 3 * DAY, read: false, kind: "cotisation" },
+    { id: "n3", title: "Sécurité", body: "Nouvelle connexion détectée sur votre compte FILAX.", at: now - 6 * DAY, read: true, kind: "systeme" },
+  ],
 };
 
 function load(): FilaxData {
