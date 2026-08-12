@@ -86,6 +86,14 @@ export interface FilaxData {
 
 export const PARTNER_BANK = "EquityBanque Partenaire";
 
+export const NOTIF_TITLE: Record<TxType, string> = {
+  depot: "Dépôt effectué",
+  retrait: "Retrait effectué",
+  envoi: "Transfert envoyé",
+  reception: "Argent reçu",
+  cotisation: "Cotisation enregistrée",
+};
+
 export const MOBILE_MONEY: { id: TxMethod; label: string; color: AccentKey }[] = [
   { id: "orange", label: "Orange Money", color: "brand-gold" },
   { id: "airtel", label: "Airtel Money", color: "brand-red" },
