@@ -66,12 +66,22 @@ export interface Profile {
   photo?: string | null;
 }
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  body: string;
+  at: number;
+  read: boolean;
+  kind: "depot" | "retrait" | "envoi" | "reception" | "cotisation" | "systeme";
+}
+
 export interface FilaxData {
   profile: Profile;
   accounts: Account[];
   transactions: Transaction[];
   goals: Goal[];
   groups: Group[];
+  notifications: AppNotification[];
 }
 
 export const PARTNER_BANK = "EquityBanque Partenaire";
