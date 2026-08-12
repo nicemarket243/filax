@@ -34,7 +34,7 @@ function ProfilPage() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
-      <AppHeader profile={profile} />
+      <AppHeader />
 
       <section className="mt-5 flex flex-col items-center rounded-3xl border border-border bg-surface p-5 soft-shadow">
         <img src={profile.photo ?? ""} alt={profile.firstName} className="h-20 w-20 rounded-full object-cover ring-4 ring-brand-blue/20" />
