@@ -6,7 +6,7 @@ export function AppHeader({ unread = 0, onNotifications }: { unread?: number; on
   return (
     <header className="flex items-center justify-between">
       <Link to="/profil" aria-label="Centre de gestion du compte FILAX" className="press">
-        <FilaxLogo height={22} className="dark:brightness-100 brightness-0 dark:invert-0" />
+        <FilaxLogo height={22} />
       </Link>
       <button
         type="button"
