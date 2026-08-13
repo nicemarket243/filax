@@ -57,10 +57,10 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
         onKeyDown={(e) => {
           if (e.key === "Enter") onNext();
         }}
-        className="press relative w-full select-none overflow-hidden rounded-[1.75rem] p-5 text-white"
+        className="press card-sheen relative w-full select-none overflow-hidden rounded-[1.75rem] p-5 text-white"
         style={{
-          background: `linear-gradient(145deg, ${accent} 0%, color-mix(in oklab, ${accent} 55%, #05070f) 100%)`,
-          boxShadow: `0 26px 60px -28px color-mix(in oklab, ${accent} 70%, transparent), inset 0 1px 0 rgba(255,255,255,.35)`,
+          background: `linear-gradient(140deg, color-mix(in oklab, ${accent} 88%, #ffffff) 0%, ${accent} 42%, color-mix(in oklab, ${accent} 42%, #04060d) 100%)`,
+          boxShadow: `0 30px 66px -30px color-mix(in oklab, ${accent} 75%, transparent), inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(0,0,0,.25)`,
           aspectRatio: "1.62 / 1",
         }}
       >
@@ -78,6 +78,12 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/22 text-lg backdrop-blur-md">
               {account.icon}
             </span>
+            <span
+              className="h-7 w-9 rounded-[0.35rem]"
+              style={{
+                background: "linear-gradient(135deg, #f6e7b4 0%, #d9b866 45%, #f8efc9 70%, #c9a24a 100%)",
+              }}
+            />
           </div>
           <div className="text-right leading-tight">
             <p className="text-[0.8rem] font-bold tracking-tight">{account.name}</p>
