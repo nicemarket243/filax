@@ -81,7 +81,7 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
             <span
               className="h-7 w-9 rounded-[0.35rem]"
               style={{
-                background: "linear-gradient(135deg, #f6e7b4 0%, #d9b866 45%, #f8efc9 70%, #c9a martin 100%)",
+                background: "linear-gradient(135deg, #f6e7b4 0%, #d9b866 45%, #f8efc9 70%, #c9a24a 100%)",
               }}
             />
           </div>
