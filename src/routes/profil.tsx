@@ -49,9 +49,12 @@ function ProfilPage() {
         <p className="text-[1.3rem] font-extrabold text-foreground">{formatMoney(totalUsd, "USD")}</p>
       </section>
 
-      <section className="mt-5 rounded-3xl border border-border bg-surface p-4 soft-shadow">
+      <section className="mt-5 flex flex-col items-center rounded-3xl border border-border bg-surface p-4 soft-shadow">
         <p className="text-[0.7rem] font-semibold text-muted-foreground">Votre ID FILAX (pour recevoir de l'argent)</p>
-        <div className="mt-2 flex items-center justify-between gap-2">
+        <div className="mt-3">
+          <FilaxQR value={profile.filaxId} />
+        </div>
+        <div className="mt-3 flex w-full items-center justify-between gap-2">
           <span className="text-[1rem] font-extrabold tracking-tight text-brand-blue">{profile.filaxId}</span>
           <div className="flex gap-2">
             <button
@@ -76,6 +79,7 @@ function ProfilPage() {
           </div>
         </div>
       </section>
+
 
       <section className="mt-6">
         <SectionTitle title="Informations personnelles" />
