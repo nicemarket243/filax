@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { BankBadge, Field, PrimaryButton, SectionTitle, TextInput, ThemeToggle } from "@/components/filax/ui-kit";
 import { InviteModal } from "@/components/filax/action-modals";
+import { FilaxQR } from "@/components/filax/qr";
 import { formatMoney, useFilax } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/profil")({
