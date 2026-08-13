@@ -314,7 +314,12 @@ function HomePage() {
       />
       <NewAccountModal open={modal === "account"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createAccount} />
       <NewGroupModal open={modal === "group"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createGroup} />
-      <NewGoalModal open={modal === "goal"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createGoal} />
+      <NewGoalModal
+        open={modal === "goal"}
+        onOpenChange={(o) => !o && setModal(null)}
+        onConfirm={(g) => filax.createGoal({ ...g, accountId: active.id, currency: active.currency })}
+      />
+
       <FundGoalModal
         open={modal === "fund"}
         onOpenChange={(o) => !o && setModal(null)}
