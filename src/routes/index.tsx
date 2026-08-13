@@ -80,6 +80,7 @@ function HomePage() {
   const active = accounts[activeIndex] ?? accounts[0]!;
   const unread = notifications.filter((n) => !n.read).length;
   const accountTx = transactions.filter((t) => t.accountId === active.id);
+  const accountGoals = goals.filter((g) => g.accountId === active.id);
 
   const openAction = (key: string) => {
     if (key === "withdraw" && isLocked(active)) {
@@ -104,7 +105,7 @@ function HomePage() {
       />
 
       <div className="mt-5">
-        <h1 className="text-[1.35rem] font-extrabold tracking-tight text-foreground">Prenez le contrôle de votre vie</h1>
+        <h1 className="text-metal text-[1.35rem] font-extrabold tracking-tight">Prenez le contrôle de vos finances</h1>
         <p className="mt-1 text-[0.72rem] text-muted-foreground">Vos fonds sont sécurisés par notre banque partenaire.</p>
       </div>
 
@@ -153,12 +154,12 @@ function HomePage() {
       <div className="mt-6 space-y-3">
         <Coffre
           title="Objectifs d'épargne"
-          subtitle="Vos projets financiers"
+          subtitle={active.name}
           icon={<Target className="h-4 w-4" />}
-          badge={`${goals.length}`}
+          badge={`${accountGoals.length}`}
         >
           <div className="space-y-2.5">
-            {goals.map((g) => (
+            {accountGoals.map((g) => (
               <button
                 key={g.id}
                 type="button"
@@ -185,6 +186,11 @@ function HomePage() {
                 </p>
               </button>
             ))}
+            {accountGoals.length === 0 && (
+              <p className="rounded-2xl bg-muted/50 px-3 py-4 text-center text-[0.7rem] text-muted-foreground">
+                Aucun objectif sur ce compte pour l'instant.
+              </p>
+            )}
             <button
               type="button"
               onClick={() => setModal("goal")}
