@@ -57,7 +57,7 @@ export function SplashScreen() {
 
       {/* Logo FILAX haute définition, net et centré */}
       <div className="relative flex flex-col items-center">
-        <FilaxLogo height={56} className="animate-fade-up drop-shadow-[0_0_30px_oklch(0.72_0.22_140/0.35)]" />
+        <FilaxLogo height={56} className="text-white animate-fade-up drop-shadow-[0_0_30px_oklch(0.72_0.22_140/0.35)]" />
 
         {/* Barre de progression verte fluide juste sous le logo */}
         <div className="mt-10 h-1 w-44 overflow-hidden rounded-full bg-white/[0.08]">

@@ -25,7 +25,7 @@ export function FilaxLogo({ className, height = 44 }: FilaxLogoProps) {
         aria-hidden
         style={{
           height: height * 0.78,
-          width: height * 0.78 * (1095 / 552),
+          width: height * 0.78 * (1147 / 552),
           backgroundColor: "currentColor",
           WebkitMaskImage: `url(${word.url})`,
           maskImage: `url(${word.url})`,
