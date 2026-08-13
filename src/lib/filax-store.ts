@@ -32,6 +32,8 @@ export interface Transaction {
 
 export interface Goal {
   id: string;
+  /** Compte auquel l'objectif est rattaché. */
+  accountId: string;
   name: string;
   target: number;
   saved: number;
@@ -45,6 +47,9 @@ export interface GroupMember {
   name: string;
   amount: number;
   avatar: string;
+  /** Date de la dernière cotisation (tri du plus récent au plus ancien). */
+  lastAt?: number;
+  filaxId?: string;
 }
 
 export interface Group {
@@ -113,7 +118,7 @@ export const ACCOUNT_ICONS = ["💼", "💍", "👨‍👩‍👧", "🏢", "�
 export const GROUP_ICONS = ["💍", "🕊️", "✈️", "🏝️", "🎉", "🚀", "👨‍👩‍👧", "⛪", "🤝"];
 export const ACCENTS: AccentKey[] = ["brand-blue", "brand-green", "brand-gold", "brand-violet", "brand-red", "brand-teal"];
 
-const KEY = "filax-v2";
+const KEY = "filax-v3";
 const DAY = 86_400_000;
 const now = Date.now();
 
@@ -149,9 +154,9 @@ const SEED: FilaxData = {
     { id: "t5", accountId: "acc-famille", type: "reception", amount: 300, currency: "USD", method: "filax", label: "Reçu de Patrick L.", at: now - 15 * DAY, reference: ref() },
   ],
   goals: [
-    { id: "g1", name: "Acheter une moto", target: 1500, saved: 640, deadline: now + 120 * DAY, icon: "🏍️", currency: "USD" },
-    { id: "g2", name: "Loyer 2027", target: 2400, saved: 900, deadline: now + 200 * DAY, icon: "🏠", currency: "USD" },
-    { id: "g3", name: "Études", target: 2000, saved: 1750, deadline: now + 60 * DAY, icon: "🎓", currency: "USD" },
+    { id: "g1", accountId: "acc-usd", name: "Acheter une moto", target: 1500, saved: 640, deadline: now + 120 * DAY, icon: "🏍️", currency: "USD" },
+    { id: "g2", accountId: "acc-usd", name: "Loyer 2027", target: 2400, saved: 900, deadline: now + 200 * DAY, icon: "🏠", currency: "USD" },
+    { id: "g3", accountId: "acc-mariage", name: "Études", target: 2000, saved: 1750, deadline: now + 60 * DAY, icon: "🎓", currency: "USD" },
   ],
   groups: [
     {
@@ -162,10 +167,10 @@ const SEED: FilaxData = {
       target: 1000,
       currency: "USD",
       members: [
-        { id: "m1", name: "Vous", amount: 150, avatar: memberAvatar("filax-owner") },
-        { id: "m2", name: "Grace Mukendi", amount: 120, avatar: memberAvatar("Grace") },
-        { id: "m3", name: "Patrick Lukusa", amount: 90, avatar: memberAvatar("Patrick") },
-        { id: "m4", name: "Sarah Kabeya", amount: 90, avatar: memberAvatar("Sarah") },
+        { id: "m1", name: "Vous", amount: 150, avatar: memberAvatar("filax-owner"), filaxId: "FLX-8241-KB", lastAt: now - 3 * DAY },
+        { id: "m2", name: "Grace Mukendi", amount: 120, avatar: memberAvatar("Grace"), filaxId: "FLX-1093-GM", lastAt: now - 1 * DAY },
+        { id: "m3", name: "Patrick Lukusa", amount: 90, avatar: memberAvatar("Patrick"), filaxId: "FLX-4417-PL", lastAt: now - 6 * DAY },
+        { id: "m4", name: "Sarah Kabeya", amount: 90, avatar: memberAvatar("Sarah"), filaxId: "FLX-7752-SK", lastAt: now - 9 * DAY },
       ],
     },
     {
@@ -176,9 +181,9 @@ const SEED: FilaxData = {
       target: 800,
       currency: "USD",
       members: [
-        { id: "m1", name: "Vous", amount: 100, avatar: memberAvatar("filax-owner") },
-        { id: "m5", name: "David Tshimanga", amount: 80, avatar: memberAvatar("David") },
-        { id: "m6", name: "Esther Mwamba", amount: 60, avatar: memberAvatar("Esther") },
+        { id: "m1", name: "Vous", amount: 100, avatar: memberAvatar("filax-owner"), filaxId: "FLX-8241-KB", lastAt: now - 5 * DAY },
+        { id: "m5", name: "David Tshimanga", amount: 80, avatar: memberAvatar("David"), filaxId: "FLX-2288-DT", lastAt: now - 2 * DAY },
+        { id: "m6", name: "Esther Mwamba", amount: 60, avatar: memberAvatar("Esther"), filaxId: "FLX-6631-EM", lastAt: now - 12 * DAY },
       ],
     },
   ],
@@ -336,7 +341,7 @@ export function useFilax() {
           accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, a.balance - amount) } : a)),
           groups: d.groups.map((g) =>
             g.id === groupId
-              ? { ...g, members: g.members.map((m) => (m.name === "Vous" ? { ...m, amount: m.amount + amount } : m)) }
+              ? { ...g, members: g.members.map((m) => (m.name === "Vous" ? { ...m, amount: m.amount + amount, lastAt: Date.now() } : m)) }
               : g,
           ),
         };
@@ -358,7 +363,7 @@ export function useFilax() {
         ...d,
         groups: d.groups.map((g) =>
           g.id === groupId
-            ? { ...g, members: [...g.members, { id: crypto.randomUUID(), name, amount: 0, avatar: memberAvatar(name) }] }
+            ? { ...g, members: [...g.members, { id: crypto.randomUUID(), name, amount: 0, avatar: memberAvatar(name), filaxId: ref().replace("FLX-", "FLX-") }] }
             : g,
         ),
       })),
@@ -431,6 +436,11 @@ export function formatDate(ts: number) {
 
 export function isLocked(a: Account) {
   return !!a.lockedUntil && a.lockedUntil > Date.now();
+}
+
+/** Membres triés : dernière cotisation en premier. */
+export function sortedMembers(g: Group) {
+  return [...g.members].sort((a, b) => (b.lastAt ?? 0) - (a.lastAt ?? 0));
 }
 
 export function groupTotal(g: Group) {
