@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, Search, Share2 } from "lucide-react";
+import { Check, Copy, QrCode, Search, Share2 } from "lucide-react";
+
 import {
   ACCENTS,
   ACCOUNT_ICONS,
@@ -16,6 +17,8 @@ import {
   type TxMethod,
 } from "@/lib/filax-store";
 import { Field, Modal, PrimaryButton, TextInput, accentVar } from "@/components/filax/ui-kit";
+import { QrScanModal, ReceiveQrModal } from "@/components/filax/qr-scanner";
+
 
 function AccountSelect({
   accounts,
@@ -94,13 +97,26 @@ export function DepositModal({
   const [accountId, setAccountId] = useState(defaultAccountId);
   const [method, setMethod] = useState<TxMethod>("mpesa");
   const [amount, setAmount, value] = useAmount(open);
-  useEffect(() => setAccountId(defaultAccountId), [defaultAccountId, open]);
+  const [scan, setScan] = useState(false);
+  const [scanned, setScanned] = useState<string | null>(null);
+  useEffect(() => {
+    setAccountId(defaultAccountId);
+    if (!open) setScanned(null);
+  }, [defaultAccountId, open]);
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange} title="Déposer de l'argent" subtitle="Mobile Money → banque partenaire">
+    <Modal open={open} onOpenChange={onOpenChange} title="Déposer de l'argent" subtitle="Mobile Money, banque partenaire ou QR code">
       <div className="space-y-4">
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} />
         <MethodPicker value={method} onChange={setMethod} />
+        <button
+          type="button"
+          onClick={() => setScan(true)}
+          className="press flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-[0.72rem] font-semibold text-brand-blue"
+        >
+          <QrCode className="h-4 w-4" /> Scanner un QR code
+        </button>
+        {scanned && <p className="text-[0.68rem] text-muted-foreground">Source scannée : {scanned}</p>}
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
@@ -116,9 +132,18 @@ export function DepositModal({
           Confirmer le dépôt
         </PrimaryButton>
       </div>
+      <QrScanModal
+        open={scan}
+        onOpenChange={setScan}
+        onResult={(v) => {
+          setScanned(v);
+          toast.success("QR code lu", { description: v });
+        }}
+      />
     </Modal>
   );
 }
+
 
 /* ---------------- Retrait ---------------- */
 

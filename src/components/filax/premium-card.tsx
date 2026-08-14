@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Lock, Plus, ShieldCheck, Wallet } from "lucide-react";
+import { Lock, Plus, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
+import { FilaxLogo } from "@/components/filax-logo";
 import { accentVar } from "@/components/filax/ui-kit";
 import { formatMoney, isLocked, pct, type Account } from "@/lib/filax-store";
 
@@ -14,25 +15,19 @@ interface Props {
   onCreate: () => void;
 }
 
-/** Carte bancaire premium — une seule à la fois. Double-clic = compte suivant, appui long = tous les comptes. */
+/** Carte bancaire premium FILAX — une seule carte à la fois. */
 export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate }: Props) {
   const [mounted, setMounted] = useState(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressed = useRef(false);
 
   useEffect(() => setMounted(true), []);
 
   const locked = mounted && isLocked(account);
   const progress = account.target ? pct(account.balance, account.target) : null;
   const accent = accentVar(account.color);
-  const number = `N°${String(index + 1).padStart(3, "0")}`;
 
   const startPress = () => {
-    longPressed.current = false;
-    pressTimer.current = setTimeout(() => {
-      longPressed.current = true;
-      onShowAll();
-    }, 550);
+    pressTimer.current = setTimeout(onShowAll, 550);
   };
   const endPress = () => {
     if (pressTimer.current) clearTimeout(pressTimer.current);
@@ -43,7 +38,7 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
       <article
         role="button"
         tabIndex={0}
-        aria-label={`${account.name}, double-cliquez pour le compte suivant`}
+        aria-label={`${account.name} — carte du compte`}
         onDoubleClick={() => {
           if (total > 1) onNext();
         }}
@@ -55,91 +50,96 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
           onShowAll();
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") onNext();
+          if (e.key === "Enter" && total > 1) onNext();
         }}
-        className="press card-sheen relative w-full select-none overflow-hidden rounded-[1.75rem] p-5 text-white"
+        className="press card-sheen relative flex w-full select-none flex-col justify-between overflow-hidden rounded-[1.6rem] p-5 text-white"
         style={{
-          background: `linear-gradient(140deg, color-mix(in oklab, ${accent} 88%, #ffffff) 0%, ${accent} 42%, color-mix(in oklab, ${accent} 42%, #04060d) 100%)`,
-          boxShadow: `0 30px 66px -30px color-mix(in oklab, ${accent} 75%, transparent), inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(0,0,0,.25)`,
-          aspectRatio: "1.62 / 1",
+          background: `linear-gradient(135deg, color-mix(in oklab, ${accent} 72%, #ffffff) 0%, ${accent} 38%, color-mix(in oklab, ${accent} 55%, #05070f) 72%, color-mix(in oklab, ${accent} 28%, #04060d) 100%)`,
+          boxShadow: `0 26px 60px -28px color-mix(in oklab, ${accent} 80%, transparent), inset 0 1px 0 rgba(255,255,255,.42), inset 0 -1px 0 rgba(0,0,0,.28)`,
+          aspectRatio: "1.6 / 1",
         }}
       >
+        {/* reflets premium */}
         <div
-          className="pointer-events-none absolute -right-14 -top-20 h-56 w-56 rounded-full opacity-30"
+          className="pointer-events-none absolute -right-16 -top-24 h-60 w-60 rounded-full opacity-25"
           style={{ background: "radial-gradient(circle, #fff 0%, transparent 68%)" }}
         />
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 opacity-20"
-          style={{ background: "linear-gradient(180deg, transparent, #fff)" }}
+          className="pointer-events-none absolute inset-0 opacity-[0.14]"
+          style={{ background: "linear-gradient(115deg, transparent 38%, #fff 48%, transparent 58%)" }}
         />
 
+        {/* Ligne du haut : identité du compte à gauche, logo FILAX à droite */}
         <div className="relative flex items-start justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/22 text-lg backdrop-blur-md">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/22 text-lg backdrop-blur-md">
               {account.icon}
             </span>
-            <span
-              className="h-7 w-9 rounded-[0.35rem]"
-              style={{
-                background: "linear-gradient(135deg, #f6e7b4 0%, #d9b866 45%, #f8efc9 70%, #c9a24a 100%)",
-              }}
-            />
+            <span className="leading-tight">
+              <span className="block text-[0.82rem] font-bold tracking-tight">{account.name}</span>
+              <span className="block text-[0.62rem] font-semibold tracking-[0.16em] text-white/70">{account.currency}</span>
+            </span>
           </div>
-          <div className="text-right leading-tight">
-            <p className="text-[0.8rem] font-bold tracking-tight">{account.name}</p>
-            <p className="text-[0.62rem] font-medium text-white/65">{number}</p>
-          </div>
+          <FilaxLogo height={14} className="text-white opacity-90" />
         </div>
 
-        <div className="relative mt-6">
-          <p className="text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-white/60">Solde disponible</p>
-          <p className="mt-1 text-[2.1rem] font-extrabold leading-none tracking-tight">
+        {/* Solde */}
+        <div className="relative">
+          <p className="text-[2rem] font-extrabold leading-none tracking-tight">
             {formatMoney(account.balance, account.currency)}
           </p>
+          <p className="mt-1 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/60">Solde disponible</p>
+
+          {progress !== null && (
+            <div className="mt-2.5">
+              <div className="h-1 w-full overflow-hidden rounded-full bg-white/25">
+                <div className="h-full rounded-full bg-white" style={{ width: `${progress}%` }} />
+              </div>
+              <p className="mt-1 text-[0.58rem] text-white/70">
+                {progress}% de {formatMoney(account.target ?? 0, account.currency)}
+              </p>
+            </div>
+          )}
         </div>
 
-        {progress !== null && (
-          <div className="relative mt-3">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/25">
-              <div className="h-full rounded-full bg-white" style={{ width: `${progress}%` }} />
-            </div>
-            <p className="mt-1 text-[0.6rem] text-white/75">
-              {progress}% de {formatMoney(account.target ?? 0, account.currency)}
-            </p>
-          </div>
-        )}
-
-        <div className="relative mt-4 flex items-center justify-between">
+        {/* Statut + bouton créer un compte */}
+        <div className="relative flex items-center justify-between">
           <span
-            className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6rem] font-bold backdrop-blur-md ${
-              locked ? "bg-black/30 text-white/85" : "bg-white/22"
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.6rem] font-bold backdrop-blur-md ${
+              locked ? "bg-black/30 text-white/80" : "bg-white/20 text-white"
             }`}
           >
             {locked ? <Lock className="h-3 w-3" /> : <ShieldCheck className="h-3 w-3" />}
-            {locked ? "Compte Verrouillé" : "Compte Actif"}
+            {locked ? "Compte verrouillé" : "Compte actif"}
           </span>
-          <span className="text-[0.58rem] font-medium text-white/60">
-            {index + 1}/{total} · double-clic
-          </span>
+          <button
+            type="button"
+            aria-label="Créer un nouveau compte"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCreate();
+            }}
+            className="press flex h-8 items-center gap-1 rounded-full bg-white/20 px-3 text-[0.6rem] font-bold text-white backdrop-blur-md"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
         </div>
       </article>
 
-      <button
-        type="button"
-        aria-label="Créer un compte"
-        onClick={onCreate}
-        className="press absolute -bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full bg-surface text-brand-blue soft-shadow"
-      >
-        <Plus className="h-5 w-5" />
-      </button>
-
-      <button
-        type="button"
-        onClick={onShowAll}
-        className="press mt-6 flex w-full items-center justify-center gap-1.5 text-[0.7rem] font-semibold text-brand-blue"
-      >
-        <Wallet className="h-3.5 w-3.5" /> Voir tous les comptes
-      </button>
+      {total > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-1.5">
+          {Array.from({ length: total }).map((_, i) => (
+            <span
+              key={i}
+              className="h-1.5 rounded-full transition-all"
+              style={{
+                width: i === index ? 18 : 6,
+                backgroundColor: i === index ? "var(--brand-blue)" : "var(--muted)",
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
