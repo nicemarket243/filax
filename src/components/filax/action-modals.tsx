@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, Search, Share2 } from "lucide-react";
+import { Check, Copy, QrCode, Search, Share2 } from "lucide-react";
+
 import {
   ACCENTS,
   ACCOUNT_ICONS,
