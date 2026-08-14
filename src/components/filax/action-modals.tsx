@@ -17,6 +17,8 @@ import {
   type TxMethod,
 } from "@/lib/filax-store";
 import { Field, Modal, PrimaryButton, TextInput, accentVar } from "@/components/filax/ui-kit";
+import { QrScanModal, ReceiveQrModal } from "@/components/filax/qr-scanner";
+
 
 function AccountSelect({
   accounts,
