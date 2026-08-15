@@ -3,6 +3,8 @@ import { Lock, Plus, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { FilaxLogo } from "@/components/filax-logo";
+import { Glyph } from "@/components/filax/glyph";
+
 import { accentVar } from "@/components/filax/ui-kit";
 import { formatMoney, isLocked, pct, type Account } from "@/lib/filax-store";
 

@@ -31,10 +31,8 @@ function GroupesPage() {
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <AppHeader />
 
-      <div className="mt-5">
-        <h1 className="text-[1.35rem] font-extrabold tracking-tight text-foreground">Groupes de cotisation</h1>
-        <p className="mt-1 text-[0.75rem] text-muted-foreground">Épargnez ensemble, suivez chaque contribution.</p>
-      </div>
+      <PageTitle title="Groupes de cotisation" subtitle="Épargnez ensemble, suivez chaque contribution." />
+
 
       <div className="mt-5">
         <SectionTitle
