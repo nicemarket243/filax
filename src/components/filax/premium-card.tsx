@@ -54,34 +54,35 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
         }}
         className="press card-sheen relative flex w-full select-none flex-col justify-between overflow-hidden rounded-[1.6rem] p-5 text-white"
         style={{
-          background: `linear-gradient(135deg, color-mix(in oklab, ${accent} 72%, #ffffff) 0%, ${accent} 38%, color-mix(in oklab, ${accent} 55%, #05070f) 72%, color-mix(in oklab, ${accent} 28%, #04060d) 100%)`,
-          boxShadow: `0 26px 60px -28px color-mix(in oklab, ${accent} 80%, transparent), inset 0 1px 0 rgba(255,255,255,.42), inset 0 -1px 0 rgba(0,0,0,.28)`,
+          background: `linear-gradient(140deg, color-mix(in oklab, ${accent} 62%, #05070f) 0%, color-mix(in oklab, ${accent} 48%, #05070f) 42%, color-mix(in oklab, ${accent} 26%, #04060d) 78%, #05070f 100%)`,
+          boxShadow: `0 26px 60px -28px color-mix(in oklab, ${accent} 60%, #000), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.4)`,
           aspectRatio: "1.6 / 1",
         }}
       >
         {/* reflets premium */}
         <div
-          className="pointer-events-none absolute -right-16 -top-24 h-60 w-60 rounded-full opacity-25"
+          className="pointer-events-none absolute -right-16 -top-24 h-60 w-60 rounded-full opacity-[0.14]"
           style={{ background: "radial-gradient(circle, #fff 0%, transparent 68%)" }}
         />
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.14]"
+          className="pointer-events-none absolute inset-0 opacity-[0.08]"
           style={{ background: "linear-gradient(115deg, transparent 38%, #fff 48%, transparent 58%)" }}
         />
 
         {/* Ligne du haut : identité du compte à gauche, logo FILAX à droite */}
         <div className="relative flex items-start justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/22 text-lg backdrop-blur-md">
-              {account.icon}
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md">
+              <Glyph icon={account.icon} className="h-[1.15rem] w-[1.15rem]" />
             </span>
             <span className="leading-tight">
               <span className="block text-[0.82rem] font-bold tracking-tight">{account.name}</span>
               <span className="block text-[0.62rem] font-semibold tracking-[0.16em] text-white/70">{account.currency}</span>
             </span>
           </div>
-          <FilaxLogo height={14} className="text-white opacity-90" />
+          <FilaxLogo height={20} className="text-white opacity-90" />
         </div>
+
 
         {/* Solde */}
         <div className="relative">
