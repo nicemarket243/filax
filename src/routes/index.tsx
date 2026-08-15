@@ -104,10 +104,11 @@ function HomePage() {
         }}
       />
 
-      <div className="mt-5">
-        <h1 className="text-metal text-[1.35rem] font-extrabold tracking-tight">Prenez le contrôle de vos finances</h1>
-        <p className="mt-1 text-[0.72rem] text-muted-foreground">Vos fonds sont sécurisés par notre banque partenaire.</p>
-      </div>
+      <PageTitle
+        title="Prenez le contrôle de vos finances"
+        subtitle="Vos fonds sont sécurisés par notre banque partenaire."
+      />
+
 
       <div className="mt-5">
         <PremiumCard

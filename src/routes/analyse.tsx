@@ -39,10 +39,8 @@ function AnalysePage() {
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <AppHeader />
 
-      <div className="mt-5">
-        <h1 className="text-[1.35rem] font-extrabold tracking-tight text-foreground">Analyse</h1>
-        <p className="mt-1 text-[0.75rem] text-muted-foreground">Comprendre où va votre argent.</p>
-      </div>
+      <PageTitle title="Analyse" subtitle="Comprendre où va votre argent." />
+
 
       <div className="mt-5 rounded-3xl p-5 text-white soft-shadow" style={{ background: "var(--gradient-blue)" }}>
         <p className="text-[0.7rem] text-white/80">Patrimoine total (USD)</p>

@@ -53,6 +53,17 @@ export function ThemeToggle({ className }: { className?: string }) {
 
 /* ---------------- Building blocks ---------------- */
 
+/** Titre d'en-tête commun à toutes les pages : centré, dégradé métal. */
+export function PageTitle({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="mt-5 text-center">
+      <h1 className="text-metal text-[1.35rem] font-extrabold leading-tight tracking-tight">{title}</h1>
+      {subtitle && <p className="mt-1 text-[0.72rem] text-muted-foreground">{subtitle}</p>}
+    </div>
+  );
+}
+
+
 export function SectionTitle({ title, action }: { title: string; action?: ReactNode }) {
   return (
     <div className="mb-3 flex items-end justify-between">
