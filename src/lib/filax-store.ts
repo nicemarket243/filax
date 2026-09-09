@@ -16,7 +16,7 @@ export interface Account {
 }
 
 export type TxType = "depot" | "retrait" | "envoi" | "reception" | "cotisation";
-export type TxMethod = "orange" | "airtel" | "mpesa" | "banque" | "filax";
+export type TxMethod = "orange" | "airtel" | "mpesa" | "banque" | "carte" | "filax";
 
 export interface Transaction {
   id: string;
@@ -104,6 +104,7 @@ export const MOBILE_MONEY: { id: TxMethod; label: string; color: AccentKey }[] =
   { id: "airtel", label: "Airtel Money", color: "brand-red" },
   { id: "mpesa", label: "M-Pesa", color: "brand-green" },
   { id: "banque", label: "Banque partenaire", color: "brand-blue" },
+  { id: "carte", label: "Carte Visa / Mastercard", color: "brand-violet" },
 ];
 
 export const METHOD_LABEL: Record<TxMethod, string> = {
@@ -111,8 +112,10 @@ export const METHOD_LABEL: Record<TxMethod, string> = {
   airtel: "Airtel Money",
   mpesa: "M-Pesa",
   banque: "Banque partenaire",
+  carte: "Carte Visa / Mastercard",
   filax: "FILAX",
 };
+
 
 export const ACCOUNT_ICONS = ["💼", "💍", "👨‍👩‍👧", "🏢", "🚀", "🏝️", "🚨", "🏠", "🎓", "✈️", "🏍️", "🛒"];
 export const GROUP_ICONS = ["💍", "🕊️", "✈️", "🏝️", "🎉", "🚀", "👨‍👩‍👧", "⛪", "🤝"];
