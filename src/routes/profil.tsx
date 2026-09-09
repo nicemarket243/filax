@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Copy, Share2, ShieldCheck } from "lucide-react";
+import { Copy, QrCode, Share2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
-import { BankBadge, Field, PrimaryButton, SectionTitle, TextInput, ThemeToggle } from "@/components/filax/ui-kit";
+import { BankBadge, Field, PageTitle, PrimaryButton, SectionTitle, TextInput, ThemeToggle } from "@/components/filax/ui-kit";
 import { InviteModal } from "@/components/filax/action-modals";
-import { FilaxQR } from "@/components/filax/qr";
+import { ReceiveQrModal } from "@/components/filax/qr-scanner";
 import { formatMoney, useFilax } from "@/lib/filax-store";
+
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -52,9 +53,14 @@ function ProfilPage() {
 
       <section className="mt-5 flex flex-col items-center rounded-3xl border border-border bg-surface p-4 soft-shadow">
         <p className="text-[0.7rem] font-semibold text-muted-foreground">Votre ID FILAX (pour recevoir de l'argent)</p>
-        <div className="mt-3">
-          <FilaxQR value={profile.filaxId} />
-        </div>
+        <button
+          type="button"
+          onClick={() => setQr(true)}
+          className="press mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-border py-2.5 text-[0.78rem] font-bold text-foreground"
+        >
+          <QrCode className="h-4 w-4 text-brand-blue" /> Mon QR Code
+        </button>
+
         <div className="mt-3 flex w-full items-center justify-between gap-2">
           <span className="text-[1rem] font-extrabold tracking-tight text-brand-blue">{profile.filaxId}</span>
           <div className="flex gap-2">
