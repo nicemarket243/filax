@@ -79,6 +79,73 @@ function useAmount(open: boolean) {
   return [amount, setAmount, Number(amount) || 0] as const;
 }
 
+/* ---------------- Carte bancaire (Visa / Mastercard) ---------------- */
+
+export interface CardDetails {
+  holder: string;
+  number: string;
+  expiry: string;
+  cvv: string;
+}
+
+function useCard(open: boolean) {
+  const [card, setCard] = useState<CardDetails>({ holder: "", number: "", expiry: "", cvv: "" });
+  useEffect(() => {
+    if (!open) setCard({ holder: "", number: "", expiry: "", cvv: "" });
+  }, [open]);
+  const valid =
+    card.holder.trim().length > 2 &&
+    card.number.replace(/\D/g, "").length >= 15 &&
+    card.expiry.length >= 4 &&
+    card.cvv.length >= 3;
+  return { card, setCard, valid };
+}
+
+function CardFields({ card, setCard }: { card: CardDetails; setCard: (c: CardDetails) => void }) {
+  const brand = /^5|^2[2-7]/.test(card.number.replace(/\D/g, "")) ? "Mastercard" : "Visa";
+  return (
+    <div className="space-y-3 rounded-2xl border border-border bg-muted/40 p-3">
+      <div className="flex items-center gap-2 text-[0.7rem] font-semibold text-muted-foreground">
+        <CreditCard className="h-4 w-4 text-brand-violet" /> {brand} · paiement sécurisé
+      </div>
+      <TextInput
+        placeholder="Nom du titulaire"
+        value={card.holder}
+        onChange={(e) => setCard({ ...card, holder: e.target.value })}
+      />
+      <TextInput
+        inputMode="numeric"
+        placeholder="0000 0000 0000 0000"
+        value={card.number}
+        onChange={(e) =>
+          setCard({
+            ...card,
+            number: e.target.value.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim(),
+          })
+        }
+      />
+      <div className="grid grid-cols-2 gap-2">
+        <TextInput
+          inputMode="numeric"
+          placeholder="MM/AA"
+          value={card.expiry}
+          onChange={(e) => {
+            const d = e.target.value.replace(/\D/g, "").slice(0, 4);
+            setCard({ ...card, expiry: d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d });
+          }}
+        />
+        <TextInput
+          inputMode="numeric"
+          type="password"
+          placeholder="CVV"
+          value={card.cvv}
+          onChange={(e) => setCard({ ...card, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) })}
+        />
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- Dépôt ---------------- */
 
 export function DepositModal({
@@ -98,32 +165,49 @@ export function DepositModal({
   const [method, setMethod] = useState<TxMethod>("mpesa");
   const [amount, setAmount, value] = useAmount(open);
   const [scan, setScan] = useState(false);
-  const [scanned, setScanned] = useState<string | null>(null);
+  const [beneficiary, setBeneficiary] = useState<string | null>(null);
+  const { card, setCard, valid: cardOk } = useCard(open);
+
   useEffect(() => {
     setAccountId(defaultAccountId);
-    if (!open) setScanned(null);
+    if (!open) setBeneficiary(null);
   }, [defaultAccountId, open]);
 
+  const byCard = method === "carte";
+  const ready = value > 0 && (!byCard || cardOk);
+
   return (
-    <Modal open={open} onOpenChange={onOpenChange} title="Déposer de l'argent" subtitle="Mobile Money, banque partenaire ou QR code">
+    <Modal open={open} onOpenChange={onOpenChange} title="Déposer de l'argent" subtitle="Mobile Money, banque, carte Visa/Mastercard ou QR code">
       <div className="space-y-4">
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} />
         <MethodPicker value={method} onChange={setMethod} />
+        {byCard && <CardFields card={card} setCard={setCard} />}
+
         <button
           type="button"
           onClick={() => setScan(true)}
           className="press flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-[0.72rem] font-semibold text-brand-blue"
         >
-          <QrCode className="h-4 w-4" /> Scanner un QR code
+          <QrCode className="h-4 w-4" /> Déposer sur le compte d'une autre personne (scanner son QR)
         </button>
-        {scanned && <p className="text-[0.68rem] text-muted-foreground">Source scannée : {scanned}</p>}
+        {beneficiary && (
+          <p className="rounded-xl bg-brand-green/10 px-3 py-2 text-[0.7rem] font-semibold text-brand-green">
+            Bénéficiaire : {beneficiary}
+          </p>
+        )}
+
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
         <PrimaryButton
           color="brand-green"
-          disabled={value <= 0}
+          disabled={!ready}
           onClick={() => {
+            if (beneficiary) {
+              onOpenChange(false);
+              toast.success("Dépôt envoyé", { description: `${value} déposés sur le compte de ${beneficiary}.` });
+              return;
+            }
             onConfirm(accountId, value, method);
             onOpenChange(false);
             toast.success("Dépôt effectué", { description: `${value} crédité sur votre compte.` });
@@ -136,8 +220,8 @@ export function DepositModal({
         open={scan}
         onOpenChange={setScan}
         onResult={(v) => {
-          setScanned(v);
-          toast.success("QR code lu", { description: v });
+          setBeneficiary(v);
+          toast.success("Bénéficiaire identifié", { description: v });
         }}
       />
     </Modal>
@@ -160,10 +244,13 @@ export function WithdrawModal({
   defaultAccountId: string;
   onConfirm: (accountId: string, amount: number, method: TxMethod) => void;
 }) {
+  const { data } = useFilax();
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(defaultAccountId);
   const [method, setMethod] = useState<TxMethod>("orange");
   const [amount, setAmount, value] = useAmount(open);
+  const [receive, setReceive] = useState(false);
+  const { card, setCard, valid: cardOk } = useCard(open);
   useEffect(() => {
     const ok = available.some((a) => a.id === defaultAccountId);
     setAccountId(ok ? defaultAccountId : (available[0]?.id ?? ""));
@@ -172,28 +259,45 @@ export function WithdrawModal({
 
   const account = accounts.find((a) => a.id === accountId);
   const tooMuch = !!account && value > account.balance;
+  const byCard = method === "carte";
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange} title="Retirer de l'argent" subtitle="Banque partenaire → Mobile Money">
+    <Modal open={open} onOpenChange={onOpenChange} title="Retirer de l'argent" subtitle="Mobile Money, banque partenaire, carte ou QR code">
       <div className="space-y-4">
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
         <MethodPicker value={method} onChange={setMethod} />
+        {byCard && <CardFields card={card} setCard={setCard} />}
+
+        <button
+          type="button"
+          onClick={() => setReceive(true)}
+          className="press flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-[0.72rem] font-semibold text-brand-blue"
+        >
+          <QrCode className="h-4 w-4" /> Recevoir via QR code
+        </button>
+
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
         {tooMuch && <p className="text-[0.7rem] font-semibold text-brand-red">Solde insuffisant.</p>}
         <PrimaryButton
           color="brand-red"
-          disabled={value <= 0 || tooMuch || !accountId}
+          disabled={value <= 0 || tooMuch || !accountId || (byCard && !cardOk)}
           onClick={() => {
             onConfirm(accountId, value, method);
             onOpenChange(false);
-            toast.success("Retrait envoyé", { description: "Vous recevrez l'argent sur votre Mobile Money." });
+            toast.success("Retrait envoyé", { description: `Destination : ${METHOD_LABEL[method]}.` });
           }}
         >
           Confirmer le retrait
         </PrimaryButton>
       </div>
+      <ReceiveQrModal
+        open={receive}
+        onOpenChange={setReceive}
+        filaxId={data.profile.filaxId}
+        name={`${data.profile.firstName} ${data.profile.lastName}`}
+      />
     </Modal>
   );
 }
@@ -205,6 +309,13 @@ const DIRECTORY = [
   { name: "Patrick Lukusa", id: "FLX-3391-PL", phone: "+243 819 771 004" },
   { name: "Sarah Kabeya", id: "FLX-7734-SK", phone: "+243 990 118 226" },
   { name: "David Tshimanga", id: "FLX-5580-DT", phone: "+243 822 445 909" },
+];
+
+const DESTINATIONS = [
+  { id: "RDC", label: "RD Congo", flag: "🇨🇩", currency: "USD", rail: "Mobile Money / banque locale" },
+  { id: "EU", label: "Europe", flag: "🇪🇺", currency: "EUR", rail: "Virement SEPA" },
+  { id: "US", label: "États-Unis", flag: "🇺🇸", currency: "USD", rail: "Virement ACH" },
+  { id: "CA", label: "Canada", flag: "🇨🇦", currency: "CAD", rail: "Interac / virement" },
 ];
 
 export function TransferModal({
@@ -221,15 +332,26 @@ export function TransferModal({
   onConfirm: (accountId: string, amount: number, recipient: string) => void;
 }) {
   const [accountId, setAccountId] = useState(defaultAccountId);
+  const [mode, setMode] = useState<"filax" | "bank">("filax");
   const [query, setQuery] = useState("");
   const [recipient, setRecipient] = useState<(typeof DIRECTORY)[number] | null>(null);
+  const [scan, setScan] = useState(false);
   const [amount, setAmount, value] = useAmount(open);
+
+  // Transfert vers une autre banque / carte
+  const [destination, setDestination] = useState(DESTINATIONS[1]!);
+  const [beneficiary, setBeneficiary] = useState("");
+  const [bankName, setBankName] = useState("");
+  const { card, setCard, valid: cardOk } = useCard(open);
 
   useEffect(() => {
     setAccountId(defaultAccountId);
     if (!open) {
       setQuery("");
       setRecipient(null);
+      setMode("filax");
+      setBeneficiary("");
+      setBankName("");
     }
   }, [defaultAccountId, open]);
 
@@ -237,46 +359,112 @@ export function TransferModal({
     ? DIRECTORY.filter((d) => [d.name, d.id, d.phone].some((f) => f.toLowerCase().includes(query.toLowerCase())))
     : [];
 
-  return (
-    <Modal open={open} onOpenChange={onOpenChange} title="Envoyer de l'argent" subtitle="Nom, ID FILAX, téléphone ou QR code">
-      <div className="space-y-4">
-        <Field label="Destinataire">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <TextInput
-              className="pl-9"
-              placeholder="Grace, FLX-1029-GM, +243…"
-              value={recipient ? recipient.name : query}
-              onChange={(e) => {
-                setRecipient(null);
-                setQuery(e.target.value);
-              }}
-            />
-          </div>
-        </Field>
+  const bankReady = beneficiary.trim().length > 2 && bankName.trim().length > 1 && cardOk;
+  const ready = value > 0 && (mode === "filax" ? !!recipient : bankReady);
 
-        {recipient ? (
-          <div className="flex items-center gap-3 rounded-xl bg-muted px-3 py-2.5">
-            <Check className="h-4 w-4 text-brand-green" />
-            <div className="leading-tight">
-              <p className="text-[0.78rem] font-bold text-foreground">{recipient.name}</p>
-              <p className="text-[0.65rem] text-muted-foreground">
-                {recipient.id} · {recipient.phone}
-              </p>
-            </div>
-          </div>
-        ) : (
-          results.map((r) => (
+  return (
+    <Modal open={open} onOpenChange={onOpenChange} title="Envoyer de l'argent" subtitle="Vers un membre FILAX, une autre banque ou une carte">
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-2 rounded-xl bg-muted p-1">
+          {([
+            ["filax", "Membre FILAX"],
+            ["bank", "Autre banque / carte"],
+          ] as const).map(([id, label]) => (
             <button
-              key={r.id}
+              key={id}
               type="button"
-              onClick={() => setRecipient(r)}
-              className="press flex w-full items-center justify-between rounded-xl border border-border px-3 py-2.5 text-left"
+              onClick={() => setMode(id)}
+              className={`press rounded-lg py-2 text-[0.72rem] font-bold ${
+                mode === id ? "bg-surface text-foreground soft-shadow" : "text-muted-foreground"
+              }`}
             >
-              <span className="text-[0.78rem] font-semibold text-foreground">{r.name}</span>
-              <span className="text-[0.65rem] text-muted-foreground">{r.id}</span>
+              {label}
             </button>
-          ))
+          ))}
+        </div>
+
+        {mode === "filax" ? (
+          <>
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-[0.7rem] font-semibold text-muted-foreground">Destinataire</span>
+                <button
+                  type="button"
+                  aria-label="Scanner un QR code"
+                  onClick={() => setScan(true)}
+                  className="press flex h-7 w-7 items-center justify-center rounded-lg border border-border text-brand-blue"
+                >
+                  <QrCode className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <TextInput
+                  className="pl-9"
+                  placeholder="Grace, FLX-1029-GM, +243…"
+                  value={recipient ? recipient.name : query}
+                  onChange={(e) => {
+                    setRecipient(null);
+                    setQuery(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+
+            {recipient ? (
+              <div className="flex items-center gap-3 rounded-xl bg-muted px-3 py-2.5">
+                <Check className="h-4 w-4 text-brand-green" />
+                <div className="leading-tight">
+                  <p className="text-[0.78rem] font-bold text-foreground">{recipient.name}</p>
+                  <p className="text-[0.65rem] text-muted-foreground">
+                    {recipient.id} · {recipient.phone}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              results.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => setRecipient(r)}
+                  className="press flex w-full items-center justify-between rounded-xl border border-border px-3 py-2.5 text-left"
+                >
+                  <span className="text-[0.78rem] font-semibold text-foreground">{r.name}</span>
+                  <span className="text-[0.65rem] text-muted-foreground">{r.id}</span>
+                </button>
+              ))
+            )}
+          </>
+        ) : (
+          <>
+            <Field label="Destination">
+              <div className="grid grid-cols-2 gap-2">
+                {DESTINATIONS.map((d) => (
+                  <button
+                    key={d.id}
+                    type="button"
+                    onClick={() => setDestination(d)}
+                    className={`press rounded-xl border px-3 py-2.5 text-left text-[0.72rem] font-semibold ${
+                      destination.id === d.id ? "border-brand-blue text-foreground" : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    <span className="mr-1.5">{d.flag}</span>
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            </Field>
+            <p className="text-[0.66rem] text-muted-foreground">
+              {destination.flag} {destination.label} · {destination.rail} · devise {destination.currency}
+            </p>
+            <Field label="Nom du bénéficiaire">
+              <TextInput placeholder="Jean Kalala" value={beneficiary} onChange={(e) => setBeneficiary(e.target.value)} />
+            </Field>
+            <Field label="Banque du bénéficiaire">
+              <TextInput placeholder="Equity BCDC, Revolut, BNP…" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+            </Field>
+            <CardFields card={card} setCard={setCard} />
+          </>
         )}
 
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
@@ -285,19 +473,38 @@ export function TransferModal({
         </Field>
 
         <PrimaryButton
-          disabled={!recipient || value <= 0}
+          disabled={!ready}
           onClick={() => {
-            onConfirm(accountId, value, recipient!.name);
+            const label = mode === "filax" ? recipient!.name : `${beneficiary} · ${bankName} (${destination.label})`;
+            onConfirm(accountId, value, label);
             onOpenChange(false);
-            toast.success("Transfert instantané envoyé", { description: `${value} envoyés à ${recipient!.name}.` });
+            toast.success("Transfert envoyé", { description: `${value} envoyés à ${label}.` });
           }}
         >
           Envoyer maintenant
         </PrimaryButton>
       </div>
+
+      <QrScanModal
+        open={scan}
+        onOpenChange={setScan}
+        onResult={(v) => {
+          const found = DIRECTORY.find((d) => d.id.toLowerCase() === v.toLowerCase());
+          if (found) {
+            setRecipient(found);
+            toast.success("Destinataire identifié", { description: `${found.name} · ${found.id}` });
+          } else {
+            const unknown = { name: v, id: v, phone: "—" };
+            setRecipient(unknown);
+            toast.success("QR code lu", { description: v });
+          }
+        }}
+      />
     </Modal>
   );
 }
+
+
 
 /* ---------------- Créer un compte ---------------- */
 
