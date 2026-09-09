@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, QrCode, Search, Share2 } from "lucide-react";
+import { Check, Copy, CreditCard, QrCode, Search, Share2 } from "lucide-react";
 
 import {
   ACCENTS,
   ACCOUNT_ICONS,
   GROUP_ICONS,
+  METHOD_LABEL,
   MOBILE_MONEY,
   formatMoney,
   isLocked,
+  useFilax,
   type AccentKey,
   type Account,
   type Currency,
@@ -16,6 +18,7 @@ import {
   type Group,
   type TxMethod,
 } from "@/lib/filax-store";
+
 import { Field, Modal, PrimaryButton, TextInput, accentVar } from "@/components/filax/ui-kit";
 import { QrScanModal, ReceiveQrModal } from "@/components/filax/qr-scanner";
 
