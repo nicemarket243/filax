@@ -28,6 +28,7 @@ function ProfilPage() {
   const filax = useFilax();
   const { profile, accounts } = filax.data;
   const [invite, setInvite] = useState(false);
+  const [qr, setQr] = useState(false);
   const [firstName, setFirstName] = useState(profile.firstName);
   const [lastName, setLastName] = useState(profile.lastName);
   const [phone, setPhone] = useState(profile.phone);
