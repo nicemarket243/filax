@@ -128,6 +128,14 @@ function ProfilPage() {
       </div>
 
       <InviteModal open={invite} onOpenChange={setInvite} filaxId={profile.filaxId} />
+      <ReceiveQrModal
+        open={qr}
+        onOpenChange={setQr}
+        filaxId={profile.filaxId}
+        name={`${profile.firstName} ${profile.lastName}`}
+        title="Mon QR Code"
+        subtitle="Faites scanner ce code pour recevoir de l'argent"
+      />
 
       <BottomNav />
     </main>
