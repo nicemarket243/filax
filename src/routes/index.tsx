@@ -20,6 +20,7 @@ import { NotificationsModal } from "@/components/filax/notifications";
 import { AccountChart } from "@/components/filax/account-chart";
 import { Coffre } from "@/components/filax/coffre";
 import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { Glyph } from "@/components/filax/glyph";
 import {
   ContributeModal,
   DepositModal,
