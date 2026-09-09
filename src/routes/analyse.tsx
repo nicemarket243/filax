@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
-import { SectionTitle, accentVar } from "@/components/filax/ui-kit";
+import { PageTitle, SectionTitle, accentVar } from "@/components/filax/ui-kit";
 import { formatDate, formatMoney, useFilax, type Transaction } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/analyse")({

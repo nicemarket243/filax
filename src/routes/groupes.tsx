@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Plus, UserPlus } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
-import { ProgressBar, SectionTitle, accentVar } from "@/components/filax/ui-kit";
+import { PageTitle, ProgressBar, SectionTitle, accentVar } from "@/components/filax/ui-kit";
 import { ContributeModal, InviteModal, NewGroupModal } from "@/components/filax/action-modals";
 import { formatMoney, groupTotal, pct, useFilax, type Group } from "@/lib/filax-store";
 

@@ -19,7 +19,8 @@ import { AllAccountsModal } from "@/components/filax/all-accounts-modal";
 import { NotificationsModal } from "@/components/filax/notifications";
 import { AccountChart } from "@/components/filax/account-chart";
 import { Coffre } from "@/components/filax/coffre";
-import { BankBadge, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { Glyph } from "@/components/filax/glyph";
 import {
   ContributeModal,
   DepositModal,
@@ -223,7 +224,7 @@ function HomePage() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-[0.8rem] font-bold text-foreground">
-                      <span className="text-base">{g.icon}</span>
+                      <Glyph icon={g.icon} className="h-4 w-4 text-brand-blue" />
                       {g.name}
                     </span>
                     <span className="flex -space-x-2">
@@ -255,12 +256,12 @@ function HomePage() {
         <div id="filax-historique">
           <Coffre
             title="Historique"
-            subtitle="Tous vos mouvements"
+            subtitle={active.name}
             icon={<History className="h-4 w-4" />}
-            badge={`${transactions.length}`}
+            badge={`${accountTx.length}`}
           >
             <div className="divide-y divide-border overflow-hidden rounded-2xl bg-muted/40">
-              {transactions.map((t) => {
+              {accountTx.map((t) => {
                 const positive = t.type === "depot" || t.type === "reception";
                 return (
                   <div key={t.id} className="flex items-center justify-between px-3 py-2.5">
