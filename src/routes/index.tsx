@@ -1,17 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  History,
-  LineChart,
-  Lock,
-  Send,
-  Target,
-  UserPlus,
-  Users,
-  Wallet,
-} from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, History, LineChart, Lock, Send, Target, Wallet } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { PremiumCard, lockedWithdrawToast } from "@/components/filax/premium-card";
@@ -22,26 +11,14 @@ import { Coffre } from "@/components/filax/coffre";
 import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { Glyph } from "@/components/filax/glyph";
 import {
-  ContributeModal,
   DepositModal,
   FundGoalModal,
   NewAccountModal,
   NewGoalModal,
-  NewGroupModal,
   TransferModal,
   WithdrawModal,
 } from "@/components/filax/action-modals";
-import {
-  formatDate,
-  formatMoney,
-  groupTotal,
-  isLocked,
-  pct,
-  useFilax,
-  type AccentKey,
-  type Goal,
-  type Group,
-} from "@/lib/filax-store";
+import { formatDate, formatMoney, isLocked, pct, useFilax, type AccentKey, type Goal } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
