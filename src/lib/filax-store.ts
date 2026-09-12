@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export type Currency = "USD" | "CDF";
 export type AccentKey = "brand-blue" | "brand-green" | "brand-gold" | "brand-violet" | "brand-red" | "brand-teal";
@@ -28,6 +29,8 @@ export interface Transaction {
   label: string;
   at: number;
   reference: string;
+  /** Provenance / destination lisible : personne, banque, opérateur. */
+  origin?: string;
 }
 
 export interface Goal {
@@ -69,6 +72,11 @@ export interface Profile {
   country: string;
   filaxId: string;
   photo?: string | null;
+  email?: string;
+  /** Identité vérifiée (KYC) — dynamique, jamais décoratif. */
+  verified?: boolean;
+  /** Code secret à 4 chiffres exigé pour les opérations sensibles. */
+  pin?: string;
 }
 
 export interface AppNotification {
