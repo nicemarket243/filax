@@ -246,7 +246,7 @@ function HomePage() {
         onConfirm={filax.transfer}
       />
       <NewAccountModal open={modal === "account"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createAccount} />
-      <NewGroupModal open={modal === "group"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createGroup} />
+      
       <NewGoalModal
         open={modal === "goal"}
         onOpenChange={(o) => !o && setModal(null)}
