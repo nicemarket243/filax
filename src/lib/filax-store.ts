@@ -441,9 +441,18 @@ export function useFilax() {
         const acc = d.accounts.find((a) => a.id === accountId);
         const goal = d.goals.find((g) => g.id === goalId);
         if (!acc || !goal) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
+        if (amount > acc.balance) {
+          toast.error("Solde insuffisant sur ce compte");
+          return d;
+        }
+        toast.success(`${formatMoney(amount, acc.currency)} épargnés pour « ${goal.name} »`);
         const next: FilaxData = {
           ...d,
-          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, a.balance - amount) } : a)),
+          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance - amount } : a)),
           goals: d.goals.map((g) => (g.id === goalId ? { ...g, saved: g.saved + amount } : g)),
         };
         return pushTx(next, {
