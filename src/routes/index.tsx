@@ -65,18 +65,14 @@ const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentK
   { key: "deposit", label: "Dépôt", icon: ArrowDownLeft, color: "brand-green" },
   { key: "withdraw", label: "Retrait", icon: ArrowUpRight, color: "brand-red" },
   { key: "transfer", label: "Transfert", icon: Send, color: "brand-blue" },
-  { key: "account", label: "Compte", icon: Wallet, color: "brand-blue" },
-  { key: "group", label: "Groupe", icon: UserPlus, color: "brand-blue" },
-  { key: "history", label: "Historique", icon: History, color: "brand-blue" },
 ];
 
 function HomePage() {
   const filax = useFilax();
-  const { accounts, goals, groups, transactions, notifications } = filax.data;
+  const { accounts, goals, transactions, notifications } = filax.data;
   const [activeIndex, setActiveIndex] = useState(0);
   const [modal, setModal] = useState<string | null>(null);
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [group, setGroup] = useState<Group | null>(null);
 
   const active = accounts[activeIndex] ?? accounts[0]!;
   const unread = notifications.filter((n) => !n.read).length;
@@ -86,10 +82,6 @@ function HomePage() {
   const openAction = (key: string) => {
     if (key === "withdraw" && isLocked(active)) {
       lockedWithdrawToast();
-      return;
-    }
-    if (key === "history") {
-      document.getElementById("filax-historique")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     setModal(key);
