@@ -203,15 +203,15 @@ function HomePage() {
             icon={<History className="h-4 w-4" />}
             badge={`${accountTx.length}`}
           >
-            <div className="divide-y divide-border overflow-hidden rounded-2xl bg-muted/40">
+            <div className="space-y-2">
               {accountTx.map((t) => {
                 const positive = t.type === "depot" || t.type === "reception";
                 return (
-                  <div key={t.id} className="flex items-center justify-between px-3 py-2.5">
+                  <div key={t.id} className="flex items-center justify-between rounded-2xl bg-muted/40 px-3 py-2.5">
                     <div className="min-w-0 leading-tight">
                       <p className="truncate text-[0.76rem] font-semibold text-foreground">{t.label}</p>
                       <p className="text-[0.6rem] text-muted-foreground">
-                        {formatDate(t.at)} · {t.reference}
+                        {formatDate(t.at)} · {t.origin ?? t.reference}
                       </p>
                     </div>
                     <span
@@ -224,6 +224,11 @@ function HomePage() {
                   </div>
                 );
               })}
+              {accountTx.length === 0 && (
+                <p className="rounded-2xl bg-muted/40 px-3 py-4 text-center text-[0.7rem] text-muted-foreground">
+                  Aucune opération sur ce compte.
+                </p>
+              )}
             </div>
           </Coffre>
         </div>
@@ -234,7 +239,7 @@ function HomePage() {
           icon={<LineChart className="h-4 w-4" />}
           badge={`${accountTx.length} op.`}
         >
-          <AccountChart account={active} transactions={transactions} />
+          <AccountChart account={active} transactions={accountTx} />
         </Coffre>
       </div>
 
@@ -277,13 +282,6 @@ function HomePage() {
         goal={goal}
         accounts={accounts}
         onConfirm={filax.fundGoal}
-      />
-      <ContributeModal
-        open={modal === "contribute"}
-        onOpenChange={(o) => !o && setModal(null)}
-        group={group}
-        accounts={accounts}
-        onConfirm={filax.contribute}
       />
       <AllAccountsModal
         open={modal === "all"}
