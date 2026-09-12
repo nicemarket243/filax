@@ -149,6 +149,8 @@ const SEED: FilaxData = {
     country: "RD Congo",
     filaxId: "FLX-8241-KB",
     photo: memberAvatar("filax-owner"),
+    email: "yannick.kabeya@filax.app",
+    verified: false,
   },
   accounts: [
     { id: "acc-usd", name: "Compte Principal USD", currency: "USD", icon: "💼", color: "brand-blue", balance: 12450.75 },
@@ -261,10 +263,15 @@ export function useFilax() {
       save((d) => {
         const acc = d.accounts.find((a) => a.id === accountId);
         if (!acc) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
         const next = {
           ...d,
           accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance + amount } : a)),
         };
+        toast.success(`Dépôt de ${formatMoney(amount, acc.currency)} sur ${acc.name}`);
         return pushTx(next, {
           accountId,
           type: "depot",
@@ -272,6 +279,7 @@ export function useFilax() {
           currency: acc.currency,
           method,
           label: `Dépôt ${METHOD_LABEL[method]}`,
+          origin: METHOD_LABEL[method],
         });
       }),
     [save],
@@ -282,10 +290,23 @@ export function useFilax() {
       save((d) => {
         const acc = d.accounts.find((a) => a.id === accountId);
         if (!acc) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
+        if (isLocked(acc)) {
+          toast.error("Ce compte est bloqué jusqu'à son échéance");
+          return d;
+        }
+        if (amount > acc.balance) {
+          toast.error("Solde insuffisant sur ce compte");
+          return d;
+        }
         const next = {
           ...d,
-          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, a.balance - amount) } : a)),
+          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance - amount } : a)),
         };
+        toast.success(`Retrait de ${formatMoney(amount, acc.currency)}`);
         return pushTx(next, {
           accountId,
           type: "retrait",
@@ -293,6 +314,7 @@ export function useFilax() {
           currency: acc.currency,
           method,
           label: `Retrait ${METHOD_LABEL[method]}`,
+          origin: METHOD_LABEL[method],
         });
       }),
     [save],
@@ -303,10 +325,23 @@ export function useFilax() {
       save((d) => {
         const acc = d.accounts.find((a) => a.id === accountId);
         if (!acc) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
+        if (isLocked(acc)) {
+          toast.error("Ce compte est bloqué jusqu'à son échéance");
+          return d;
+        }
+        if (amount > acc.balance) {
+          toast.error("Solde insuffisant sur ce compte");
+          return d;
+        }
         const next = {
           ...d,
-          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, a.balance - amount) } : a)),
+          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance - amount } : a)),
         };
+        toast.success(`${formatMoney(amount, acc.currency)} envoyés à ${recipient}`);
         return pushTx(next, {
           accountId,
           type: "envoi",
@@ -314,6 +349,7 @@ export function useFilax() {
           currency: acc.currency,
           method: "filax",
           label: `Envoi à ${recipient}`,
+          origin: recipient,
         });
       }),
     [save],
