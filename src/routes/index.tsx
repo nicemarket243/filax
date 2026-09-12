@@ -165,7 +165,7 @@ function HomePage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-[0.8rem] font-bold text-foreground">
-                    <span className="text-base">{g.icon}</span>
+                    <Glyph icon={g.icon} className="h-4 w-4 text-brand-green" />
                     {g.name}
                   </span>
                   <span className="flex items-center gap-1 text-[0.6rem] text-muted-foreground">
