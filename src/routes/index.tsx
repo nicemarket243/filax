@@ -1,17 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  History,
-  LineChart,
-  Lock,
-  Send,
-  Target,
-  UserPlus,
-  Users,
-  Wallet,
-} from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, History, LineChart, Lock, Send, Target, Wallet } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { PremiumCard, lockedWithdrawToast } from "@/components/filax/premium-card";
@@ -22,26 +11,14 @@ import { Coffre } from "@/components/filax/coffre";
 import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { Glyph } from "@/components/filax/glyph";
 import {
-  ContributeModal,
   DepositModal,
   FundGoalModal,
   NewAccountModal,
   NewGoalModal,
-  NewGroupModal,
   TransferModal,
   WithdrawModal,
 } from "@/components/filax/action-modals";
-import {
-  formatDate,
-  formatMoney,
-  groupTotal,
-  isLocked,
-  pct,
-  useFilax,
-  type AccentKey,
-  type Goal,
-  type Group,
-} from "@/lib/filax-store";
+import { formatDate, formatMoney, isLocked, pct, useFilax, type AccentKey, type Goal } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -65,18 +42,14 @@ const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentK
   { key: "deposit", label: "Dépôt", icon: ArrowDownLeft, color: "brand-green" },
   { key: "withdraw", label: "Retrait", icon: ArrowUpRight, color: "brand-red" },
   { key: "transfer", label: "Transfert", icon: Send, color: "brand-blue" },
-  { key: "account", label: "Compte", icon: Wallet, color: "brand-blue" },
-  { key: "group", label: "Groupe", icon: UserPlus, color: "brand-blue" },
-  { key: "history", label: "Historique", icon: History, color: "brand-blue" },
 ];
 
 function HomePage() {
   const filax = useFilax();
-  const { accounts, goals, groups, transactions, notifications } = filax.data;
+  const { accounts, goals, transactions, notifications } = filax.data;
   const [activeIndex, setActiveIndex] = useState(0);
   const [modal, setModal] = useState<string | null>(null);
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [group, setGroup] = useState<Group | null>(null);
 
   const active = accounts[activeIndex] ?? accounts[0]!;
   const unread = notifications.filter((n) => !n.read).length;
@@ -86,10 +59,6 @@ function HomePage() {
   const openAction = (key: string) => {
     if (key === "withdraw" && isLocked(active)) {
       lockedWithdrawToast();
-      return;
-    }
-    if (key === "history") {
-      document.getElementById("filax-historique")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     setModal(key);
@@ -173,7 +142,7 @@ function HomePage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-[0.8rem] font-bold text-foreground">
-                    <span className="text-base">{g.icon}</span>
+                    <Glyph icon={g.icon} className="h-4 w-4 text-brand-green" />
                     {g.name}
                   </span>
                   <span className="flex items-center gap-1 text-[0.6rem] text-muted-foreground">
@@ -203,55 +172,6 @@ function HomePage() {
           </div>
         </Coffre>
 
-        <Coffre
-          title="Groupes de cotisation"
-          subtitle="Épargnez à plusieurs"
-          icon={<Users className="h-4 w-4" />}
-          badge={`${groups.length}`}
-        >
-          <div className="space-y-2.5">
-            {groups.map((g) => {
-              const total = groupTotal(g);
-              return (
-                <button
-                  key={g.id}
-                  type="button"
-                  onClick={() => {
-                    setGroup(g);
-                    setModal("contribute");
-                  }}
-                  className="press block w-full rounded-2xl bg-muted/50 p-3 text-left"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-[0.8rem] font-bold text-foreground">
-                      <Glyph icon={g.icon} className="h-4 w-4 text-brand-blue" />
-                      {g.name}
-                    </span>
-                    <span className="flex -space-x-2">
-                      {g.members.slice(0, 4).map((m) => (
-                        <img key={m.id} src={m.avatar} alt={m.name} className="h-6 w-6 rounded-full ring-2 ring-surface" />
-                      ))}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[0.64rem] text-muted-foreground">{g.description}</p>
-                  <div className="mt-2">
-                    <ProgressBar value={pct(total, g.target)} color="brand-blue" />
-                  </div>
-                  <p className="mt-1.5 text-[0.66rem] text-muted-foreground">
-                    {formatMoney(total, g.currency)} sur {formatMoney(g.target, g.currency)} · {g.members.length} membres
-                  </p>
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => setModal("group")}
-              className="press w-full rounded-xl border border-dashed border-border py-2.5 text-[0.7rem] font-semibold text-brand-blue"
-            >
-              + Nouveau groupe
-            </button>
-          </div>
-        </Coffre>
 
         <div id="filax-historique">
           <Coffre
@@ -260,15 +180,15 @@ function HomePage() {
             icon={<History className="h-4 w-4" />}
             badge={`${accountTx.length}`}
           >
-            <div className="divide-y divide-border overflow-hidden rounded-2xl bg-muted/40">
+            <div className="space-y-2">
               {accountTx.map((t) => {
                 const positive = t.type === "depot" || t.type === "reception";
                 return (
-                  <div key={t.id} className="flex items-center justify-between px-3 py-2.5">
+                  <div key={t.id} className="flex items-center justify-between rounded-2xl bg-muted/40 px-3 py-2.5">
                     <div className="min-w-0 leading-tight">
                       <p className="truncate text-[0.76rem] font-semibold text-foreground">{t.label}</p>
                       <p className="text-[0.6rem] text-muted-foreground">
-                        {formatDate(t.at)} · {t.reference}
+                        {formatDate(t.at)} · {t.origin ?? t.reference}
                       </p>
                     </div>
                     <span
@@ -281,6 +201,11 @@ function HomePage() {
                   </div>
                 );
               })}
+              {accountTx.length === 0 && (
+                <p className="rounded-2xl bg-muted/40 px-3 py-4 text-center text-[0.7rem] text-muted-foreground">
+                  Aucune opération sur ce compte.
+                </p>
+              )}
             </div>
           </Coffre>
         </div>
@@ -291,7 +216,7 @@ function HomePage() {
           icon={<LineChart className="h-4 w-4" />}
           badge={`${accountTx.length} op.`}
         >
-          <AccountChart account={active} transactions={transactions} />
+          <AccountChart account={active} transactions={accountTx} />
         </Coffre>
       </div>
 
@@ -321,7 +246,7 @@ function HomePage() {
         onConfirm={filax.transfer}
       />
       <NewAccountModal open={modal === "account"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createAccount} />
-      <NewGroupModal open={modal === "group"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createGroup} />
+      
       <NewGoalModal
         open={modal === "goal"}
         onOpenChange={(o) => !o && setModal(null)}
@@ -334,13 +259,6 @@ function HomePage() {
         goal={goal}
         accounts={accounts}
         onConfirm={filax.fundGoal}
-      />
-      <ContributeModal
-        open={modal === "contribute"}
-        onOpenChange={(o) => !o && setModal(null)}
-        group={group}
-        accounts={accounts}
-        onConfirm={filax.contribute}
       />
       <AllAccountsModal
         open={modal === "all"}

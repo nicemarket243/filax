@@ -1,15 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { useState } from "react";
+import { History } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
-import { PageTitle, SectionTitle, accentVar } from "@/components/filax/ui-kit";
+import { AccountChart } from "@/components/filax/account-chart";
+import { Coffre } from "@/components/filax/coffre";
+import { Glyph } from "@/components/filax/glyph";
+import { PageTitle, accentVar } from "@/components/filax/ui-kit";
 import { formatDate, formatMoney, useFilax, type Transaction } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/analyse")({
   head: () => ({
     meta: [
       { title: "Analyse de vos finances — FILAX" },
-      { name: "description", content: "Visualisez vos entrées, sorties et l'évolution de votre épargne mois par mois." },
+      { name: "description", content: "Visualisez vos entrées, sorties et l'évolution de votre épargne compte par compte." },
       { property: "og:title", content: "Analyse financière FILAX" },
       { property: "og:description", content: "Entrées, sorties et progression de votre épargne en un coup d'œil." },
       { property: "og:type", content: "website" },
@@ -25,81 +29,85 @@ function isIn(t: Transaction) {
 
 function AnalysePage() {
   const { data } = useFilax();
-  const { transactions, accounts, profile } = data;
+  const { transactions, accounts } = data;
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const usd = transactions.filter((t) => t.currency === "USD");
-  const income = usd.filter(isIn).reduce((s, t) => s + t.amount, 0);
-  const outcome = usd.filter((t) => !isIn(t)).reduce((s, t) => s + t.amount, 0);
-  const totalUsd = accounts.filter((a) => a.currency === "USD").reduce((s, a) => s + a.balance, 0);
-
-  // Répartition par compte (barres verticales).
-  const maxBalance = Math.max(...accounts.map((a) => (a.currency === "USD" ? a.balance : a.balance / 2800)), 1);
+  const active = accounts.find((a) => a.id === activeId) ?? accounts[0]!;
+  const accountTx = transactions.filter((t) => t.accountId === active.id);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <AppHeader />
 
-      <PageTitle title="Analyse" subtitle="Comprendre où va votre argent." />
+      <PageTitle title="Analyse" subtitle="Comprendre où va l'argent de chaque compte." />
 
-
-      <div className="mt-5 rounded-3xl p-5 text-white soft-shadow" style={{ background: "var(--gradient-blue)" }}>
-        <p className="text-[0.7rem] text-white/80">Patrimoine total (USD)</p>
-        <p className="mt-1 text-[2rem] font-extrabold leading-none tracking-tight">{formatMoney(totalUsd, "USD")}</p>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-white/15 p-3">
-            <span className="flex items-center gap-1 text-[0.65rem] text-white/85">
-              <ArrowDownLeft className="h-3 w-3" /> Entrées
-            </span>
-            <p className="mt-1 text-[0.95rem] font-bold">{formatMoney(income, "USD")}</p>
-          </div>
-          <div className="rounded-2xl bg-white/15 p-3">
-            <span className="flex items-center gap-1 text-[0.65rem] text-white/85">
-              <ArrowUpRight className="h-3 w-3" /> Sorties
-            </span>
-            <p className="mt-1 text-[0.95rem] font-bold">{formatMoney(outcome, "USD")}</p>
-          </div>
-        </div>
+      {/* Sélecteur de compte : toutes les données ci-dessous suivent ce choix. */}
+      <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+        {accounts.map((a) => {
+          const on = a.id === active.id;
+          return (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => setActiveId(a.id)}
+              className="press flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-[0.7rem] font-semibold transition"
+              style={{
+                backgroundColor: on ? `color-mix(in oklab, ${accentVar(a.color)} 16%, transparent)` : "var(--muted)",
+                color: on ? accentVar(a.color) : "var(--muted-foreground)",
+              }}
+            >
+              <Glyph icon={a.icon} className="h-3.5 w-3.5" />
+              {a.name}
+            </button>
+          );
+        })}
       </div>
 
-      <section className="mt-7">
-        <SectionTitle title="Répartition par compte" />
-        <div className="rounded-3xl border border-border bg-surface p-4 soft-shadow">
-          <div className="flex h-40 items-end justify-between gap-2">
-            {accounts.map((a) => {
-              const v = a.currency === "USD" ? a.balance : a.balance / 2800;
-              return (
-                <div key={a.id} className="flex flex-1 flex-col items-center gap-1.5">
-                  <div
-                    className="w-full rounded-t-lg transition-all"
-                    style={{ height: `${Math.max(6, (v / maxBalance) * 100)}%`, backgroundColor: accentVar(a.color) }}
-                  />
-                  <span className="text-base leading-none">{a.icon}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <div
+        className="mt-4 rounded-3xl p-5 text-white soft-shadow"
+        style={{ background: `linear-gradient(140deg, ${accentVar(active.color)}, color-mix(in oklab, ${accentVar(active.color)} 45%, #05070f))` }}
+      >
+        <p className="text-[0.7rem] text-white/80">{active.name}</p>
+        <p className="mt-1 text-[1.9rem] font-extrabold leading-none tracking-tight">
+          {formatMoney(active.balance, active.currency)}
+        </p>
+        <p className="mt-2 text-[0.65rem] text-white/80">{accountTx.length} opération(s) enregistrée(s)</p>
+      </div>
 
-      <section className="mt-7">
-        <SectionTitle title="Historique complet" />
-        <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface soft-shadow">
-          {transactions.map((t) => (
-            <div key={t.id} className="flex items-center justify-between px-3.5 py-3">
-              <div className="leading-tight">
-                <p className="text-[0.78rem] font-semibold text-foreground">{t.label}</p>
-                <p className="text-[0.62rem] text-muted-foreground">
-                  {formatDate(t.at)} · {t.reference}
-                </p>
+      <div className="mt-5">
+        <AccountChart account={active} transactions={accountTx} />
+      </div>
+
+      <div className="mt-5">
+        <Coffre
+          title="Historique complet"
+          subtitle={active.name}
+          icon={<History className="h-4 w-4" />}
+          badge={`${accountTx.length}`}
+        >
+          <div className="space-y-2">
+            {accountTx.map((t) => (
+              <div key={t.id} className="flex items-center justify-between rounded-2xl bg-muted/40 px-3 py-2.5">
+                <div className="min-w-0 leading-tight">
+                  <p className="truncate text-[0.78rem] font-semibold text-foreground">{t.label}</p>
+                  <p className="text-[0.62rem] text-muted-foreground">
+                    {formatDate(t.at)} · {t.origin ?? t.reference}
+                  </p>
+                </div>
+                <span className="text-[0.8rem] font-bold" style={{ color: accentVar(isIn(t) ? "brand-green" : "brand-red") }}>
+                  {isIn(t) ? "+" : "−"}
+                  {formatMoney(t.amount, t.currency)}
+                </span>
               </div>
-              <span className="text-[0.8rem] font-bold" style={{ color: accentVar(isIn(t) ? "brand-green" : "brand-red") }}>
-                {isIn(t) ? "+" : "−"}
-                {formatMoney(t.amount, t.currency)}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+            {accountTx.length === 0 && (
+              <p className="rounded-2xl bg-muted/40 px-3 py-4 text-center text-[0.7rem] text-muted-foreground">
+                Aucune opération sur ce compte.
+              </p>
+            )}
+          </div>
+        </Coffre>
+      </div>
 
       <BottomNav />
     </main>

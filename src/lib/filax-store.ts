@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export type Currency = "USD" | "CDF";
 export type AccentKey = "brand-blue" | "brand-green" | "brand-gold" | "brand-violet" | "brand-red" | "brand-teal";
@@ -28,6 +29,8 @@ export interface Transaction {
   label: string;
   at: number;
   reference: string;
+  /** Provenance / destination lisible : personne, banque, opérateur. */
+  origin?: string;
 }
 
 export interface Goal {
@@ -69,6 +72,11 @@ export interface Profile {
   country: string;
   filaxId: string;
   photo?: string | null;
+  email?: string;
+  /** Identité vérifiée (KYC) — dynamique, jamais décoratif. */
+  verified?: boolean;
+  /** Code secret à 4 chiffres exigé pour les opérations sensibles. */
+  pin?: string;
 }
 
 export interface AppNotification {
@@ -141,6 +149,8 @@ const SEED: FilaxData = {
     country: "RD Congo",
     filaxId: "FLX-8241-KB",
     photo: memberAvatar("filax-owner"),
+    email: "yannick.kabeya@filax.app",
+    verified: false,
   },
   accounts: [
     { id: "acc-usd", name: "Compte Principal USD", currency: "USD", icon: "💼", color: "brand-blue", balance: 12450.75 },
@@ -253,10 +263,15 @@ export function useFilax() {
       save((d) => {
         const acc = d.accounts.find((a) => a.id === accountId);
         if (!acc) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
         const next = {
           ...d,
           accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance + amount } : a)),
         };
+        toast.success(`Dépôt de ${formatMoney(amount, acc.currency)} sur ${acc.name}`);
         return pushTx(next, {
           accountId,
           type: "depot",
@@ -264,6 +279,7 @@ export function useFilax() {
           currency: acc.currency,
           method,
           label: `Dépôt ${METHOD_LABEL[method]}`,
+          origin: METHOD_LABEL[method],
         });
       }),
     [save],
@@ -274,10 +290,23 @@ export function useFilax() {
       save((d) => {
         const acc = d.accounts.find((a) => a.id === accountId);
         if (!acc) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
+        if (isLocked(acc)) {
+          toast.error("Ce compte est bloqué jusqu'à son échéance");
+          return d;
+        }
+        if (amount > acc.balance) {
+          toast.error("Solde insuffisant sur ce compte");
+          return d;
+        }
         const next = {
           ...d,
-          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, a.balance - amount) } : a)),
+          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance - amount } : a)),
         };
+        toast.success(`Retrait de ${formatMoney(amount, acc.currency)}`);
         return pushTx(next, {
           accountId,
           type: "retrait",
@@ -285,6 +314,7 @@ export function useFilax() {
           currency: acc.currency,
           method,
           label: `Retrait ${METHOD_LABEL[method]}`,
+          origin: METHOD_LABEL[method],
         });
       }),
     [save],
@@ -295,10 +325,23 @@ export function useFilax() {
       save((d) => {
         const acc = d.accounts.find((a) => a.id === accountId);
         if (!acc) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
+        if (isLocked(acc)) {
+          toast.error("Ce compte est bloqué jusqu'à son échéance");
+          return d;
+        }
+        if (amount > acc.balance) {
+          toast.error("Solde insuffisant sur ce compte");
+          return d;
+        }
         const next = {
           ...d,
-          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, a.balance - amount) } : a)),
+          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance - amount } : a)),
         };
+        toast.success(`${formatMoney(amount, acc.currency)} envoyés à ${recipient}`);
         return pushTx(next, {
           accountId,
           type: "envoi",
@@ -306,6 +349,7 @@ export function useFilax() {
           currency: acc.currency,
           method: "filax",
           label: `Envoi à ${recipient}`,
+          origin: recipient,
         });
       }),
     [save],
@@ -339,9 +383,22 @@ export function useFilax() {
         const acc = d.accounts.find((a) => a.id === accountId);
         const group = d.groups.find((g) => g.id === groupId);
         if (!acc || !group) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
+        if (isLocked(acc)) {
+          toast.error("Ce compte est bloqué jusqu'à son échéance");
+          return d;
+        }
+        if (amount > acc.balance) {
+          toast.error("Solde insuffisant sur ce compte");
+          return d;
+        }
+        toast.success(`Cotisation de ${formatMoney(amount, acc.currency)} · ${group.name}`);
         const next: FilaxData = {
           ...d,
-          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, a.balance - amount) } : a)),
+          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance - amount } : a)),
           groups: d.groups.map((g) =>
             g.id === groupId
               ? { ...g, members: g.members.map((m) => (m.name === "Vous" ? { ...m, amount: m.amount + amount, lastAt: Date.now() } : m)) }
@@ -384,9 +441,18 @@ export function useFilax() {
         const acc = d.accounts.find((a) => a.id === accountId);
         const goal = d.goals.find((g) => g.id === goalId);
         if (!acc || !goal) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
+        if (amount > acc.balance) {
+          toast.error("Solde insuffisant sur ce compte");
+          return d;
+        }
+        toast.success(`${formatMoney(amount, acc.currency)} épargnés pour « ${goal.name} »`);
         const next: FilaxData = {
           ...d,
-          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, a.balance - amount) } : a)),
+          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance - amount } : a)),
           goals: d.goals.map((g) => (g.id === goalId ? { ...g, saved: g.saved + amount } : g)),
         };
         return pushTx(next, {
