@@ -383,9 +383,22 @@ export function useFilax() {
         const acc = d.accounts.find((a) => a.id === accountId);
         const group = d.groups.find((g) => g.id === groupId);
         if (!acc || !group) return d;
+        if (!(amount > 0)) {
+          toast.error("Montant invalide");
+          return d;
+        }
+        if (isLocked(acc)) {
+          toast.error("Ce compte est bloqué jusqu'à son échéance");
+          return d;
+        }
+        if (amount > acc.balance) {
+          toast.error("Solde insuffisant sur ce compte");
+          return d;
+        }
+        toast.success(`Cotisation de ${formatMoney(amount, acc.currency)} · ${group.name}`);
         const next: FilaxData = {
           ...d,
-          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, a.balance - amount) } : a)),
+          accounts: d.accounts.map((a) => (a.id === accountId ? { ...a, balance: a.balance - amount } : a)),
           groups: d.groups.map((g) =>
             g.id === groupId
               ? { ...g, members: g.members.map((m) => (m.name === "Vous" ? { ...m, amount: m.amount + amount, lastAt: Date.now() } : m)) }
