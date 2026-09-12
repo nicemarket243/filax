@@ -195,55 +195,6 @@ function HomePage() {
           </div>
         </Coffre>
 
-        <Coffre
-          title="Groupes de cotisation"
-          subtitle="Épargnez à plusieurs"
-          icon={<Users className="h-4 w-4" />}
-          badge={`${groups.length}`}
-        >
-          <div className="space-y-2.5">
-            {groups.map((g) => {
-              const total = groupTotal(g);
-              return (
-                <button
-                  key={g.id}
-                  type="button"
-                  onClick={() => {
-                    setGroup(g);
-                    setModal("contribute");
-                  }}
-                  className="press block w-full rounded-2xl bg-muted/50 p-3 text-left"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-[0.8rem] font-bold text-foreground">
-                      <Glyph icon={g.icon} className="h-4 w-4 text-brand-blue" />
-                      {g.name}
-                    </span>
-                    <span className="flex -space-x-2">
-                      {g.members.slice(0, 4).map((m) => (
-                        <img key={m.id} src={m.avatar} alt={m.name} className="h-6 w-6 rounded-full ring-2 ring-surface" />
-                      ))}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[0.64rem] text-muted-foreground">{g.description}</p>
-                  <div className="mt-2">
-                    <ProgressBar value={pct(total, g.target)} color="brand-blue" />
-                  </div>
-                  <p className="mt-1.5 text-[0.66rem] text-muted-foreground">
-                    {formatMoney(total, g.currency)} sur {formatMoney(g.target, g.currency)} · {g.members.length} membres
-                  </p>
-                </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => setModal("group")}
-              className="press w-full rounded-xl border border-dashed border-border py-2.5 text-[0.7rem] font-semibold text-brand-blue"
-            >
-              + Nouveau groupe
-            </button>
-          </div>
-        </Coffre>
 
         <div id="filax-historique">
           <Coffre
