@@ -55,6 +55,8 @@ export interface GroupMember {
   filaxId?: string;
 }
 
+export type GroupCategory = "Famille" | "Événement" | "Voyage" | "Business" | "Communauté";
+
 export interface Group {
   id: string;
   name: string;
@@ -63,6 +65,8 @@ export interface Group {
   target: number;
   currency: Currency;
   members: GroupMember[];
+  /** Catégorie de regroupement dans la page Groupes. */
+  category?: GroupCategory;
 }
 
 export interface Profile {
@@ -77,6 +81,12 @@ export interface Profile {
   verified?: boolean;
   /** Code secret à 4 chiffres exigé pour les opérations sensibles. */
   pin?: string;
+  /** Date de naissance (KYC). */
+  birthDate?: string;
+  /** Double authentification activée. */
+  twoFactor?: boolean;
+  /** Date de la vérification d'identité. */
+  verifiedAt?: number;
 }
 
 export interface AppNotification {
