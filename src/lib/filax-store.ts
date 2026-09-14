@@ -55,6 +55,8 @@ export interface GroupMember {
   filaxId?: string;
 }
 
+export type GroupCategory = "Famille" | "Événement" | "Voyage" | "Business" | "Communauté";
+
 export interface Group {
   id: string;
   name: string;
@@ -63,6 +65,8 @@ export interface Group {
   target: number;
   currency: Currency;
   members: GroupMember[];
+  /** Catégorie de regroupement dans la page Groupes. */
+  category?: GroupCategory;
 }
 
 export interface Profile {
@@ -77,6 +81,12 @@ export interface Profile {
   verified?: boolean;
   /** Code secret à 4 chiffres exigé pour les opérations sensibles. */
   pin?: string;
+  /** Date de naissance (KYC). */
+  birthDate?: string;
+  /** Double authentification activée. */
+  twoFactor?: boolean;
+  /** Date de la vérification d'identité. */
+  verifiedAt?: number;
 }
 
 export interface AppNotification {
@@ -519,4 +529,64 @@ export function groupTotal(g: Group) {
 export function pct(current: number, target: number) {
   if (!target) return 0;
   return Math.min(100, Math.round((current / target) * 100));
+}
+
+/* ---------------- Catégories de groupes ---------------- */
+
+export const GROUP_CATEGORIES: GroupCategory[] = ["Famille", "Événement", "Voyage", "Business", "Communauté"];
+
+/** Catégorie explicite si définie, sinon déduite du nom / de l'icône. */
+export function groupCategory(g: Group): GroupCategory {
+  if (g.category) return g.category;
+  const t = `${g.name} ${g.description} ${g.icon}`.toLowerCase();
+  if (/(voyage|✈️|🏝️|trip|vacance)/.test(t)) return "Voyage";
+  if (/(mariage|💍|anniversaire|🎉|fête|ceremonie|cérémonie|deuil|🕊️)/.test(t)) return "Événement";
+  if (/(business|🚀|projet|🏢|invest)/.test(t)) return "Business";
+  if (/(famille|👨‍👩‍👧|maison|🏠|enfant)/.test(t)) return "Famille";
+  return "Communauté";
+}
+
+/** Total cotisé par le membre « Vous ». */
+export function myContribution(g: Group) {
+  return g.members.find((m) => m.name === "Vous")?.amount ?? 0;
+}
+
+/* ---------------- Compte sélectionné (partagé entre les pages) ---------------- */
+
+const ACTIVE_KEY = "filax-active-account";
+
+export function useActiveAccountId(accounts: Account[]) {
+  const [id, setId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      setId(localStorage.getItem(ACTIVE_KEY));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const select = useCallback((next: string) => {
+    setId(next);
+    try {
+      localStorage.setItem(ACTIVE_KEY, next);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const activeId = accounts.some((a) => a.id === id) ? (id as string) : (accounts[0]?.id ?? "");
+  return { activeId, select } as const;
+}
+
+/** Agrégats d'analyse sur une période donnée (ms), pour un compte précis. */
+export function analyse(txs: Transaction[], sinceMs: number | null) {
+  const from = sinceMs ? Date.now() - sinceMs : 0;
+  const list = txs.filter((t) => t.at >= from).sort((a, b) => a.at - b.at);
+  const isIn = (t: Transaction) => t.type === "depot" || t.type === "reception";
+  const inflow = list.filter(isIn).reduce((s, t) => s + t.amount, 0);
+  const outflow = list.filter((t) => !isIn(t)).reduce((s, t) => s + t.amount, 0);
+  const byMethod = new Map<TxMethod, number>();
+  for (const t of list) byMethod.set(t.method, (byMethod.get(t.method) ?? 0) + t.amount);
+  return { list, inflow, outflow, net: inflow - outflow, byMethod } as const;
 }
