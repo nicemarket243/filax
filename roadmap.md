@@ -1,12 +1,13 @@
 # FILAX roadmap
 
-## En cours — Refonte parcours utilisateur (style Revolut/Wise)
-- [ ] Onboarding léger : nom, téléphone + OTP, langue, mode sombre/clair (pas de KYC au démarrage)
-- [ ] Accueil : un seul compte par défaut à 0,00 $, suppression des boutons chargés, bouton « + » sur la carte
-- [ ] Bottom-sheet « + » : créer un compte/cagnotte (nom, objectif, description, membres si collectif)
-- [ ] Profil : tiroir « Choisissez votre banque » (Equity BCDC, I&B RDC, BCC, Rawbank, TMB) + note sécurité + toggle conditions + bouton bleu, au-dessus des infos personnelles
-- [ ] KYC depuis le profil, requis avant dépôts/retraits
-- [ ] Uniformité des modales : un seul design system moderne pour dépôt, retrait, transfert, banque, création
+## En cours — Accès public, banques et KYC
+- [ ] Remplacer les FAQ bancaires inventées par les textes officiels fournis pour Equity BCDC, UBA RDC, BCC, Rawbank et TMB
+- [ ] Rendre les tiroirs du Profil strictement exclusifs et fermés par défaut
+- [ ] Créer une page d'accueil publique avec inscription et connexion par téléphone + code SMS
+- [ ] Conserver et rattacher les profils FILAX existants après connexion téléphonique
+- [ ] Afficher le statut KYC sur l'accueil et dans la fiche client du back-office
+- [ ] Vérifier que le back-office affiche uniquement les vrais fichiers KYC téléversés, avec états de chargement/erreur
+- [ ] Tester un parcours KYC complet avec fichiers explicitement marqués TEST, puis nettoyer les fichiers et données de test
 
 ## Fait
 - [x] Base de données : profils, banque partenaire, ID FILAX, PIN chiffré, comptes, transactions, micro-frais, groupes, notifications, temps réel
