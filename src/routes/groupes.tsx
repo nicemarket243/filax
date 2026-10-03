@@ -117,7 +117,7 @@ function GroupesPage() {
             <Coffre
               key={cat}
               title={cat}
-              subtitle={`${list.length} groupe${list.length > 1 ? "s" : ""}`}
+              subtitle={t(`${list.length} groupe${list.length > 1 ? "s" : ""}`)}
               icon={<Users className="h-4 w-4" />}
               badge={`${list.length}`}
             >
@@ -141,7 +141,9 @@ function GroupesPage() {
                           </span>
                           <div className="leading-tight">
                             <p className="text-[0.85rem] font-bold text-foreground">{g.name}</p>
-                            <p className="text-[0.62rem] text-muted-foreground">{g.members.length} membres</p>
+                             <p className="text-[0.62rem] text-muted-foreground">
+                               {t(`${g.members.length} membre${g.members.length > 1 ? "s" : ""}`)}
+                             </p>
                           </div>
                         </div>
                         <span className="text-[0.75rem] font-bold" style={{ color: accentVar("brand-violet") }}>

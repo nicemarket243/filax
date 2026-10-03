@@ -57,6 +57,7 @@ const EN: Record<string, string> = {
   "Créer un nouveau compte": "Create a new account",
   "Portefeuille total": "Total portfolio",
   comptes: "accounts",
+  "opération(s)": "transaction(s)",
   "Converti en USD": "Converted to USD",
   "Évolution de tous les comptes": "All accounts trend",
   "Évolution globale": "Overall trend",
