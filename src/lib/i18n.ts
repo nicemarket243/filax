@@ -307,7 +307,7 @@ export function translate(text: string, l: Lang) {
     .replace(/^Portefeuille total · (\d+) comptes$/, "Total portfolio · $1 accounts")
     .replace(/^Converti en USD \((.+)\) · (\d+) opération\(s\)$/, "Converted to USD ($1) · $2 transaction(s)")
     .replace(/^Cotiser — (.+)$/, "Contribute — $1")
-    .replace(/^Épargner — (.+)$/, "Save — $1");
+    .replace(/^Épargner — (.+)$/, "Save — $1")
     .replace(/^Afficher l'image (\d+)$/, "Show image $1")
     .replace(/^N°(\d+) · Verrouillé$/, "No. $1 · Locked")
     .replace(/^N°(\d+) · Actif$/, "No. $1 · Active")
