@@ -302,9 +302,6 @@ function ProfilPage() {
             </div>
           )}
         </Modal>
-        <div className="hidden">
-          <div>
-        </Coffre>
 
         {/* Informations personnelles dans un tiroir */}
         <Coffre title="Informations personnelles" subtitle="Nom, contact, naissance" icon={<User className="h-4 w-4" />}>
