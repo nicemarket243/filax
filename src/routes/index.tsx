@@ -18,7 +18,7 @@ import {
   TransferModal,
   WithdrawModal,
 } from "@/components/filax/action-modals";
-import { useDbUser, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb } from "@/lib/filax-db";
+import { useDbUser, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb } from "@/lib/filax-db";
 import { formatDate, formatMoney, isLocked, pct, useFilax, type AccentKey, type Goal } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/")({
@@ -47,12 +47,14 @@ const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentK
 
 function HomePage() {
   const filax = useFilax();
-  const { goals, notifications } = filax.data;
+  const { notifications } = filax.data;
   const userId = useDbUser();
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
   const live = !!userId && !!db.accounts && db.accounts.length > 0;
   const accounts = live ? db.accounts! : filax.data.accounts;
+  const dbGoals = useDbGoals(userId);
+  const goals = live ? dbGoals.goals ?? [] : filax.data.goals;
   const transactions = live ? dbTx.transactions ?? [] : filax.data.transactions;
   const reload = async () => {
     await db.refresh();
@@ -269,7 +271,7 @@ function HomePage() {
       <NewGoalModal
         open={modal === "goal"}
         onOpenChange={(o) => !o && setModal(null)}
-        onConfirm={(g) => filax.createGoal({ ...g, accountId: active.id, currency: active.currency })}
+        onConfirm={(g) => live ? createGoalDb(userId!, { ...g, accountId: active.id, currency: active.currency }).then(() => dbGoals.refresh()) : filax.createGoal({ ...g, accountId: active.id, currency: active.currency })}
       />
 
       <FundGoalModal
@@ -277,7 +279,7 @@ function HomePage() {
         onOpenChange={(o) => !o && setModal(null)}
         goal={goal}
         accounts={accounts}
-        onConfirm={filax.fundGoal}
+        onConfirm={live ? async (gid, amt, acc) => { await fundGoalDb(gid, amt, acc); await Promise.all([dbGoals.refresh(), reload()]); } : filax.fundGoal}
       />
       <AllAccountsModal
         open={modal === "all"}
