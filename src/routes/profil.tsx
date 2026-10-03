@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { BadgeCheck, Copy, Languages, Lock, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
@@ -27,6 +28,7 @@ import {
   submitDbKyc,
   useDbProfile,
   useDbUser,
+  useIsAdmin,
 } from "@/lib/filax-db";
 
 export const Route = createFileRoute("/profil")({
@@ -46,6 +48,7 @@ export const Route = createFileRoute("/profil")({
 function ProfilPage() {
   const filax = useFilax();
   const userId = useDbUser();
+  const isAdmin = useIsAdmin(userId);
   const { profile: dbProfile, refresh: refreshProfile } = useDbProfile(userId);
   // Données réelles si connecté, démonstration sinon.
   const profile = dbProfile ?? filax.data.profile;
@@ -308,6 +311,13 @@ function ProfilPage() {
             </div>
           )}
         </Coffre>
+
+        {isAdmin && (
+          <Link to="/admin" className="press flex items-center justify-between rounded-2xl bg-surface px-4 py-3 soft-shadow">
+            <span className="text-[0.8rem] font-bold text-foreground">Back-office (KYC et retraits)</span>
+            <ShieldCheck className="h-4 w-4 text-brand-green" />
+          </Link>
+        )}
 
         {/* Sécurité */}
         <Coffre title="Sécurité" subtitle="Code secret et double authentification" icon={<Lock className="h-4 w-4" />}>

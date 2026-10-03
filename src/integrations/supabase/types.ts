@@ -158,6 +158,57 @@ export type Database = {
           },
         ]
       }
+      group_withdrawals: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string
+          decided_at: string | null
+          group_id: string
+          id: string
+          reason: string | null
+          requested_by: string
+          status: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          created_at?: string
+          decided_at?: string | null
+          group_id: string
+          id?: string
+          reason?: string | null
+          requested_by: string
+          status?: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string
+          decided_at?: string | null
+          group_id?: string
+          id?: string
+          reason?: string | null
+          requested_by?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_withdrawals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_withdrawals_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       groups: {
         Row: {
           category: string
@@ -372,6 +423,24 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_security: {
         Row: {
           pin_hash: string | null
@@ -395,6 +464,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_decide_kyc: {
+        Args: { _approved: boolean; _user: string }
+        Returns: undefined
+      }
+      admin_decide_withdrawal: {
+        Args: { _approved: boolean; _id: string }
+        Returns: undefined
+      }
+      admin_list_kyc: {
+        Args: never
+        Returns: {
+          email: string
+          filax_id: string
+          first_name: string
+          id_document_path: string
+          id_document_type: string
+          kyc_status: string
+          last_name: string
+          selfie_path: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      admin_list_withdrawals: {
+        Args: never
+        Returns: {
+          amount: number
+          collected: number
+          created_at: string
+          currency: string
+          group_name: string
+          id: string
+          reason: string
+          requester: string
+          status: string
+        }[]
+      }
       check_pin: { Args: { _pin: string }; Returns: boolean }
       contribute: {
         Args: { _amount: number; _from: string; _group: string }
@@ -408,6 +514,13 @@ export type Database = {
       fund_goal: {
         Args: { _amount: number; _from: string; _goal: string }
         Returns: undefined
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       invite_to_group: {
         Args: { _group: string; _identifier: string }
@@ -425,6 +538,15 @@ export type Database = {
           first_name: string
           last_name: string
         }[]
+      }
+      request_group_withdrawal: {
+        Args: {
+          _account: string
+          _amount: number
+          _group: string
+          _reason: string
+        }
+        Returns: string
       }
       set_pin: { Args: { _pin: string }; Returns: undefined }
       submit_kyc: {
@@ -454,7 +576,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -581,6 +703,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

@@ -59,6 +59,8 @@ export type GroupCategory = "Famille" | "Événement" | "Voyage" | "Business" | 
 
 export interface Group {
   id: string;
+  /** Propriétaire (données réelles uniquement). */
+  ownerId?: string;
   name: string;
   description: string;
   icon: string;

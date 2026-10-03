@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { Plus, UserPlus, Users } from "lucide-react";
+import { Plus, UserPlus, Users, Banknote } from "lucide-react";
+import { toast } from "sonner";
 import groupSlideOne from "@/assets/groups-solidarity-1.jpg";
 import groupSlideTwo from "@/assets/groups-solidarity-2.jpg";
 import groupSlideThree from "@/assets/groups-solidarity-3.jpg";
@@ -9,7 +10,7 @@ import groupSlideThree from "@/assets/groups-solidarity-3.jpg";
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
 import { Glyph } from "@/components/filax/glyph";
-import { Modal, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { Field, Modal, PrimaryButton, TextInput, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { ContributeModal, InviteModal, NewGroupModal } from "@/components/filax/action-modals";
 import {
   GROUP_CATEGORIES,
@@ -29,6 +30,7 @@ import {
   inviteDb,
   useDbAccounts,
   useDbGroups,
+  requestGroupWithdrawalDb,
   useDbUser,
 } from "@/lib/filax-db";
 
@@ -102,6 +104,11 @@ function GroupesPage() {
   const current = group ? (groups.find((g) => g.id === group.id) ?? group) : null;
   const { t } = useI18n();
   const [hideAmounts, setHideAmounts] = useState(false);
+  const isOwner = !!dbGroups && !!current && current.ownerId === userId;
+  const [wdAmount, setWdAmount] = useState("");
+  const [wdReason, setWdReason] = useState("");
+  const [wdAccount, setWdAccount] = useState("");
+  const wdAccounts = current ? accounts.filter((a) => a.currency === current.currency) : [];
   const daysLeft = (d?: number) => (d ? Math.max(0, Math.ceil((d - Date.now()) / 86400000)) : null);
 
   return (
@@ -293,8 +300,64 @@ function GroupesPage() {
                 <UserPlus className="h-3.5 w-3.5" /> {t("Inviter")}
               </button>
             </div>
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => {
+                  setWdAccount(wdAccounts[0]?.id ?? "");
+                  setModal("withdraw");
+                }}
+                className="press flex w-full items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-[0.75rem] font-bold text-foreground"
+              >
+                <Banknote className="h-3.5 w-3.5" /> {t("Demander un retrait")}
+              </button>
+            )}
           </div>
         )}
+      </Modal>
+
+      <Modal
+        open={modal === "withdraw" && !!current}
+        onOpenChange={(o) => !o && setModal(current ? "detail" : null)}
+        title="Demander un retrait"
+        subtitle="La demande est validée par le back-office FILAX avant le versement."
+      >
+        <div className="space-y-4">
+          <Field label="Compte de réception">
+            <select
+              value={wdAccount}
+              onChange={(e) => setWdAccount(e.target.value)}
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-[0.8rem] text-foreground"
+            >
+              {wdAccounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Montant">
+            <TextInput inputMode="decimal" placeholder="0.00" value={wdAmount} onChange={(e) => setWdAmount(e.target.value)} />
+          </Field>
+          <Field label="Motif">
+            <TextInput placeholder="Achat du terrain" value={wdReason} onChange={(e) => setWdReason(e.target.value)} />
+          </Field>
+          <PrimaryButton
+            disabled={!wdAccount || !(Number(wdAmount) > 0)}
+            onClick={async () => {
+              try {
+                await requestGroupWithdrawalDb(current!.id, wdAccount, Number(wdAmount), wdReason.trim());
+              } catch (e) {
+                toast.error("Demande refusée", { description: (e as Error).message });
+                return;
+              }
+              toast.success("Demande envoyée", { description: "En attente de validation." });
+              setWdAmount("");
+              setWdReason("");
+              setModal("detail");
+            }}
+          >
+            Envoyer la demande
+          </PrimaryButton>
+        </div>
       </Modal>
 
       <NewGroupModal
