@@ -1,8 +1,12 @@
 # FILAX roadmap (backend phase)
-- [x] Domaine : filax.com déjà pris — l'utilisateur doit choisir une alternative (filax.app / filax.money)
+- [x] Domaine : mis de côté sur demande de l'utilisateur (app en mode aperçu)
 - [x] Base de données : profils, banque partenaire, ID FILAX, PIN chiffré, comptes, transactions, micro-frais, groupes, notifications, temps réel
+- [x] Logique KYC : submit_kyc (documents → coffre sécurisé, statut « en cours »), validate_kyc réservé au back-office, politiques de stockage par utilisateur
+- [x] Logique groupes : invite_to_group (par username ou FILAX-ID), leave_group, retrait de membre par le propriétaire
 - [x] Page publique de partage /user/pseudo
-- [ ] Brancher l'accueil, les dépôts/transferts et l'inscription sur la base (aujourd'hui données locales)
-- [ ] Brancher Groupes + notifications en temps réel sur la base
+- [x] Profil branché sur la base : infos personnelles, KYC réel (upload pièce + selfie), PIN chiffré, double authentification
+- [x] Groupes branchés sur la base : création, cotisation (frais 0,5 %), invitation, membres et cotisations réels
+- [ ] Brancher l'accueil, les dépôts/transferts sur la base (encore données locales)
+- [ ] Notifications en temps réel dans l'app
 - [ ] Boutons WhatsApp/SMS sur le profil vers le lien public
 - [ ] Analyse mise à jour automatiquement depuis la base
