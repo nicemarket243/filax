@@ -232,6 +232,47 @@ const EN: Record<string, string> = {
   "Compte Mariage": "Wedding Account",
   "Compte Voyage": "Travel Account",
   "Compte Business": "Business Account",
+  "Compte Principal CDF": "Main CDF Account",
+  "Compte Famille": "Family Account",
+  Famille: "Family",
+  Événement: "Event",
+  Voyage: "Travel",
+  Communauté: "Community",
+  "Carte Visa / Mastercard": "Visa / Mastercard card",
+  "Virement SEPA": "SEPA transfer",
+  "Virement ACH": "ACH transfer",
+  "Interac / virement": "Interac / transfer",
+  "Mobile Money / banque locale": "Mobile Money / local bank",
+  "RD Congo": "DR Congo",
+  "États-Unis": "United States",
+  "Dépôt M-Pesa": "M-Pesa deposit",
+  "Envoi à Grace M.": "Sent to Grace M.",
+  "Dépôt banque partenaire": "Partner bank deposit",
+  "Retrait Orange Money": "Orange Money withdrawal",
+  "Reçu de Patrick L.": "Received from Patrick L.",
+  "Acheter une moto": "Buy a motorcycle",
+  Études: "Education",
+  "Mariage Grace & Jonas": "Grace & Jonas Wedding",
+  "Cotisation pour la cérémonie de décembre.": "Savings for the December ceremony.",
+  "Voyage Kinshasa": "Kinshasa Trip",
+  "Sortie entre amis, départ en mars.": "Friends' trip departing in March.",
+  "Voyage Paris": "Paris Trip",
+  "Une semaine à Paris en avril, vols et hôtel.": "One week in Paris in April, flights and hotel.",
+  "Achat Terrain": "Land Purchase",
+  "Terrain de 20 ares à Kinshasa-Mont Ngafula.": "A 20-are plot in Kinshasa-Mont Ngafula.",
+  "Cotisation Famille": "Family Savings",
+  "Soutien mensuel aux parents et frais scolaires.": "Monthly family support and school fees.",
+  "Projet Business": "Business Project",
+  "Lancement d'une boutique de cosmétiques.": "Launching a cosmetics store.",
+  Vous: "You",
+  "Dépôt reçu": "Deposit received",
+  "Cotisation reçue": "Contribution received",
+  "500 USD crédités depuis M-Pesa.": "USD 500 credited from M-Pesa.",
+  "Grace M. a cotisé 120 USD au groupe Mariage.": "Grace M. contributed USD 120 to the Wedding group.",
+  "Nouvelle connexion détectée sur votre compte FILAX.": "New sign-in detected on your FILAX account.",
+  "EquityBanque Partenaire": "Equity Partner Bank",
+  "Solidarité et épargne collective": "Community and shared savings",
+  "Amis réunis autour d'une épargne commune": "Friends gathered around shared savings",
 };
 
 let lang: Lang = "fr";
@@ -267,6 +308,19 @@ export function translate(text: string, l: Lang) {
     .replace(/^Converti en USD \((.+)\) · (\d+) opération\(s\)$/, "Converted to USD ($1) · $2 transaction(s)")
     .replace(/^Cotiser — (.+)$/, "Contribute — $1")
     .replace(/^Épargner — (.+)$/, "Save — $1");
+    .replace(/^Afficher l'image (\d+)$/, "Show image $1")
+    .replace(/^N°(\d+) · Verrouillé$/, "No. $1 · Locked")
+    .replace(/^N°(\d+) · Actif$/, "No. $1 · Active")
+    .replace(/^Dépôt de (.+) sur (.+)$/, "Deposit of $1 into $2")
+    .replace(/^Retrait de (.+)$/, "Withdrawal of $1")
+    .replace(/^(.+) envoyés à (.+)$/, "$1 sent to $2")
+    .replace(/^Cotisation de (.+) · (.+)$/, "Contribution of $1 · $2")
+    .replace(/^(.+) épargnés pour « (.+) »$/, "$1 saved for “$2”")
+    .replace(/^Dépôt (.+)$/, "$1 deposit")
+    .replace(/^Retrait (.+)$/, "$1 withdrawal")
+    .replace(/^Envoi à (.+)$/, "Sent to $1")
+    .replace(/^Cotisation (.+)$/, "$1 contribution")
+    .replace(/^Épargne « (.+) »$/, "Savings “$1”");
 }
 
 export function useI18n() {
