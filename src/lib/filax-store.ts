@@ -143,7 +143,7 @@ export const ACCOUNT_ICONS = ["💼", "💍", "👨‍👩‍👧", "🏢", "�
 export const GROUP_ICONS = ["💍", "🕊️", "✈️", "🏝️", "🎉", "🚀", "👨‍👩‍👧", "⛪", "🤝"];
 export const ACCENTS: AccentKey[] = ["brand-blue", "brand-green", "brand-gold", "brand-violet", "brand-red", "brand-teal"];
 
-const KEY = "filax-v4";
+const KEY = "filax-v5";
 const DAY = 86_400_000;
 const now = Date.now();
 
@@ -157,141 +157,23 @@ export function memberAvatar(seed: string) {
 
 const SEED: FilaxData = {
   profile: {
-    firstName: "Yannick",
-    lastName: "Kabeya",
-    phone: "+243 812 345 678",
+    firstName: "Nouveau",
+    lastName: "Membre",
+    phone: "",
     country: "RD Congo",
-    filaxId: "FLX-8241-KB",
-    photo: memberAvatar("filax-owner"),
-    email: "yannick.kabeya@filax.app",
+    filaxId: "FLX-0000-XX",
+    photo: null,
+    email: "",
     verified: false,
   },
+  // Nouvel utilisateur : un seul compte, solde vierge, aucune donnée fictive.
   accounts: [
-    { id: "acc-usd", name: "Compte Principal USD", currency: "USD", icon: "💼", color: "brand-blue", balance: 12450.75 },
-    { id: "acc-cdf", name: "Compte Principal CDF", currency: "CDF", icon: "🇨🇩", color: "brand-teal", balance: 2_350_000 },
-    { id: "acc-mariage", name: "Compte Mariage", currency: "USD", icon: "💍", color: "brand-violet", balance: 3200, lockedUntil: now + 92 * DAY, target: 6000 },
-    { id: "acc-famille", name: "Compte Famille", currency: "USD", icon: "👨‍👩‍👧", color: "brand-green", balance: 860, target: 2000 },
-    { id: "acc-business", name: "Compte Business", currency: "USD", icon: "🚀", color: "brand-gold", balance: 4180, target: 10000 },
+    { id: "acc-usd", name: "Compte Principal", currency: "USD", icon: "💼", color: "brand-blue", balance: 0 },
   ],
-  transactions: [
-    { id: "t1", accountId: "acc-usd", type: "depot", amount: 500, currency: "USD", method: "mpesa", label: "Dépôt M-Pesa", at: now - 2 * DAY, reference: ref() },
-    { id: "t2", accountId: "acc-usd", type: "envoi", amount: 120, currency: "USD", method: "filax", label: "Envoi à Grace M.", at: now - 4 * DAY, reference: ref() },
-    { id: "t3", accountId: "acc-business", type: "depot", amount: 1000, currency: "USD", method: "banque", label: "Dépôt banque partenaire", at: now - 8 * DAY, reference: ref() },
-    { id: "t4", accountId: "acc-cdf", type: "retrait", amount: 250000, currency: "CDF", method: "orange", label: "Retrait Orange Money", at: now - 11 * DAY, reference: ref() },
-    { id: "t5", accountId: "acc-famille", type: "reception", amount: 300, currency: "USD", method: "filax", label: "Reçu de Patrick L.", at: now - 15 * DAY, reference: ref() },
-  ],
-  goals: [
-    { id: "g1", accountId: "acc-usd", name: "Acheter une moto", target: 1500, saved: 640, deadline: now + 120 * DAY, icon: "🏍️", currency: "USD" },
-    { id: "g2", accountId: "acc-usd", name: "Loyer 2027", target: 2400, saved: 900, deadline: now + 200 * DAY, icon: "🏠", currency: "USD" },
-    { id: "g3", accountId: "acc-mariage", name: "Études", target: 2000, saved: 1750, deadline: now + 60 * DAY, icon: "🎓", currency: "USD" },
-  ],
-  groups: [
-    {
-      id: "grp1",
-      name: "Mariage Grace & Jonas",
-      description: "Cotisation pour la cérémonie de décembre.",
-      icon: "💍",
-      target: 1000,
-      currency: "USD",
-      members: [
-        { id: "m1", name: "Vous", amount: 150, avatar: memberAvatar("filax-owner"), filaxId: "FLX-8241-KB", lastAt: now - 3 * DAY },
-        { id: "m2", name: "Grace Mukendi", amount: 120, avatar: memberAvatar("Grace"), filaxId: "FLX-1093-GM", lastAt: now - 1 * DAY },
-        { id: "m3", name: "Patrick Lukusa", amount: 90, avatar: memberAvatar("Patrick"), filaxId: "FLX-4417-PL", lastAt: now - 6 * DAY },
-        { id: "m4", name: "Sarah Kabeya", amount: 90, avatar: memberAvatar("Sarah"), filaxId: "FLX-7752-SK", lastAt: now - 9 * DAY },
-      ],
-    },
-    {
-      id: "grp2",
-      name: "Voyage Kinshasa",
-      description: "Sortie entre amis, départ en mars.",
-      icon: "✈️",
-      target: 800,
-      currency: "USD",
-      members: [
-        { id: "m1", name: "Vous", amount: 100, avatar: memberAvatar("filax-owner"), filaxId: "FLX-8241-KB", lastAt: now - 5 * DAY },
-        { id: "m5", name: "David Tshimanga", amount: 80, avatar: memberAvatar("David"), filaxId: "FLX-2288-DT", lastAt: now - 2 * DAY },
-        { id: "m6", name: "Esther Mwamba", amount: 60, avatar: memberAvatar("Esther"), filaxId: "FLX-6631-EM", lastAt: now - 12 * DAY },
-      ],
-    },
-    {
-      id: "grp3",
-      name: "Voyage Paris",
-      description: "Une semaine à Paris en avril, vols et hôtel.",
-      icon: "✈️",
-      target: 7000,
-      currency: "USD",
-      category: "Voyage",
-      deadline: now + 14 * DAY,
-      members: [
-        { id: "grp3-m0", name: "Jérôme Kalala", amount: 620, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3000-JX", lastAt: now - 1 * DAY },
-        { id: "grp3-m1", name: "Marc Ilunga", amount: 540, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3001-MX", lastAt: now - 2 * DAY },
-        { id: "grp3-m2", name: "Sophie Mbuyi", amount: 700, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3002-SX", lastAt: now - 3 * DAY },
-        { id: "grp3-m3", name: "Nadia Kasongo", amount: 480, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3003-NX", lastAt: now - 4 * DAY },
-        { id: "grp3-m4", name: "Olivier Ngoy", amount: 390, avatar: "https://images.unsplash.com/photo-1500048993953-d23a436266cf?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3004-OX", lastAt: now - 5 * DAY },
-        { id: "grp3-m5", name: "Claire Banza", amount: 510, avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3005-CX", lastAt: now - 6 * DAY },
-        { id: "grp3-m6", name: "Vous", amount: 450, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3006-VX", lastAt: now - 7 * DAY },
-      ],
-    },
-    {
-      id: "grp4",
-      name: "Achat Terrain",
-      description: "Terrain de 20 ares à Kinshasa-Mont Ngafula.",
-      icon: "🏡",
-      target: 50000,
-      currency: "USD",
-      category: "Business",
-      deadline: now + 60 * DAY,
-      members: [
-        { id: "grp4-m0", name: "Vous", amount: 3200, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3049-VX", lastAt: now - 1 * DAY },
-        { id: "grp4-m1", name: "Joseph Mutombo", amount: 4500, avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3050-JX", lastAt: now - 2 * DAY },
-        { id: "grp4-m2", name: "Ruth Kabongo", amount: 2800, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3051-RX", lastAt: now - 3 * DAY },
-        { id: "grp4-m3", name: "Emmanuel Tshibangu", amount: 5100, avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3052-EX", lastAt: now - 4 * DAY },
-        { id: "grp4-m4", name: "Aline Nsimba", amount: 2300, avatar: "https://images.unsplash.com/photo-1552058544-f2b08422138a?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3053-AX", lastAt: now - 5 * DAY },
-        { id: "grp4-m5", name: "Thierry Lukusa", amount: 3900, avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3054-TX", lastAt: now - 6 * DAY },
-        { id: "grp4-m6", name: "Mireille Kapinga", amount: 2600, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3055-MX", lastAt: now - 7 * DAY },
-        { id: "grp4-m7", name: "Benjamin Mpoyi", amount: 4100, avatar: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3056-BX", lastAt: now - 8 * DAY },
-        { id: "grp4-m8", name: "Laura Kitenge", amount: 1900, avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3057-LX", lastAt: now - 9 * DAY },
-        { id: "grp4-m9", name: "Christian Mbala", amount: 3400, avatar: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3058-CX", lastAt: now - 10 * DAY },
-      ],
-    },
-    {
-      id: "grp5",
-      name: "Cotisation Famille",
-      description: "Soutien mensuel aux parents et frais scolaires.",
-      icon: "👨‍👩‍👧",
-      target: 1500,
-      currency: "USD",
-      category: "Famille",
-      deadline: now + 21 * DAY,
-      members: [
-        { id: "grp5-m0", name: "Vous", amount: 200, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3021-VX", lastAt: now - 1 * DAY },
-        { id: "grp5-m1", name: "Maman Agnès", amount: 150, avatar: "https://images.unsplash.com/photo-1500048993953-d23a436266cf?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3022-MX", lastAt: now - 2 * DAY },
-        { id: "grp5-m2", name: "Papa Jean", amount: 180, avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3023-PX", lastAt: now - 3 * DAY },
-        { id: "grp5-m3", name: "Rachel Kabeya", amount: 120, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3024-RX", lastAt: now - 4 * DAY },
-        { id: "grp5-m4", name: "Samuel Kabeya", amount: 140, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3025-SX", lastAt: now - 5 * DAY },
-      ],
-    },
-    {
-      id: "grp6",
-      name: "Projet Business",
-      description: "Lancement d'une boutique de cosmétiques.",
-      icon: "💼",
-      target: 9000,
-      currency: "USD",
-      category: "Business",
-      deadline: now + 45 * DAY,
-      members: [
-        { id: "grp6-m0", name: "Vous", amount: 1500, avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3084-VX", lastAt: now - 1 * DAY },
-        { id: "grp6-m1", name: "Kevin Lumbala", amount: 1800, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3085-KX", lastAt: now - 2 * DAY },
-        { id: "grp6-m2", name: "Grâce Nkulu", amount: 1200, avatar: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=160&h=160&fit=crop&crop=faces", filaxId: "FLX-3086-GX", lastAt: now - 3 * DAY },
-      ],
-    },
-  ],
-  notifications: [
-    { id: "n1", title: "Dépôt reçu", body: "500 USD crédités depuis M-Pesa.", at: now - 2 * DAY, read: false, kind: "depot" },
-    { id: "n2", title: "Cotisation reçue", body: "Grace M. a cotisé 120 USD au groupe Mariage.", at: now - 3 * DAY, read: false, kind: "cotisation" },
-    { id: "n3", title: "Sécurité", body: "Nouvelle connexion détectée sur votre compte FILAX.", at: now - 6 * DAY, read: true, kind: "systeme" },
-  ],
+  transactions: [],
+  goals: [],
+  groups: [],
+  notifications: [],
 };
 
 function load(): FilaxData {

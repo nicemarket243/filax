@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, History, LineChart, Lock, Send, Target, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, History, LineChart, Lock, Send, Target, Users, Wallet } from "lucide-react";
+import { toast } from "sonner";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { PremiumCard, lockedWithdrawToast } from "@/components/filax/premium-card";
@@ -8,17 +9,18 @@ import { AllAccountsModal } from "@/components/filax/all-accounts-modal";
 import { NotificationsModal } from "@/components/filax/notifications";
 import { AccountChart } from "@/components/filax/account-chart";
 import { Coffre } from "@/components/filax/coffre";
-import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { BankBadge, Modal, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { Glyph } from "@/components/filax/glyph";
 import {
   DepositModal,
   FundGoalModal,
   NewAccountModal,
   NewGoalModal,
+  NewGroupModal,
   TransferModal,
   WithdrawModal,
 } from "@/components/filax/action-modals";
-import { useDbUser, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb } from "@/lib/filax-db";
+import { useDbUser, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb, useDbProfile, createDbAccount, createDbGroup } from "@/lib/filax-db";
 import { formatDate, formatMoney, isLocked, pct, useFilax, type AccentKey, type Goal } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/")({
@@ -39,16 +41,20 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentKey }[] = [
+const PLUS_ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentKey }[] = [
   { key: "deposit", label: "Dépôt", icon: ArrowDownLeft, color: "brand-green" },
   { key: "withdraw", label: "Retrait", icon: ArrowUpRight, color: "brand-red" },
   { key: "transfer", label: "Transfert", icon: Send, color: "brand-blue" },
+  { key: "account", label: "Créer un compte", icon: Wallet, color: "brand-violet" },
+  { key: "group", label: "Créer une cagnotte", icon: Users, color: "brand-gold" },
 ];
 
 function HomePage() {
+  const navigate = useNavigate();
   const filax = useFilax();
   const { notifications } = filax.data;
   const userId = useDbUser();
+  const { profile: dbProfile } = useDbProfile(userId);
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
   const live = !!userId && !!db.accounts && db.accounts.length > 0;
@@ -68,9 +74,19 @@ function HomePage() {
   const accountTx = transactions.filter((t) => t.accountId === active.id);
   const accountGoals = goals.filter((g) => g.accountId === active.id);
 
+  // Dépôts, retraits et transferts exigent une identité vérifiée (KYC depuis le profil).
+  const kycOk = !live || dbProfile?.kycStatus === "verified";
+
   const openAction = (key: string) => {
     if (key === "withdraw" && isLocked(active)) {
       lockedWithdrawToast();
+      return;
+    }
+    if (!kycOk && (key === "deposit" || key === "withdraw" || key === "transfer")) {
+      toast.error("Vérifiez votre identité pour débloquer les dépôts, retraits et transferts.", {
+        description: "Rendez-vous dans Profil → Vérification d'identité.",
+        action: { label: "Vérifier", onClick: () => navigate({ to: "/profil" }) },
+      });
       return;
     }
     setModal(key);
@@ -99,40 +115,23 @@ function HomePage() {
           total={accounts.length}
           onNext={() => setActiveIndex((i) => (i + 1) % accounts.length)}
           onShowAll={() => setModal("all")}
-          onCreate={() => setModal("account")}
+          onCreate={() => setModal("plus")}
         />
       </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-2.5">
-        {ACTIONS.map(({ key, label, icon: Icon, color }) => {
-          const disabled = key === "withdraw" && isLocked(active);
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => openAction(key)}
-              className="press flex flex-col items-center gap-1.5 rounded-2xl bg-surface py-3 soft-shadow"
-            >
-              <span
-                className="flex h-9 w-9 items-center justify-center rounded-xl"
-                style={{
-                  backgroundColor: disabled
-                    ? "var(--muted)"
-                    : `color-mix(in oklab, ${accentVar(color)} 14%, transparent)`,
-                }}
-              >
-                <Icon className="h-4 w-4" style={{ color: disabled ? "var(--muted-foreground)" : accentVar(color) }} />
-              </span>
-              <span
-                className="text-[0.65rem] font-semibold"
-                style={{ color: disabled ? "var(--muted-foreground)" : "var(--foreground)" }}
-              >
-                {label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Badge KYC discret si l'identité n'est pas encore vérifiée */}
+      {live && !kycOk && (
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/profil" })}
+          className="press mt-4 flex w-full items-center justify-between rounded-2xl border border-brand-gold/30 bg-brand-gold/[0.07] px-4 py-3 text-left"
+        >
+          <span className="text-[0.72rem] font-semibold text-foreground">
+            Vérifiez votre identité pour débloquer les dépôts, retraits et transferts.
+          </span>
+          <span className="text-[0.68rem] font-bold text-brand-blue">Vérifier mon identité</span>
+        </button>
+      )}
 
       <div className="mt-6 space-y-3">
         <Coffre
@@ -236,6 +235,32 @@ function HomePage() {
         <BankBadge />
       </div>
 
+      {/* Bottom-sheet « + » : actions et création, design unifié */}
+      <Modal open={modal === "plus"} onOpenChange={(o) => !o && setModal(null)} title="Que souhaitez-vous faire ?">
+        <div className="space-y-2.5">
+          {PLUS_ACTIONS.map(({ key, label, icon: Icon, color }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => {
+                setModal(null);
+                if (key === "account" || key === "group") setModal(key);
+                else openAction(key);
+              }}
+              className="press flex w-full items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3.5 text-left"
+            >
+              <span
+                className="flex h-10 w-10 items-center justify-center rounded-xl"
+                style={{ backgroundColor: `color-mix(in oklab, ${accentVar(color)} 14%, transparent)` }}
+              >
+                <Icon className="h-4.5 w-4.5" style={{ color: accentVar(color) }} />
+              </span>
+              <span className="text-[0.85rem] font-bold text-foreground">{label}</span>
+            </button>
+          ))}
+        </div>
+      </Modal>
+
       <DepositModal
         open={modal === "deposit"}
         onOpenChange={(o) => !o && setModal(null)}
@@ -266,7 +291,24 @@ function HomePage() {
             : filax.transfer
         }
       />
-      <NewAccountModal open={modal === "account"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createAccount} />
+      <NewAccountModal
+        open={modal === "account"}
+        onOpenChange={(o) => !o && setModal(null)}
+        onConfirm={(a) =>
+          live
+            ? void createDbAccount({ name: a.name, currency: a.currency, lockedUntil: a.lockedUntil }).then(reload)
+            : filax.createAccount(a)
+        }
+      />
+      <NewGroupModal
+        open={modal === "group"}
+        onOpenChange={(o) => !o && setModal(null)}
+        onConfirm={async (g) => {
+          if (live) await createDbGroup({ name: g.name, category: "Communauté", target: g.target, currency: g.currency });
+          else filax.createGroup(g);
+          navigate({ to: "/groupes" });
+        }}
+      />
       
       <NewGoalModal
         open={modal === "goal"}

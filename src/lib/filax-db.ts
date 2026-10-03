@@ -383,6 +383,29 @@ export async function fundGoalDb(goalId: string, amount: number, accountId: stri
   if (error) throw new Error(error.message);
 }
 
+/** Enregistre la banque partenaire choisie par l'utilisateur. */
+export async function setPartnerBank(bank: string) {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ partner_bank: bank })
+    .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "");
+  if (error) throw new Error(error.message);
+}
+
+/** Crée un compte réel (épargne libre ou bloquée). */
+export async function createDbAccount(input: { name: string; currency: Currency; lockedUntil?: number | null }) {
+  const userId = (await supabase.auth.getUser()).data.user?.id;
+  if (!userId) throw new Error("Non connecté");
+  const { error } = await supabase.from("accounts").insert({
+    user_id: userId,
+    name: input.name,
+    currency: input.currency,
+    kind: input.lockedUntil ? "locked" : "savings",
+    locked_until: input.lockedUntil ? new Date(input.lockedUntil).toISOString() : null,
+  });
+  if (error) throw new Error(error.message);
+}
+
 /* ---------------- Back-office ---------------- */
 
 export function useIsAdmin(userId: string | null) {

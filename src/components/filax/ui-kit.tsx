@@ -159,8 +159,9 @@ export function Modal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[88vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-3xl border-white/20 bg-surface/85 p-5 backdrop-blur-2xl"
+        className="bottom-0 top-auto max-h-[88vh] w-full max-w-md translate-y-0 gap-0 overflow-y-auto rounded-t-[2rem] rounded-b-none border-x-0 border-b-0 border-white/20 bg-surface/90 p-5 pb-8 backdrop-blur-2xl data-[state=open]:slide-in-from-bottom-full data-[state=open]:zoom-in-100 data-[state=closed]:slide-out-to-bottom-full data-[state=closed]:zoom-out-100"
       >
+        <div className="mx-auto -mt-1 mb-4 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/30" />
         <div className="mb-4 pr-6">
           <DialogTitle className="text-base font-bold tracking-tight text-foreground">{title}</DialogTitle>
           {subtitle && <p className="mt-0.5 text-[0.72rem] text-muted-foreground">{subtitle}</p>}

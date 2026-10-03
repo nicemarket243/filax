@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { BadgeCheck, Copy, Languages, Lock, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BadgeCheck, Copy, Landmark, Languages, Lock, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import avatarImg from "@/assets/profile-avatar.jpg";
 import { toast } from "sonner";
 
@@ -25,11 +25,20 @@ import {
   saveDbProfile,
   setDbPin,
   setDbTwoFactor,
+  setPartnerBank,
   submitDbKyc,
   useDbProfile,
   useDbUser,
   useIsAdmin,
 } from "@/lib/filax-db";
+
+const PARTNER_BANKS = [
+  { id: "equity-bcdc", name: "Equity BCDC", desc: "Banque commerciale panafricaine" },
+  { id: "ib-rdc", name: "I&B RDC", desc: "Banque locale digitale" },
+  { id: "bcc", name: "Banque Centrale du Congo (BCC)", desc: "Institution de régulation" },
+  { id: "rawbank", name: "Rawbank", desc: "Première banque commerciale de RDC" },
+  { id: "tmb", name: "TMB", desc: "Trust Merchant Bank" },
+] as const;
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -67,6 +76,13 @@ function ProfilPage() {
   const [kycStep, setKycStep] = useState(0);
   const { lang, setLang, t } = useI18n();
   const [code2fa, setCode2fa] = useState("");
+  const [bank, setBank] = useState<string | null>(null);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [bankBusy, setBankBusy] = useState(false);
+
+  useEffect(() => {
+    if (dbProfile?.partnerBank) setBank(dbProfile.partnerBank);
+  }, [dbProfile?.partnerBank]);
 
   const verified = !!profile.verified;
 
@@ -189,6 +205,88 @@ function ProfilPage() {
       </div>
 
       <div className="mt-4 space-y-3">
+        {/* Banque partenaire — bien visible, au-dessus des informations personnelles */}
+        <Coffre
+          title={t("Choisissez votre banque")}
+          subtitle={t("Banque partenaire et sécurité des fonds")}
+          icon={<Landmark className="h-4 w-4" />}
+          badge={bank ? "✓" : "!"}
+        >
+          <div className="space-y-3">
+            <p className="rounded-2xl bg-brand-blue/[0.07] px-3 py-2.5 text-[0.7rem] leading-relaxed text-muted-foreground">
+              {t("Vos fonds sont hébergés et sécurisés par la banque partenaire que vous choisissez.")}
+            </p>
+            <div className="space-y-2">
+              {PARTNER_BANKS.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setBank(b.name)}
+                  className={`press flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition ${
+                    bank === b.name ? "border-brand-blue/50 bg-brand-blue/[0.08]" : "border-border bg-background"
+                  }`}
+                >
+                  <span
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[0.62rem] font-black text-white"
+                    style={{ background: "var(--gradient-blue)" }}
+                  >
+                    {b.name.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="min-w-0 flex-1 leading-tight">
+                    <span className="block truncate text-[0.8rem] font-bold text-foreground">{b.name}</span>
+                    <span className="block text-[0.62rem] text-muted-foreground">{b.desc}</span>
+                  </span>
+                  <span
+                    className={`h-4 w-4 shrink-0 rounded-full border-2 ${
+                      bank === b.name ? "border-brand-blue bg-brand-blue" : "border-muted-foreground/40"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={acceptTerms}
+              onClick={() => setAcceptTerms((a) => !a)}
+              className="press flex w-full items-center justify-between rounded-2xl bg-muted/50 px-3.5 py-3 text-left"
+            >
+              <span className="text-[0.72rem] font-semibold text-foreground">
+                {t("J'accepte les conditions d'hébergement des fonds")}
+              </span>
+              <span
+                className="relative h-6 w-11 shrink-0 rounded-full transition"
+                style={{ backgroundColor: acceptTerms ? accentVar("brand-green") : "var(--muted-foreground)" }}
+              >
+                <span
+                  className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all"
+                  style={{ left: acceptTerms ? "1.5rem" : "0.125rem" }}
+                />
+              </span>
+            </button>
+            <PrimaryButton
+              disabled={!bank || !acceptTerms || bankBusy}
+              onClick={async () => {
+                if (!bank) return;
+                setBankBusy(true);
+                try {
+                  if (userId) {
+                    await setPartnerBank(bank);
+                    await refreshProfile();
+                  }
+                  toast.success(t("Banque enregistrée"), { description: bank });
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Enregistrement impossible");
+                } finally {
+                  setBankBusy(false);
+                }
+              }}
+            >
+              {bankBusy ? "…" : t("Valider ma banque")}
+            </PrimaryButton>
+          </div>
+        </Coffre>
+
         {/* Informations personnelles dans un tiroir */}
         <Coffre title="Informations personnelles" subtitle="Nom, contact, naissance" icon={<User className="h-4 w-4" />}>
           <div className="space-y-3">
