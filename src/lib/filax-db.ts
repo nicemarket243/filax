@@ -79,7 +79,7 @@ export function useDbProfile(userId: string | null) {
 export async function saveDbProfile(
   updates: { firstName?: string; lastName?: string; phone?: string; email?: string; birthDate?: string },
 ) {
-  const payload: Record<string, unknown> = {};
+  const payload: { first_name?: string; last_name?: string; phone?: string; email?: string; birth_date?: string | null } = {};
   if (updates.firstName !== undefined) payload.first_name = updates.firstName;
   if (updates.lastName !== undefined) payload.last_name = updates.lastName;
   if (updates.phone !== undefined) payload.phone = updates.phone;
