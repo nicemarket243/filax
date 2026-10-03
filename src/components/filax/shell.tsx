@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Bell, Home, PieChart, User, Users } from "lucide-react";
 import { FilaxLogo } from "@/components/filax-logo";
+import { useI18n } from "@/lib/i18n";
 
 export function AppHeader({ unread = 0, onNotifications }: { unread?: number; onNotifications?: () => void }) {
   return (
@@ -33,6 +34,7 @@ const TABS = [
 ] as const;
 
 export function BottomNav() {
+  const { t } = useI18n();
   return (
     <nav className="fixed bottom-4 left-1/2 z-40 flex w-[calc(100%-2.5rem)] max-w-sm -translate-x-1/2 items-center justify-around rounded-full border border-border bg-surface/80 p-1.5 backdrop-blur-xl soft-shadow">
       {TABS.map(({ to, label, icon: Icon }) => (
@@ -43,7 +45,7 @@ export function BottomNav() {
           className="press flex flex-1 flex-col items-center gap-0.5 rounded-full py-2 text-[0.6rem] font-semibold text-muted-foreground data-[status=active]:bg-accent data-[status=active]:text-brand-blue"
         >
           <Icon className="h-[1.15rem] w-[1.15rem]" />
-          {label}
+          {t(label)}
         </Link>
       ))}
     </nav>

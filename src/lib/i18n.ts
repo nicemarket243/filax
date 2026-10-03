@@ -26,6 +26,11 @@ const EN: Record<string, string> = {
   Inviter: "Invite",
   Collecté: "Collected",
   Objectif: "Target",
+  "Identité, sécurité et préférences.": "Identity, security and preferences.",
+  "Vision globale de tout votre portefeuille.": "Overall view of your whole portfolio.",
+  "Informations personnelles": "Personal information",
+  "Vérification de sécurité": "Security verification",
+  Confirmer: "Confirm",
 };
 
 let lang: Lang = "fr";

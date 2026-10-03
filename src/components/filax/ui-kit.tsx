@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PARTNER_BANK, type AccentKey } from "@/lib/filax-store";
+import { useI18n } from "@/lib/i18n";
 
 export function accentVar(key: AccentKey) {
   return `var(--${key})`;
@@ -55,6 +56,9 @@ export function ThemeToggle({ className }: { className?: string }) {
 
 /** Titre d'en-tête commun à toutes les pages : centré, dégradé métal. */
 export function PageTitle({ title, subtitle }: { title: string; subtitle?: string }) {
+  const { t } = useI18n();
+  title = t(title);
+  subtitle = subtitle && t(subtitle);
   return (
     <div className="mt-5 text-center">
       <h1 className="text-metal text-[1.35rem] font-extrabold leading-tight tracking-tight">{title}</h1>
@@ -65,6 +69,8 @@ export function PageTitle({ title, subtitle }: { title: string; subtitle?: strin
 
 
 export function SectionTitle({ title, action }: { title: string; action?: ReactNode }) {
+  const { t } = useI18n();
+  title = t(title);
   return (
     <div className="mb-3 flex items-end justify-between">
       <h2 className="text-[0.95rem] font-bold tracking-tight text-foreground">{title}</h2>
