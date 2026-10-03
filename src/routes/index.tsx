@@ -235,6 +235,32 @@ function HomePage() {
         <BankBadge />
       </div>
 
+      {/* Bottom-sheet « + » : actions et création, design unifié */}
+      <Modal open={modal === "plus"} onOpenChange={(o) => !o && setModal(null)} title="Que souhaitez-vous faire ?">
+        <div className="space-y-2.5">
+          {PLUS_ACTIONS.map(({ key, label, icon: Icon, color }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => {
+                setModal(null);
+                if (key === "account" || key === "group") setModal(key);
+                else openAction(key);
+              }}
+              className="press flex w-full items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3.5 text-left"
+            >
+              <span
+                className="flex h-10 w-10 items-center justify-center rounded-xl"
+                style={{ backgroundColor: `color-mix(in oklab, ${accentVar(color)} 14%, transparent)` }}
+              >
+                <Icon className="h-4.5 w-4.5" style={{ color: accentVar(color) }} />
+              </span>
+              <span className="text-[0.85rem] font-bold text-foreground">{label}</span>
+            </button>
+          ))}
+        </div>
+      </Modal>
+
       <DepositModal
         open={modal === "deposit"}
         onOpenChange={(o) => !o && setModal(null)}
@@ -265,7 +291,24 @@ function HomePage() {
             : filax.transfer
         }
       />
-      <NewAccountModal open={modal === "account"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createAccount} />
+      <NewAccountModal
+        open={modal === "account"}
+        onOpenChange={(o) => !o && setModal(null)}
+        onConfirm={(a) =>
+          live
+            ? void createDbAccount({ name: a.name, currency: a.currency, lockedUntil: a.lockedUntil }).then(reload)
+            : filax.createAccount(a)
+        }
+      />
+      <NewGroupModal
+        open={modal === "group"}
+        onOpenChange={(o) => !o && setModal(null)}
+        onConfirm={async (g) => {
+          if (live) await createDbGroup({ name: g.name, category: "Communauté", target: g.target, currency: g.currency });
+          else filax.createGroup(g);
+          navigate({ to: "/groupes" });
+        }}
+      />
       
       <NewGoalModal
         open={modal === "goal"}
