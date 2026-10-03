@@ -445,7 +445,7 @@ export async function adminListGroups() {
   if (error) throw new Error(error.message);
   return data ?? [];
 }
-export async function adminCreateGroup(input: { name: string; category: string; currency: string; target: number | null; deadline: string | null; owner: string }) {
+export async function adminCreateGroup(input: { name: string; category: string; currency: string; target: number | null; deadline: string | null; owner: string | null }) {
   const { data, error } = await supabase.rpc("admin_create_group", {
     _name: input.name, _category: input.category, _currency: input.currency,
     _target: input.target, _deadline: input.deadline, _owner: input.owner,
@@ -453,7 +453,7 @@ export async function adminCreateGroup(input: { name: string; category: string; 
   if (error) throw new Error(error.message);
   return data as string;
 }
-export async function adminUpdateGroup(input: { id: string; name: string; category: string; target: number | null; deadline: string | null }) {
+export async function adminUpdateGroup(input: { id: string; name: string; category: string; target: number | null; deadline: string | null; }) {
   const { error } = await supabase.rpc("admin_update_group", {
     _id: input.id, _name: input.name, _category: input.category, _target: input.target, _deadline: input.deadline,
   });
