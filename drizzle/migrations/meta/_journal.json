@@ -36,6 +36,13 @@
       "when": 1790994350854,
       "tag": "0004_backoffice_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790994666906,
+      "tag": "0005_admin_clients",
+      "breakpoints": true
     }
   ]
 }
