@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { BadgeCheck, Copy, Lock, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BadgeCheck, Copy, Languages, Lock, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
+import avatarImg from "@/assets/profile-avatar.jpg";
 import { toast } from "sonner";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
@@ -44,6 +45,10 @@ function ProfilPage() {
   const [birthDate, setBirthDate] = useState(profile.birthDate ?? "");
   const [pin, setPin] = useState("");
   const [kycStep, setKycStep] = useState(0);
+  const [lang, setLang] = useState<"fr" | "en">("fr");
+  useEffect(() => {
+    if (localStorage.getItem("filax-lang") === "en") setLang("en");
+  }, []);
 
   const verified = !!profile.verified;
 
