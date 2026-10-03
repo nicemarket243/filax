@@ -6,6 +6,7 @@ import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
 import { Glyph } from "@/components/filax/glyph";
 import { PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { useI18n } from "@/lib/i18n";
 import {
   METHOD_LABEL,
   formatDate,
@@ -45,6 +46,7 @@ const CDF_PER_USD = 2800;
 const toUsd = (amount: number, currency: string) => (currency === "CDF" ? amount / CDF_PER_USD : amount);
 
 function AnalysePage() {
+  const { t } = useI18n();
   const { data } = useFilax();
   const { transactions, accounts, goals } = data;
   const [periodKey, setPeriodKey] = useState("30j");
@@ -110,10 +112,10 @@ function AnalysePage() {
         className="mt-5 rounded-3xl p-5 text-white soft-shadow"
         style={{ background: `linear-gradient(140deg, ${accentVar("brand-blue")}, color-mix(in oklab, ${accentVar("brand-blue")} 40%, #05070f))` }}
       >
-        <p className="text-[0.7rem] text-white/80">Portefeuille total · {accounts.length} comptes</p>
+        <p className="text-[0.7rem] text-white/80">{t("Portefeuille total")} · {accounts.length} {t("comptes")}</p>
         <p className="mt-1 text-[1.9rem] font-extrabold leading-none tracking-tight">{formatMoney(totalUsd, "USD")}</p>
         <p className="mt-2 text-[0.65rem] text-white/80">
-          Converti en USD (1 $ = {CDF_PER_USD.toLocaleString("fr-FR")} FC) · {stats.list.length} opération(s)
+          {t("Converti en USD")} (1 $ = {CDF_PER_USD.toLocaleString("fr-FR")} FC) · {stats.list.length} {t("opération(s)")}
         </p>
       </div>
 
