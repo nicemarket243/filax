@@ -45,7 +45,11 @@ export const Route = createFileRoute("/profil")({
 
 function ProfilPage() {
   const filax = useFilax();
-  const { profile } = filax.data;
+  const userId = useDbUser();
+  const { profile: dbProfile, refresh: refreshProfile } = useDbProfile(userId);
+  // Données réelles si connecté, démonstration sinon.
+  const profile = dbProfile ?? filax.data.profile;
+  const kycStatus = dbProfile?.kycStatus ?? (filax.data.profile.verified ? "verified" : "not_started");
   const [modal, setModal] = useState<string | null>(null);
   const [firstName, setFirstName] = useState(profile.firstName);
   const [lastName, setLastName] = useState(profile.lastName);
@@ -53,6 +57,10 @@ function ProfilPage() {
   const [email, setEmail] = useState(profile.email ?? "");
   const [birthDate, setBirthDate] = useState(profile.birthDate ?? "");
   const [pin, setPin] = useState("");
+  const [kycDocType, setKycDocType] = useState("cni");
+  const [kycDoc, setKycDoc] = useState<File | null>(null);
+  const [kycSelfie, setKycSelfie] = useState<File | null>(null);
+  const [kycBusy, setKycBusy] = useState(false);
   const [kycStep, setKycStep] = useState(0);
   const { lang, setLang, t } = useI18n();
   const [code2fa, setCode2fa] = useState("");
