@@ -464,6 +464,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_client_detail: { Args: { _user: string }; Returns: Json }
       admin_decide_kyc: {
         Args: { _approved: boolean; _user: string }
         Returns: undefined
@@ -471,6 +472,23 @@ export type Database = {
       admin_decide_withdrawal: {
         Args: { _approved: boolean; _id: string }
         Returns: undefined
+      }
+      admin_list_clients: {
+        Args: never
+        Returns: {
+          accounts: Json
+          created_at: string
+          email: string
+          filax_id: string
+          first_name: string
+          groups_count: number
+          kyc_status: string
+          last_name: string
+          last_tx_at: string
+          phone: string
+          tx_count: number
+          user_id: string
+        }[]
       }
       admin_list_kyc: {
         Args: never

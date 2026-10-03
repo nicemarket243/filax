@@ -424,3 +424,18 @@ export async function kycFileUrl(path: string | null) {
   const { data } = await supabase.storage.from("kyc-documents").createSignedUrl(path, 600);
   return data?.signedUrl ?? null;
 }
+
+export async function adminListClients() {
+  const { data, error } = await supabase.rpc("admin_list_clients");
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+export interface AdminClientDetail {
+  groups: { name: string; category: string; currency: string; collected: number; target: number | null; owner: boolean; members: number }[];
+  transactions: { type: string; amount: number; fee: number; method: string | null; label: string | null; created_at: string; currency: string; account: string }[];
+}
+export async function adminClientDetail(user: string) {
+  const { data, error } = await supabase.rpc("admin_client_detail", { _user: user });
+  if (error) throw new Error(error.message);
+  return data as unknown as AdminClientDetail;
+}

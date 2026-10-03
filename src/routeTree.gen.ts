@@ -15,6 +15,7 @@ import { Route as AnalyseRouteImport } from './routes/analyse'
 import { Route as GroupesRouteImport } from './routes/groupes'
 import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as ProfilRouteImport } from './routes/profil'
+import { Route as AdminClientsRouteImport } from './routes/admin_.clients'
 import { Route as UserUsernameRouteImport } from './routes/user.$username'
 
 const IndexRoute = IndexRouteImport.update({
@@ -47,6 +48,11 @@ const ProfilRoute = ProfilRouteImport.update({
   path: '/profil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminClientsRoute = AdminClientsRouteImport.update({
+  id: '/admin_/clients',
+  path: '/admin/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UserUsernameRoute = UserUsernameRouteImport.update({
   id: '/user/$username',
   path: '/user/$username',
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
+  '/admin/clients': typeof AdminClientsRoute
   '/user/$username': typeof UserUsernameRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
+  '/admin/clients': typeof AdminClientsRoute
   '/user/$username': typeof UserUsernameRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
+  '/admin_/clients': typeof AdminClientsRoute
   '/user/$username': typeof UserUsernameRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/groupes'
     | '/inscription'
     | '/profil'
+    | '/admin/clients'
     | '/user/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/groupes'
     | '/inscription'
     | '/profil'
+    | '/admin/clients'
     | '/user/$username'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/groupes'
     | '/inscription'
     | '/profil'
+    | '/admin_/clients'
     | '/user/$username'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   GroupesRoute: typeof GroupesRoute
   InscriptionRoute: typeof InscriptionRoute
   ProfilRoute: typeof ProfilRoute
+  AdminClientsRoute: typeof AdminClientsRoute
   UserUsernameRoute: typeof UserUsernameRoute
 }
 
@@ -165,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/clients': {
+      id: '/admin_/clients'
+      path: '/admin/clients'
+      fullPath: '/admin/clients'
+      preLoaderRoute: typeof AdminClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/user/$username': {
       id: '/user/$username'
       path: '/user/$username'
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   GroupesRoute: GroupesRoute,
   InscriptionRoute: InscriptionRoute,
   ProfilRoute: ProfilRoute,
+  AdminClientsRoute: AdminClientsRoute,
   UserUsernameRoute: UserUsernameRoute,
 }
 export const routeTree = rootRouteImport

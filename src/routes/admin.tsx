@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Banknote, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Banknote, ShieldCheck, Users } from "lucide-react";
 import { Coffre } from "@/components/filax/coffre";
 import { PageTitle } from "@/components/filax/ui-kit";
 import {
@@ -121,6 +121,10 @@ function AdminPage() {
         <p className="mt-6 text-center text-[0.8rem] text-muted-foreground">Accès réservé aux administrateurs FILAX.</p>
       ) : (
         <div className="mt-4 space-y-3">
+          <Link to="/admin/clients" className="press flex items-center justify-between rounded-2xl bg-surface px-4 py-3 soft-shadow">
+            <span className="flex items-center gap-2 text-[0.8rem] font-bold text-foreground"><Users className="h-4 w-4" /> Clients</span>
+            <span className="text-[0.7rem] text-muted-foreground">Comptes, groupes, opérations</span>
+          </Link>
           <Coffre
             title="Demandes KYC"
             subtitle="Pièce d'identité et selfie"
