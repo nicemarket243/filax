@@ -142,6 +142,16 @@ export function useDbAccounts(userId: string | null) {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+  useEffect(() => {
+    if (!userId) return;
+    const ch = supabase
+      .channel(`accounts-${userId}-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "accounts", filter: `user_id=eq.${userId}` }, () => void refresh())
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [userId, refresh]);
   return { accounts, refresh };
 }
 
@@ -284,6 +294,16 @@ export function useDbTransactions(userId: string | null, accounts: Account[] | n
   useEffect(() => {
     void refresh();
   }, [refresh]);
+  useEffect(() => {
+    if (!userId) return;
+    const ch = supabase
+      .channel(`transactions-${userId}-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "transactions", filter: `user_id=eq.${userId}` }, () => void refresh())
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [userId, refresh]);
   return { transactions: txs, refresh };
 }
 
