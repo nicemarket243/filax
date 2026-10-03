@@ -7,6 +7,7 @@ import { Coffre } from "@/components/filax/coffre";
 import { Glyph } from "@/components/filax/glyph";
 import { PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { useI18n } from "@/lib/i18n";
+import { useDbUser, useDbAccounts, useDbTransactions } from "@/lib/filax-db";
 import {
   METHOD_LABEL,
   formatDate,
@@ -48,7 +49,13 @@ const toUsd = (amount: number, currency: string) => (currency === "CDF" ? amount
 function AnalysePage() {
   const { t } = useI18n();
   const { data } = useFilax();
-  const { transactions, accounts, goals } = data;
+  const { goals } = data;
+  const userId = useDbUser();
+  const db = useDbAccounts(userId);
+  const dbTx = useDbTransactions(userId, db.accounts);
+  const live = !!userId && !!db.accounts && db.accounts.length > 0;
+  const accounts = live ? db.accounts! : data.accounts;
+  const transactions = live ? dbTx.transactions ?? [] : data.transactions;
   const [periodKey, setPeriodKey] = useState("30j");
   const [point, setPoint] = useState<number | null>(null);
 
