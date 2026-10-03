@@ -247,17 +247,50 @@ function ProfilPage() {
             <div className="rounded-2xl bg-muted/50 p-3 text-[0.72rem] leading-relaxed text-muted-foreground">
               Votre identité a été vérifiée{profile.verifiedAt ? ` le ${formatDate(profile.verifiedAt)}` : ""}. Vos plafonds de
               transfert sont débloqués.
-              <button
-                type="button"
-                onClick={() => {
-                  filax.updateProfile({ verified: false, verifiedAt: undefined });
-                  setKycStep(0);
-                  toast("Vérification réinitialisée");
-                }}
-                className="press mt-2 block text-[0.7rem] font-bold text-brand-red"
-              >
-                Refaire la vérification
-              </button>
+            </div>
+          ) : userId && kycStatus === "pending" ? (
+            <div className="rounded-2xl bg-muted/50 p-3 text-[0.72rem] leading-relaxed text-muted-foreground">
+              Vos documents sont entre nos mains. La vérification est en cours d'examen — vous serez notifié dès qu'elle
+              sera terminée.
+            </div>
+          ) : userId ? (
+            <div className="space-y-3">
+              {kycStatus === "rejected" && (
+                <p className="rounded-2xl bg-brand-red/10 px-3 py-2 text-[0.7rem] font-semibold text-brand-red">
+                  Votre dernière vérification a été refusée. Renvoyez des documents lisibles.
+                </p>
+              )}
+              <Field label="Type de pièce">
+                <select
+                  value={kycDocType}
+                  onChange={(e) => setKycDocType(e.target.value)}
+                  className="w-full rounded-2xl bg-muted px-3.5 py-3 text-[0.8rem] font-semibold text-foreground outline-none"
+                >
+                  <option value="cni">Carte d'identité</option>
+                  <option value="passeport">Passeport</option>
+                  <option value="permis">Permis de conduire</option>
+                </select>
+              </Field>
+              <Field label="Photo de la pièce">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setKycDoc(e.target.files?.[0] ?? null)}
+                  className="w-full rounded-2xl bg-muted px-3.5 py-2.5 text-[0.72rem] text-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-brand-blue/15 file:px-3 file:py-1.5 file:text-[0.7rem] file:font-bold file:text-brand-blue"
+                />
+              </Field>
+              <Field label="Selfie de contrôle">
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  onChange={(e) => setKycSelfie(e.target.files?.[0] ?? null)}
+                  className="w-full rounded-2xl bg-muted px-3.5 py-2.5 text-[0.72rem] text-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-brand-blue/15 file:px-3 file:py-1.5 file:text-[0.7rem] file:font-bold file:text-brand-blue"
+                />
+              </Field>
+              <PrimaryButton color="brand-green" onClick={runKyc} disabled={kycBusy}>
+                {kycBusy ? "Envoi en cours…" : "Envoyer mes documents"}
+              </PrimaryButton>
             </div>
           ) : (
             <div className="space-y-2.5">
@@ -289,12 +322,21 @@ function ProfilPage() {
               />
             </Field>
             <PrimaryButton
-              onClick={() => {
+              onClick={async () => {
                 if (pin.length !== 4) {
                   toast.error("Le code doit contenir 4 chiffres");
                   return;
                 }
-                filax.updateProfile({ pin });
+                if (userId) {
+                  try {
+                    await setDbPin(pin);
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Enregistrement impossible");
+                    return;
+                  }
+                } else {
+                  filax.updateProfile({ pin });
+                }
                 setPin("");
                 toast.success("Code secret enregistré");
               }}
