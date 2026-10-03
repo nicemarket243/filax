@@ -18,6 +18,7 @@ import {
   TransferModal,
   WithdrawModal,
 } from "@/components/filax/action-modals";
+import { useDbUser, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb } from "@/lib/filax-db";
 import { formatDate, formatMoney, isLocked, pct, useFilax, type AccentKey, type Goal } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/")({
@@ -46,7 +47,17 @@ const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentK
 
 function HomePage() {
   const filax = useFilax();
-  const { accounts, goals, transactions, notifications } = filax.data;
+  const { goals, notifications } = filax.data;
+  const { user } = useDbUser();
+  const userId = user?.id ?? null;
+  const db = useDbAccounts(userId);
+  const dbTx = useDbTransactions(userId, db.accounts);
+  const live = !!userId && !!db.accounts && db.accounts.length > 0;
+  const accounts = live ? db.accounts! : filax.data.accounts;
+  const transactions = live ? dbTx.transactions ?? [] : filax.data.transactions;
+  const reload = async () => {
+    await db.refresh();
+  };
   const [activeIndex, setActiveIndex] = useState(0);
   const [modal, setModal] = useState<string | null>(null);
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -229,21 +240,30 @@ function HomePage() {
         onOpenChange={(o) => !o && setModal(null)}
         accounts={accounts}
         defaultAccountId={active.id}
-        onConfirm={filax.deposit}
+        onConfirm={live ? async (id, amt, m) => { await depositDb(id, amt, m); await reload(); } : filax.deposit}
       />
       <WithdrawModal
         open={modal === "withdraw"}
         onOpenChange={(o) => !o && setModal(null)}
         accounts={accounts}
         defaultAccountId={active.id}
-        onConfirm={filax.withdraw}
+        onConfirm={live ? async (id, amt, m) => { await withdrawDb(id, amt, m); await reload(); } : filax.withdraw}
       />
       <TransferModal
         open={modal === "transfer"}
         onOpenChange={(o) => !o && setModal(null)}
         accounts={accounts}
         defaultAccountId={active.id}
-        onConfirm={filax.transfer}
+        requirePin={live}
+        onConfirm={
+          live
+            ? async (id, amt, label, extra) => {
+                if (extra?.external) await transferExternalDb(id, amt, label, extra.pin ?? "");
+                else await transferDb(id, amt, extra?.filaxId ?? "", extra?.pin ?? "");
+                await reload();
+              }
+            : filax.transfer
+        }
       />
       <NewAccountModal open={modal === "account"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createAccount} />
       
