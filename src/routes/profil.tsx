@@ -353,9 +353,19 @@ function ProfilPage() {
                 type="button"
                 role="switch"
                 aria-checked={!!profile.twoFactor}
-                onClick={() => {
+                onClick={async () => {
                   if (profile.twoFactor) {
-                    filax.updateProfile({ twoFactor: false });
+                    if (userId) {
+                      try {
+                        await setDbTwoFactor(false);
+                        await refreshProfile();
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Action impossible");
+                        return;
+                      }
+                    } else {
+                      filax.updateProfile({ twoFactor: false });
+                    }
                     toast.success("Double authentification désactivée");
                   } else {
                     setCode2fa("");
@@ -424,8 +434,18 @@ function ProfilPage() {
           />
           <PrimaryButton
             disabled={code2fa.length !== 6}
-            onClick={() => {
-              filax.updateProfile({ twoFactor: true });
+            onClick={async () => {
+              if (userId) {
+                try {
+                  await setDbTwoFactor(true);
+                  await refreshProfile();
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Action impossible");
+                  return;
+                }
+              } else {
+                filax.updateProfile({ twoFactor: true });
+              }
               setModal(null);
               toast.success("Double authentification activée");
             }}
