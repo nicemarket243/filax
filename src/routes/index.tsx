@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, History, LineChart, Lock, Send, Target, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, History, LineChart, Lock, Send, Target, Users, Wallet } from "lucide-react";
+import { toast } from "sonner";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { PremiumCard, lockedWithdrawToast } from "@/components/filax/premium-card";
@@ -8,17 +9,18 @@ import { AllAccountsModal } from "@/components/filax/all-accounts-modal";
 import { NotificationsModal } from "@/components/filax/notifications";
 import { AccountChart } from "@/components/filax/account-chart";
 import { Coffre } from "@/components/filax/coffre";
-import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { BankBadge, Modal, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { Glyph } from "@/components/filax/glyph";
 import {
   DepositModal,
   FundGoalModal,
   NewAccountModal,
   NewGoalModal,
+  NewGroupModal,
   TransferModal,
   WithdrawModal,
 } from "@/components/filax/action-modals";
-import { useDbUser, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb } from "@/lib/filax-db";
+import { useDbUser, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb, useDbProfile, createDbAccount, createDbGroup } from "@/lib/filax-db";
 import { formatDate, formatMoney, isLocked, pct, useFilax, type AccentKey, type Goal } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/")({
@@ -39,13 +41,16 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentKey }[] = [
+const PLUS_ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentKey }[] = [
   { key: "deposit", label: "Dépôt", icon: ArrowDownLeft, color: "brand-green" },
   { key: "withdraw", label: "Retrait", icon: ArrowUpRight, color: "brand-red" },
   { key: "transfer", label: "Transfert", icon: Send, color: "brand-blue" },
+  { key: "account", label: "Créer un compte", icon: Wallet, color: "brand-violet" },
+  { key: "group", label: "Créer une cagnotte", icon: Users, color: "brand-gold" },
 ];
 
 function HomePage() {
+  const navigate = useNavigate();
   const filax = useFilax();
   const { notifications } = filax.data;
   const userId = useDbUser();
