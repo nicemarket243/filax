@@ -54,6 +54,7 @@ function HomePage() {
   const filax = useFilax();
   const { notifications } = filax.data;
   const userId = useDbUser();
+  const { profile: dbProfile } = useDbProfile(userId);
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
   const live = !!userId && !!db.accounts && db.accounts.length > 0;
@@ -73,9 +74,19 @@ function HomePage() {
   const accountTx = transactions.filter((t) => t.accountId === active.id);
   const accountGoals = goals.filter((g) => g.accountId === active.id);
 
+  // Dépôts, retraits et transferts exigent une identité vérifiée (KYC depuis le profil).
+  const kycOk = !live || dbProfile?.kycStatus === "verified";
+
   const openAction = (key: string) => {
     if (key === "withdraw" && isLocked(active)) {
       lockedWithdrawToast();
+      return;
+    }
+    if (!kycOk && (key === "deposit" || key === "withdraw" || key === "transfer")) {
+      toast.error("Vérifiez votre identité pour débloquer les dépôts, retraits et transferts.", {
+        description: "Rendez-vous dans Profil → Vérification d'identité.",
+        action: { label: "Vérifier", onClick: () => navigate({ to: "/profil" }) },
+      });
       return;
     }
     setModal(key);
@@ -104,40 +115,23 @@ function HomePage() {
           total={accounts.length}
           onNext={() => setActiveIndex((i) => (i + 1) % accounts.length)}
           onShowAll={() => setModal("all")}
-          onCreate={() => setModal("account")}
+          onCreate={() => setModal("plus")}
         />
       </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-2.5">
-        {ACTIONS.map(({ key, label, icon: Icon, color }) => {
-          const disabled = key === "withdraw" && isLocked(active);
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => openAction(key)}
-              className="press flex flex-col items-center gap-1.5 rounded-2xl bg-surface py-3 soft-shadow"
-            >
-              <span
-                className="flex h-9 w-9 items-center justify-center rounded-xl"
-                style={{
-                  backgroundColor: disabled
-                    ? "var(--muted)"
-                    : `color-mix(in oklab, ${accentVar(color)} 14%, transparent)`,
-                }}
-              >
-                <Icon className="h-4 w-4" style={{ color: disabled ? "var(--muted-foreground)" : accentVar(color) }} />
-              </span>
-              <span
-                className="text-[0.65rem] font-semibold"
-                style={{ color: disabled ? "var(--muted-foreground)" : "var(--foreground)" }}
-              >
-                {label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Badge KYC discret si l'identité n'est pas encore vérifiée */}
+      {live && !kycOk && (
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/profil" })}
+          className="press mt-4 flex w-full items-center justify-between rounded-2xl border border-brand-gold/30 bg-brand-gold/[0.07] px-4 py-3 text-left"
+        >
+          <span className="text-[0.72rem] font-semibold text-foreground">
+            Vérifiez votre identité pour débloquer les dépôts, retraits et transferts.
+          </span>
+          <span className="text-[0.68rem] font-bold text-brand-blue">Vérifier mon identité</span>
+        </button>
+      )}
 
       <div className="mt-6 space-y-3">
         <Coffre
