@@ -80,7 +80,13 @@ function ProfilPage() {
 
       {/* Bloc identité compact */}
       <section className="mt-5 flex items-center gap-3 rounded-3xl border border-border bg-surface p-3.5 soft-shadow">
-        <img src={profile.photo ?? ""} alt={profile.firstName} className="h-14 w-14 rounded-full object-cover ring-2 ring-brand-blue/25" />
+        <img
+          src={profile.photo && !profile.photo.includes("pravatar") ? profile.photo : avatarImg}
+          alt={profile.firstName}
+          width={56}
+          height={56}
+          className="h-14 w-14 rounded-full object-cover ring-2 ring-brand-blue/25"
+        />
         <div className="min-w-0 flex-1 leading-tight">
           <p className="truncate text-[0.95rem] font-extrabold tracking-tight text-foreground">
             {profile.firstName} {profile.lastName}
@@ -156,6 +162,12 @@ function ProfilPage() {
             </Field>
             <Field label="Date de naissance">
               <TextInput type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+            </Field>
+            <Field label="Pays de résidence">
+              <div className="flex items-center justify-between rounded-2xl bg-muted px-3.5 py-3 text-[0.8rem] font-semibold text-foreground">
+                <span>🇨🇩 Congo-Kinshasa (RDC)</span>
+                <span className="text-[0.58rem] font-bold text-brand-green">Détecté automatiquement</span>
+              </div>
             </Field>
             <PrimaryButton
               onClick={() => {
@@ -271,6 +283,27 @@ function ProfilPage() {
           </div>
           <ThemeToggle />
         </div>
+
+        <Coffre title="Langue" subtitle={lang === "fr" ? "Français" : "Anglais"} icon={<Languages className="h-4 w-4" />}>
+          <div className="grid grid-cols-2 gap-2">
+            {(["fr", "en"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => {
+                  setLang(l);
+                  localStorage.setItem("filax-lang", l);
+                  toast.success(l === "fr" ? "Langue : Français" : "Language: English");
+                }}
+                className={`press rounded-2xl py-3 text-[0.75rem] font-bold transition ${
+                  lang === l ? "bg-brand-blue/15 text-brand-blue" : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {l === "fr" ? "Français" : "Anglais"}
+              </button>
+            ))}
+          </div>
+        </Coffre>
       </div>
 
       <div className="mt-4">
