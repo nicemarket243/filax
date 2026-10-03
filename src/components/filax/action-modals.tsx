@@ -622,7 +622,7 @@ export function NewGroupModal({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onConfirm: (g: { name: string; description: string; icon: string; target: number; currency: Currency }) => void;
+  onConfirm: (g: { name: string; description: string; icon: string; target: number; currency: Currency }) => void | Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -665,10 +665,14 @@ export function NewGroupModal({
         </Field>
         <PrimaryButton
           disabled={!name.trim() || Number(target) <= 0}
-          onClick={() => {
-            onConfirm({ name: name.trim(), description: description.trim(), icon, target: Number(target), currency: "USD" });
-            onOpenChange(false);
-            toast.success("Groupe créé", { description: name.trim() });
+          onClick={async () => {
+            try {
+              await onConfirm({ name: name.trim(), description: description.trim(), icon, target: Number(target), currency: "USD" });
+              onOpenChange(false);
+              toast.success("Groupe créé", { description: name.trim() });
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Création impossible");
+            }
           }}
         >
           Créer le groupe
@@ -691,7 +695,7 @@ export function ContributeModal({
   onOpenChange: (o: boolean) => void;
   group: Group | null;
   accounts: Account[];
-  onConfirm: (groupId: string, amount: number, accountId: string) => void;
+  onConfirm: (groupId: string, amount: number, accountId: string) => void | Promise<void>;
 }) {
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(available[0]?.id ?? "");
@@ -708,10 +712,14 @@ export function ContributeModal({
         <PrimaryButton
           color="brand-green"
           disabled={!group || value <= 0 || !accountId}
-          onClick={() => {
-            onConfirm(group!.id, value, accountId);
-            onOpenChange(false);
-            toast.success("Cotisation enregistrée");
+          onClick={async () => {
+            try {
+              await onConfirm(group!.id, value, accountId);
+              onOpenChange(false);
+              toast.success("Cotisation enregistrée");
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Cotisation impossible");
+            }
           }}
         >
           Cotiser
@@ -732,7 +740,7 @@ export function InviteModal({
   open: boolean;
   onOpenChange: (o: boolean) => void;
   filaxId: string;
-  onAddMember?: (name: string) => void;
+  onAddMember?: (name: string) => void | Promise<void>;
 }) {
   const [name, setName] = useState("");
   const link = typeof window !== "undefined" ? `${window.location.origin}/inscription?ref=${filaxId}` : "";
@@ -769,11 +777,15 @@ export function InviteModal({
             </Field>
             <PrimaryButton
               disabled={!name.trim()}
-              onClick={() => {
-                onAddMember(name.trim());
-                setName("");
-                onOpenChange(false);
-                toast.success("Membre ajouté");
+              onClick={async () => {
+                try {
+                  await onAddMember(name.trim());
+                  setName("");
+                  onOpenChange(false);
+                  toast.success("Membre ajouté");
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Ajout impossible");
+                }
               }}
             >
               Ajouter au groupe
