@@ -198,6 +198,7 @@ export function useDbGroups(userId: string | null) {
         }
         return {
           id: g.id,
+          ownerId: g.owner_id,
           name: g.name,
           description: "",
           icon: "users",
@@ -260,6 +261,7 @@ const TX_TYPE: Record<string, import("./filax-store").TxType> = {
   transfer_in: "reception",
   contribution: "cotisation",
   goal_fund: "envoi",
+  group_withdraw: "reception",
 };
 const KNOWN_METHODS = ["orange", "airtel", "mpesa", "banque", "carte", "filax"];
 
@@ -379,4 +381,46 @@ export async function createGoalDb(userId: string, g: { accountId: string; name:
 export async function fundGoalDb(goalId: string, amount: number, accountId: string) {
   const { error } = await supabase.rpc("fund_goal", { _goal: goalId, _from: accountId, _amount: amount });
   if (error) throw new Error(error.message);
+}
+
+/* ---------------- Back-office ---------------- */
+
+export function useIsAdmin(userId: string | null) {
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!userId) {
+      setIsAdmin(false);
+      return;
+    }
+    supabase.rpc("has_role", { _user_id: userId, _role: "admin" }).then(({ data }) => setIsAdmin(!!data));
+  }, [userId]);
+  return isAdmin;
+}
+
+export async function requestGroupWithdrawalDb(groupId: string, accountId: string, amount: number, reason: string) {
+  const { error } = await supabase.rpc("request_group_withdrawal", { _group: groupId, _account: accountId, _amount: amount, _reason: reason });
+  if (error) throw new Error(error.message);
+}
+export async function adminListKyc() {
+  const { data, error } = await supabase.rpc("admin_list_kyc");
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+export async function adminDecideKyc(user: string, approved: boolean) {
+  const { error } = await supabase.rpc("admin_decide_kyc", { _user: user, _approved: approved });
+  if (error) throw new Error(error.message);
+}
+export async function adminListWithdrawals() {
+  const { data, error } = await supabase.rpc("admin_list_withdrawals");
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+export async function adminDecideWithdrawal(id: string, approved: boolean) {
+  const { error } = await supabase.rpc("admin_decide_withdrawal", { _id: id, _approved: approved });
+  if (error) throw new Error(error.message);
+}
+export async function kycFileUrl(path: string | null) {
+  if (!path) return null;
+  const { data } = await supabase.storage.from("kyc-documents").createSignedUrl(path, 600);
+  return data?.signedUrl ?? null;
 }
