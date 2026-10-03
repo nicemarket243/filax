@@ -143,7 +143,7 @@ export const ACCOUNT_ICONS = ["💼", "💍", "👨‍👩‍👧", "🏢", "�
 export const GROUP_ICONS = ["💍", "🕊️", "✈️", "🏝️", "🎉", "🚀", "👨‍👩‍👧", "⛪", "🤝"];
 export const ACCENTS: AccentKey[] = ["brand-blue", "brand-green", "brand-gold", "brand-violet", "brand-red", "brand-teal"];
 
-const KEY = "filax-v4";
+const KEY = "filax-v5";
 const DAY = 86_400_000;
 const now = Date.now();
 
