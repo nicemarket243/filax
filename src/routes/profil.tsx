@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BadgeCheck, Copy, Languages, Lock, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import avatarImg from "@/assets/profile-avatar.jpg";
 import { toast } from "sonner";
@@ -19,6 +19,7 @@ import {
 import { InviteModal } from "@/components/filax/action-modals";
 import { ReceiveQrModal } from "@/components/filax/qr-scanner";
 import { formatDate, useFilax } from "@/lib/filax-store";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -45,10 +46,8 @@ function ProfilPage() {
   const [birthDate, setBirthDate] = useState(profile.birthDate ?? "");
   const [pin, setPin] = useState("");
   const [kycStep, setKycStep] = useState(0);
-  const [lang, setLang] = useState<"fr" | "en">("fr");
-  useEffect(() => {
-    if (localStorage.getItem("filax-lang") === "en") setLang("en");
-  }, []);
+  const { lang, setLang, t } = useI18n();
+  const [code2fa, setCode2fa] = useState("");
 
   const verified = !!profile.verified;
 
@@ -257,7 +256,7 @@ function ProfilPage() {
 
             <div className="flex items-center justify-between rounded-2xl bg-muted/50 px-3 py-2.5">
               <div className="leading-tight">
-                <p className="text-[0.76rem] font-bold text-foreground">Double authentification</p>
+                <p className="text-[0.76rem] font-bold text-foreground">{t("Double authentification")}</p>
                 <p className="text-[0.62rem] text-muted-foreground">Code envoyé au {profile.phone}</p>
               </div>
               <button
@@ -265,8 +264,13 @@ function ProfilPage() {
                 role="switch"
                 aria-checked={!!profile.twoFactor}
                 onClick={() => {
-                  filax.updateProfile({ twoFactor: !profile.twoFactor });
-                  toast.success(profile.twoFactor ? "Double authentification désactivée" : "Double authentification activée");
+                  if (profile.twoFactor) {
+                    filax.updateProfile({ twoFactor: false });
+                    toast.success("Double authentification désactivée");
+                  } else {
+                    setCode2fa("");
+                    setModal("2fa");
+                  }
                 }}
                 className="press relative h-6 w-11 rounded-full transition"
                 style={{ backgroundColor: profile.twoFactor ? accentVar("brand-green") : "var(--muted-foreground)" }}
@@ -289,7 +293,7 @@ function ProfilPage() {
           <ThemeToggle />
         </div>
 
-        <Coffre title="Langue" subtitle={lang === "fr" ? "Français" : "Anglais"} icon={<Languages className="h-4 w-4" />}>
+        <Coffre title={t("Langue")} subtitle={t(lang === "fr" ? "Français" : "Anglais")} icon={<Languages className="h-4 w-4" />}>
           <div className="grid grid-cols-2 gap-2">
             {(["fr", "en"] as const).map((l) => (
               <button
@@ -297,14 +301,13 @@ function ProfilPage() {
                 type="button"
                 onClick={() => {
                   setLang(l);
-                  localStorage.setItem("filax-lang", l);
                   toast.success(l === "fr" ? "Langue : Français" : "Language: English");
                 }}
                 className={`press rounded-2xl py-3 text-[0.75rem] font-bold transition ${
                   lang === l ? "bg-brand-blue/15 text-brand-blue" : "bg-muted text-muted-foreground"
                 }`}
               >
-                {l === "fr" ? "Français" : "Anglais"}
+                {t(l === "fr" ? "Français" : "Anglais")}
               </button>
             ))}
           </div>
@@ -314,6 +317,33 @@ function ProfilPage() {
       <div className="mt-4">
         <BankBadge />
       </div>
+
+      <Modal open={modal === "2fa"} onOpenChange={(o) => !o && setModal(null)} title={t("Vérification de sécurité")}>
+        <div className="space-y-4">
+          <p className="text-[0.75rem] text-muted-foreground">
+            Veuillez entrer le code à 6 chiffres envoyé sur votre numéro/email
+          </p>
+          <TextInput
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            placeholder="••••••"
+            value={code2fa}
+            onChange={(e) => setCode2fa(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            className="text-center text-lg font-bold tracking-[0.6em]"
+          />
+          <PrimaryButton
+            disabled={code2fa.length !== 6}
+            onClick={() => {
+              filax.updateProfile({ twoFactor: true });
+              setModal(null);
+              toast.success("Double authentification activée");
+            }}
+          >
+            {t("Confirmer")}
+          </PrimaryButton>
+        </div>
+      </Modal>
 
       <InviteModal open={modal === "invite"} onOpenChange={(o) => !o && setModal(null)} filaxId={profile.filaxId} />
       <ReceiveQrModal
