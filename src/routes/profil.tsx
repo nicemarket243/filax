@@ -34,7 +34,7 @@ import {
 
 const PARTNER_BANKS = [
   { id: "equity-bcdc", name: "Equity BCDC", desc: "Banque commerciale panafricaine" },
-  { id: "ib-rdc", name: "I&B RDC", desc: "Banque locale digitale" },
+  { id: "uba-rdc", name: "UBA RDC", desc: "United Bank for Africa" },
   { id: "bcc", name: "Banque Centrale du Congo (BCC)", desc: "Institution de régulation" },
   { id: "rawbank", name: "Rawbank", desc: "Première banque commerciale de RDC" },
   { id: "tmb", name: "TMB", desc: "Trust Merchant Bank" },
@@ -77,12 +77,13 @@ function ProfilPage() {
   const { lang, setLang, t } = useI18n();
   const [code2fa, setCode2fa] = useState("");
   const [bank, setBank] = useState<string | null>(null);
-  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [faqBank, setFaqBank] = useState<(typeof PARTNER_BANKS)[number] | null>(null);
   const [bankBusy, setBankBusy] = useState(false);
 
   useEffect(() => {
     if (dbProfile?.partnerBank) setBank(dbProfile.partnerBank);
-  }, [dbProfile?.partnerBank]);
+    else if (!userId) setBank(localStorage.getItem("filax-partner-bank"));
+  }, [dbProfile?.partnerBank, userId]);
 
   const verified = !!profile.verified;
 
@@ -213,17 +214,28 @@ function ProfilPage() {
           badge={bank ? "✓" : "!"}
         >
           <div className="space-y-3">
-            <p className="rounded-2xl bg-brand-blue/[0.07] px-3 py-2.5 text-[0.7rem] leading-relaxed text-muted-foreground">
-              {t("Vos fonds sont hébergés et sécurisés par la banque partenaire que vous choisissez.")}
-            </p>
+            {bank ? (
+              <div className="flex items-center gap-3 rounded-2xl border border-brand-green/40 bg-brand-green/[0.08] px-3.5 py-3">
+                <BadgeCheck className="h-5 w-5 shrink-0 text-brand-green" />
+                <span className="min-w-0 flex-1 leading-tight">
+                  <span className="block text-[0.8rem] font-bold text-foreground">{bank}</span>
+                  <span className="block text-[0.62rem] text-muted-foreground">{t("Banque validée — choix définitif")}</span>
+                </span>
+              </div>
+            ) : (
+              <p className="rounded-2xl bg-brand-blue/[0.07] px-3 py-2.5 text-[0.7rem] leading-relaxed text-muted-foreground">
+                {t("Touchez une banque pour lire la FAQ et la valider.")}
+              </p>
+            )}
             <div className="space-y-2">
               {PARTNER_BANKS.map((b) => (
                 <button
                   key={b.id}
                   type="button"
-                  onClick={() => setBank(b.name)}
-                  className={`press flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition ${
-                    bank === b.name ? "border-brand-blue/50 bg-brand-blue/[0.08]" : "border-border bg-background"
+                  disabled={!!bank}
+                  onClick={() => setFaqBank(b)}
+                  className={`press flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition disabled:cursor-default ${
+                    bank === b.name ? "border-brand-green/50 bg-brand-green/[0.08]" : bank ? "border-border bg-background opacity-50" : "border-border bg-background"
                   }`}
                 >
                   <span
@@ -236,56 +248,60 @@ function ProfilPage() {
                     <span className="block truncate text-[0.8rem] font-bold text-foreground">{b.name}</span>
                     <span className="block text-[0.62rem] text-muted-foreground">{b.desc}</span>
                   </span>
-                  <span
-                    className={`h-4 w-4 shrink-0 rounded-full border-2 ${
-                      bank === b.name ? "border-brand-blue bg-brand-blue" : "border-muted-foreground/40"
-                    }`}
-                  />
+                  {bank === b.name && <BadgeCheck className="h-4 w-4 shrink-0 text-brand-green" />}
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={acceptTerms}
-              onClick={() => setAcceptTerms((a) => !a)}
-              className="press flex w-full items-center justify-between rounded-2xl bg-muted/50 px-3.5 py-3 text-left"
-            >
-              <span className="text-[0.72rem] font-semibold text-foreground">
-                {t("J'accepte les conditions d'hébergement des fonds")}
-              </span>
-              <span
-                className="relative h-6 w-11 shrink-0 rounded-full transition"
-                style={{ backgroundColor: acceptTerms ? accentVar("brand-green") : "var(--muted-foreground)" }}
-              >
-                <span
-                  className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all"
-                  style={{ left: acceptTerms ? "1.5rem" : "0.125rem" }}
-                />
-              </span>
-            </button>
-            <PrimaryButton
-              disabled={!bank || !acceptTerms || bankBusy}
-              onClick={async () => {
-                if (!bank) return;
-                setBankBusy(true);
-                try {
-                  if (userId) {
-                    await setPartnerBank(bank);
-                    await refreshProfile();
-                  }
-                  toast.success(t("Banque enregistrée"), { description: bank });
-                } catch (e) {
-                  toast.error(e instanceof Error ? e.message : "Enregistrement impossible");
-                } finally {
-                  setBankBusy(false);
-                }
-              }}
-            >
-              {bankBusy ? "…" : t("Valider ma banque")}
-            </PrimaryButton>
           </div>
         </Coffre>
+
+        <Modal
+          open={!!faqBank}
+          onOpenChange={(o) => !o && setFaqBank(null)}
+          title={faqBank?.name ?? ""}
+          subtitle={t("FAQ — sécurité de vos fonds")}
+        >
+          {faqBank && (
+            <div className="space-y-2.5">
+              {[
+                ["Où sont gardés mes fonds ?", `Vos fonds sont hébergés sur un sous-compte à votre nom chez ${faqBank.name}, banque partenaire agréée de FILAX.`],
+                ["Mes fonds sont-ils sécurisés ?", `Oui. ${faqBank.name} conserve vos fonds séparément des comptes de FILAX : ils ne sont jamais utilisés pour les opérations de la plateforme.`],
+                ["Qui peut accéder à mon argent ?", "Vous seul, grâce à votre code secret et à votre identité vérifiée. Aucun retrait n'est possible sans votre autorisation."],
+                ["Quels sont les frais ?", "Seuls des micro-frais de 0,5 % (minimum 0,10 $) s'appliquent par opération. Votre capital d'épargne n'est jamais prélevé."],
+                ["Puis-je changer de banque ?", "Non. Le choix de la banque partenaire est définitif une fois validé, afin de garantir la traçabilité de vos fonds."],
+              ].map(([q, a]) => (
+                <details key={q} className="group rounded-2xl bg-muted/50 px-3.5 py-3">
+                  <summary className="cursor-pointer list-none text-[0.78rem] font-bold text-foreground">{q}</summary>
+                  <p className="mt-1.5 text-[0.7rem] leading-relaxed text-muted-foreground">{a}</p>
+                </details>
+              ))}
+              <PrimaryButton
+                className="mt-2"
+                disabled={bankBusy}
+                onClick={async () => {
+                  const chosen = faqBank.name;
+                  setBankBusy(true);
+                  try {
+                    if (userId) {
+                      await setPartnerBank(chosen);
+                      await refreshProfile();
+                    }
+                    localStorage.setItem("filax-partner-bank", chosen);
+                    setBank(chosen);
+                    setFaqBank(null);
+                    toast.success(t("Banque enregistrée"), { description: chosen });
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Enregistrement impossible");
+                  } finally {
+                    setBankBusy(false);
+                  }
+                }}
+              >
+                {bankBusy ? "…" : t("Valider ma banque")}
+              </PrimaryButton>
+            </div>
+          )}
+        </Modal>
 
         {/* Informations personnelles dans un tiroir */}
         <Coffre title="Informations personnelles" subtitle="Nom, contact, naissance" icon={<User className="h-4 w-4" />}>

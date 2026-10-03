@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SplashScreen } from "../components/splash-screen";
 import { I18nDomSync } from "../components/filax/i18n-dom-sync";
+import { FirstVisitOnboarding } from "../components/filax/first-visit-onboarding";
 
 function NotFoundComponent() {
   return (
@@ -126,6 +127,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <I18nDomSync />
       <SplashScreen />
+      <FirstVisitOnboarding />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
