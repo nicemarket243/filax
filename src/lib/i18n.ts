@@ -226,6 +226,12 @@ const EN: Record<string, string> = {
   "Centre de gestion du compte FILAX": "FILAX account center",
   "Activer le mode clair": "Enable light mode",
   "Activer le mode sombre": "Enable dark mode",
+  "Banque partenaire": "Partner bank",
+  "Compte Principal USD": "Main USD Account",
+  "Compte Épargne CDF": "CDF Savings Account",
+  "Compte Mariage": "Wedding Account",
+  "Compte Voyage": "Travel Account",
+  "Compte Business": "Business Account",
 };
 
 let lang: Lang = "fr";
@@ -247,15 +253,20 @@ const subscribe = (l: () => void) => {
 export function translate(text: string, l: Lang) {
   if (l !== "en") return text;
   if (EN[text]) return EN[text];
-  let result = text;
-  for (const [source, target] of Object.entries(EN).sort((a, b) => b[0].length - a[0].length)) {
-    if (result.includes(source)) result = result.split(source).join(target);
-  }
-  return result
-    .replace(/(\d+) groupe(s?)/g, "$1 group$2")
-    .replace(/(\d+) membre(s?)/g, "$1 member$2")
-    .replace(/(\d+) opération\(s\)/g, "$1 transaction(s)")
-    .replace(/ sur /g, " of ");
+  return text
+    .replace(/^(\d+) groupes?$/, (_, count) => `${count} ${count === "1" ? "group" : "groups"}`)
+    .replace(/^(\d+) membres?$/, (_, count) => `${count} ${count === "1" ? "member" : "members"}`)
+    .replace(/^(\d+) opération\(s\)$/, "$1 transaction(s)")
+    .replace(/^Objectif (.+)$/, "Target $1")
+    .replace(/^Votre contribution : (.+)$/, "Your contribution: $1")
+    .replace(/^Dernière cotisation (.+)$/, "Latest contribution $1")
+    .replace(/^⏳ (\d+) jours restants$/, "⏳ $1 days remaining")
+    .replace(/^(.+) sur (.+)$/, "$1 of $2")
+    .replace(/^Évolution du solde · (.+)$/, "Balance trend · $1")
+    .replace(/^Portefeuille total · (\d+) comptes$/, "Total portfolio · $1 accounts")
+    .replace(/^Converti en USD \((.+)\) · (\d+) opération\(s\)$/, "Converted to USD ($1) · $2 transaction(s)")
+    .replace(/^Cotiser — (.+)$/, "Contribute — $1")
+    .replace(/^Épargner — (.+)$/, "Save — $1");
 }
 
 export function useI18n() {
