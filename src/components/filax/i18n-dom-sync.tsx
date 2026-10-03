@@ -51,10 +51,11 @@ export function I18nDomSync() {
     syncElement(document.body, lang);
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
+        if (mutation.type === "characterData") syncElement(mutation.target, lang);
         for (const node of mutation.addedNodes) syncElement(node, lang);
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, characterData: true, subtree: true });
     return () => observer.disconnect();
   }, [lang]);
 
