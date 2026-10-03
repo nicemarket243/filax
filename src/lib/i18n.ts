@@ -288,7 +288,6 @@ const EN: Record<string, string> = {
   "Bienvenue sur FILAX": "Welcome to FILAX",
   "Quelques secondes suffisent pour commencer.": "It only takes a few seconds to get started.",
   "Votre nom complet": "Your full name",
-  "Numéro de téléphone": "Phone number",
   "Code de vérification": "Verification code",
   "Envoyer le code": "Send code",
   "Choisir la langue": "Choose language",
