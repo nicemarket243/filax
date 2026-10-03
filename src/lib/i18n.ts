@@ -136,7 +136,6 @@ const EN: Record<string, string> = {
   "Partager mon ID": "Share my ID",
   "QR profil": "Profile QR",
   "QR de réception": "Receiving QR",
-  "Informations personnelles": "Personal information",
   "Nom, contact, naissance": "Name, contact, birth details",
   Prénom: "First name",
   Nom: "Last name",
