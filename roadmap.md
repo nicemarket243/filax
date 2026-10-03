@@ -1,12 +1,21 @@
-# FILAX roadmap (backend phase)
-- [x] Domaine : mis de côté sur demande de l'utilisateur (app en mode aperçu)
+# FILAX roadmap
+
+## En cours — Refonte parcours utilisateur (style Revolut/Wise)
+- [ ] Onboarding léger : nom, téléphone + OTP, langue, mode sombre/clair (pas de KYC au démarrage)
+- [ ] Accueil : un seul compte par défaut à 0,00 $, suppression des boutons chargés, bouton « + » sur la carte
+- [ ] Bottom-sheet « + » : créer un compte/cagnotte (nom, objectif, description, membres si collectif)
+- [ ] Profil : tiroir « Choisissez votre banque » (Equity BCDC, I&B RDC, BCC, Rawbank, TMB) + note sécurité + toggle conditions + bouton bleu, au-dessus des infos personnelles
+- [ ] KYC depuis le profil, requis avant dépôts/retraits
+- [ ] Uniformité des modales : un seul design system moderne pour dépôt, retrait, transfert, banque, création
+
+## Fait
 - [x] Base de données : profils, banque partenaire, ID FILAX, PIN chiffré, comptes, transactions, micro-frais, groupes, notifications, temps réel
-- [x] Logique KYC : submit_kyc (documents → coffre sécurisé, statut « en cours »), validate_kyc réservé au back-office, politiques de stockage par utilisateur
-- [x] Logique groupes : invite_to_group (par username ou FILAX-ID), leave_group, retrait de membre par le propriétaire
-- [x] Page publique de partage /user/pseudo
-- [x] Profil branché sur la base : infos personnelles, KYC réel (upload pièce + selfie), PIN chiffré, double authentification
-- [x] Groupes branchés sur la base : création, cotisation (frais 0,5 %), invitation, membres et cotisations réels
-- [ ] Brancher l'accueil, les dépôts/transferts sur la base (encore données locales)
-- [ ] Notifications en temps réel dans l'app
-- [ ] Boutons WhatsApp/SMS sur le profil vers le lien public
-- [ ] Analyse mise à jour automatiquement depuis la base
+- [x] KYC : submit/validate, back-office admin (KYC, retraits de groupe, clients, gestion des groupes)
+- [x] Accueil, Analyse, Groupes, Profil branchés sur la vraie base
+- [x] Page publique /user/pseudo
+
+## Plus tard
+- [ ] Domaine filax.money : achat mis en pause par l'utilisateur
+- [ ] Notifications temps réel dans l'app
+- [ ] Boutons WhatsApp/SMS sur le profil
+- [ ] Nettoyage des données de test (KYC fictif, groupe « Test Back-office », dépôt 100 $)
