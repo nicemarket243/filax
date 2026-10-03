@@ -42,26 +42,14 @@ function GroupesPage() {
 
   // Le groupe affiché dans le détail reste synchronisé avec le store après cotisation.
   const current = group ? (groups.find((g) => g.id === group.id) ?? group) : null;
-  const totalCollected = groups.reduce((s, g) => s + groupTotal(g), 0);
+  const [hideAmounts, setHideAmounts] = useState(false);
+  const daysLeft = (d?: number) => (d ? Math.max(0, Math.ceil((d - Date.now()) / 86400000)) : null);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <AppHeader />
 
       <PageTitle title="Groupes de cotisation" subtitle="Épargnez ensemble, suivez chaque contribution." />
-
-      <div className="mt-5 grid grid-cols-2 gap-2.5">
-        <div className="rounded-2xl border border-border bg-surface px-3 py-2.5 leading-tight soft-shadow">
-          <p className="text-[0.6rem] text-muted-foreground">Groupes actifs</p>
-          <p className="mt-0.5 text-[0.95rem] font-extrabold text-foreground">{groups.length}</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-surface px-3 py-2.5 leading-tight soft-shadow">
-          <p className="text-[0.6rem] text-muted-foreground">Total collecté</p>
-          <p className="mt-0.5 text-[0.95rem] font-extrabold" style={{ color: accentVar("brand-violet") }}>
-            {formatMoney(totalCollected, groups[0]?.currency ?? "USD")}
-          </p>
-        </div>
-      </div>
 
       <div className="mt-4 flex justify-end">
         <button
@@ -165,9 +153,29 @@ function GroupesPage() {
               <div className="mt-2">
                 <ProgressBar value={pct(groupTotal(current), current.target)} color="brand-violet" />
               </div>
+              {daysLeft(current.deadline) !== null && (
+                <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-brand-violet/10 px-2.5 py-1 text-[0.65rem] font-bold text-brand-violet">
+                  ⏳ {daysLeft(current.deadline)} jours restants
+                </span>
+              )}
               <p className="mt-2 text-[0.65rem] text-muted-foreground">
                 Votre contribution : {formatMoney(myContribution(current), current.currency)}
               </p>
+            </div>
+
+            <div className="flex items-center justify-between rounded-2xl bg-muted/50 px-3 py-2.5">
+              <p className="text-[0.74rem] font-bold text-foreground">Masquer les montants des membres</p>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={hideAmounts}
+                aria-label="Masquer les montants des membres"
+                onClick={() => setHideAmounts((v) => !v)}
+                className="press relative h-6 w-11 shrink-0 rounded-full transition"
+                style={{ backgroundColor: hideAmounts ? accentVar("brand-green") : "var(--muted-foreground)" }}
+              >
+                <span className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all" style={{ left: hideAmounts ? "1.5rem" : "0.125rem" }} />
+              </button>
             </div>
 
             <div className="space-y-2">
@@ -184,7 +192,7 @@ function GroupesPage() {
                     </p>
                   </div>
                   <span className="text-[0.75rem] font-bold" style={{ color: accentVar("brand-violet") }}>
-                    {formatMoney(m.amount, current.currency)}
+                    {hideAmounts ? "•••" : formatMoney(m.amount, current.currency)}
                   </span>
                 </div>
               ))}

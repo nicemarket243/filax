@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BadgeCheck, Copy, Languages, Lock, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import avatarImg from "@/assets/profile-avatar.jpg";
 import { toast } from "sonner";
