@@ -20,6 +20,14 @@ import { InviteModal } from "@/components/filax/action-modals";
 import { ReceiveQrModal } from "@/components/filax/qr-scanner";
 import { formatDate, useFilax } from "@/lib/filax-store";
 import { useI18n } from "@/lib/i18n";
+import {
+  saveDbProfile,
+  setDbPin,
+  setDbTwoFactor,
+  submitDbKyc,
+  useDbProfile,
+  useDbUser,
+} from "@/lib/filax-db";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
