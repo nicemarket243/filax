@@ -449,14 +449,14 @@ export async function adminCreateGroup(input: { name: string; category: string; 
   const { data, error } = await supabase.rpc("admin_create_group", {
     _name: input.name, _category: input.category, _currency: input.currency,
     _target: input.target, _deadline: input.deadline, _owner: input.owner,
-  });
+  } as never);
   if (error) throw new Error(error.message);
   return data as string;
 }
 export async function adminUpdateGroup(input: { id: string; name: string; category: string; target: number | null; deadline: string | null; }) {
   const { error } = await supabase.rpc("admin_update_group", {
     _id: input.id, _name: input.name, _category: input.category, _target: input.target, _deadline: input.deadline,
-  });
+  } as never);
   if (error) throw new Error(error.message);
 }
 export async function adminDeleteGroup(id: string) {
