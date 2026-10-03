@@ -29,6 +29,13 @@
       "when": 1790994220897,
       "tag": "0003_savings_goals",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790994350854,
+      "tag": "0004_backoffice_admin",
+      "breakpoints": true
     }
   ]
 }
