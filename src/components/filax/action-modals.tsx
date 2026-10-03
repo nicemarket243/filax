@@ -773,7 +773,7 @@ export function InviteModal({
         {onAddMember && (
           <>
             <Field label="Ajouter un membre au groupe">
-              <TextInput placeholder="Nom du membre" value={name} onChange={(e) => setName(e.target.value)} />
+              <TextInput placeholder="Username ou ID FILAX (ex. FLX-1A2B3C4D)" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
             <PrimaryButton
               disabled={!name.trim()}

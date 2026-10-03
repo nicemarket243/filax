@@ -297,19 +297,48 @@ function GroupesPage() {
         )}
       </Modal>
 
-      <NewGroupModal open={modal === "new"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createGroup} />
+      <NewGroupModal
+        open={modal === "new"}
+        onOpenChange={(o) => !o && setModal(null)}
+        onConfirm={async (g) => {
+          if (userId) {
+            await createDbGroup({ name: g.name, category: "Famille", target: g.target, currency: g.currency });
+            await refreshGroups();
+          } else {
+            filax.createGroup(g);
+          }
+        }}
+      />
       <ContributeModal
         open={modal === "contribute"}
         onOpenChange={(o) => !o && setModal(null)}
         group={current}
         accounts={accounts}
-        onConfirm={filax.contribute}
+        onConfirm={async (groupId, amount, accountId) => {
+          if (userId) {
+            await contributeDb(groupId, accountId, amount);
+            await Promise.all([refreshGroups(), refreshAccounts()]);
+          } else {
+            filax.contribute(groupId, amount, accountId);
+          }
+        }}
       />
       <InviteModal
         open={modal === "invite"}
         onOpenChange={(o) => !o && setModal(null)}
         filaxId={profile.filaxId}
-        onAddMember={current ? (name) => filax.addMember(current.id, name) : undefined}
+        onAddMember={
+          current
+            ? async (identifier) => {
+                if (userId) {
+                  await inviteDb(current.id, identifier);
+                  await refreshGroups();
+                } else {
+                  filax.addMember(current.id, identifier);
+                }
+              }
+            : undefined
+        }
       />
 
       <BottomNav />
