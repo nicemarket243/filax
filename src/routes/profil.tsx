@@ -81,8 +81,29 @@ function ProfilPage() {
     toast.success("Lien de partage copié");
   };
 
-  const runKyc = () => {
-    // Vérification en 3 étapes : pièce d'identité, selfie, validation.
+  const runKyc = async () => {
+    // Connecté : envoi réel des documents puis passage en « en cours d'examen ».
+    if (userId) {
+      if (!kycDoc || !kycSelfie) {
+        toast.error("Ajoutez la pièce d'identité et le selfie");
+        return;
+      }
+      setKycBusy(true);
+      setKycStep(1);
+      try {
+        await submitDbKyc(userId, kycDocType, kycDoc, kycSelfie);
+        setKycStep(3);
+        await refreshProfile();
+        toast.success("Documents envoyés — vérification en cours");
+      } catch (e) {
+        setKycStep(0);
+        toast.error(e instanceof Error ? e.message : "Envoi impossible");
+      } finally {
+        setKycBusy(false);
+      }
+      return;
+    }
+    // Démo locale : simulation en 3 étapes.
     setKycStep(1);
     setTimeout(() => setKycStep(2), 900);
     setTimeout(() => {
@@ -190,12 +211,23 @@ function ProfilPage() {
               </div>
             </Field>
             <PrimaryButton
-              onClick={() => {
+              onClick={async () => {
                 if (!firstName.trim() || !lastName.trim()) {
                   toast.error("Le nom et le prénom sont obligatoires");
                   return;
                 }
-                filax.updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), phone, email, birthDate });
+                const updates = { firstName: firstName.trim(), lastName: lastName.trim(), phone, email, birthDate };
+                if (userId) {
+                  try {
+                    await saveDbProfile(updates);
+                    await refreshProfile();
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Enregistrement impossible");
+                    return;
+                  }
+                } else {
+                  filax.updateProfile(updates);
+                }
                 toast.success("Informations mises à jour");
               }}
             >
