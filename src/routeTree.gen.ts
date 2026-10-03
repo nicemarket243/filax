@@ -14,6 +14,7 @@ import { Route as AnalyseRouteImport } from './routes/analyse'
 import { Route as GroupesRouteImport } from './routes/groupes'
 import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as ProfilRouteImport } from './routes/profil'
+import { Route as UserUsernameRouteImport } from './routes/user.$username'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const ProfilRoute = ProfilRouteImport.update({
   path: '/profil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UserUsernameRoute = UserUsernameRouteImport.update({
+  id: '/user/$username',
+  path: '/user/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
+  '/user/$username': typeof UserUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
+  '/user/$username': typeof UserUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,33 @@ export interface FileRoutesById {
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
+  '/user/$username': typeof UserUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyse' | '/groupes' | '/inscription' | '/profil'
+  fullPaths:
+    | '/'
+    | '/analyse'
+    | '/groupes'
+    | '/inscription'
+    | '/profil'
+    | '/user/$username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyse' | '/groupes' | '/inscription' | '/profil'
-  id: '__root__' | '/' | '/analyse' | '/groupes' | '/inscription' | '/profil'
+  to:
+    | '/'
+    | '/analyse'
+    | '/groupes'
+    | '/inscription'
+    | '/profil'
+    | '/user/$username'
+  id:
+    | '__root__'
+    | '/'
+    | '/analyse'
+    | '/groupes'
+    | '/inscription'
+    | '/profil'
+    | '/user/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +105,7 @@ export interface RootRouteChildren {
   GroupesRoute: typeof GroupesRoute
   InscriptionRoute: typeof InscriptionRoute
   ProfilRoute: typeof ProfilRoute
+  UserUsernameRoute: typeof UserUsernameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/user/$username': {
+      id: '/user/$username'
+      path: '/user/$username'
+      fullPath: '/user/$username'
+      preLoaderRoute: typeof UserUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +161,7 @@ const rootRouteChildren: RootRouteChildren = {
   GroupesRoute: GroupesRoute,
   InscriptionRoute: InscriptionRoute,
   ProfilRoute: ProfilRoute,
+  UserUsernameRoute: UserUsernameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

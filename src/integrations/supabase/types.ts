@@ -14,12 +14,206 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounts: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          kind: string
+          locked_until: string | null
+          name: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          kind?: string
+          locked_until?: string | null
+          name: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          kind?: string
+          locked_until?: string | null
+          name?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      group_contributions: {
+        Row: {
+          amount: number
+          contributor_name: string | null
+          created_at: string
+          group_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          contributor_name?: string | null
+          created_at?: string
+          group_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          contributor_name?: string | null
+          created_at?: string
+          group_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_contributions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          category: string
+          collected: number
+          created_at: string
+          currency: string
+          deadline: string | null
+          id: string
+          name: string
+          owner_id: string
+          target: number | null
+        }
+        Insert: {
+          category?: string
+          collected?: number
+          created_at?: string
+          currency?: string
+          deadline?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          target?: number | null
+        }
+        Update: {
+          category?: string
+          collected?: number
+          created_at?: string
+          currency?: string
+          deadline?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          target?: number | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_fees: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          id?: string
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_fees_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           birth_city: string | null
           birth_date: string | null
+          country: string | null
           created_at: string
           email: string | null
+          filax_id: string | null
           first_name: string | null
           id: string
           id_document_path: string | null
@@ -27,15 +221,22 @@ export type Database = {
           kyc_status: string
           kyc_validated_at: string | null
           last_name: string | null
+          partner_bank: string | null
+          partner_subaccount: string | null
+          phone: string | null
           selfie_path: string | null
+          two_factor: boolean
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           birth_city?: string | null
           birth_date?: string | null
+          country?: string | null
           created_at?: string
           email?: string | null
+          filax_id?: string | null
           first_name?: string | null
           id?: string
           id_document_path?: string | null
@@ -43,15 +244,22 @@ export type Database = {
           kyc_status?: string
           kyc_validated_at?: string | null
           last_name?: string | null
+          partner_bank?: string | null
+          partner_subaccount?: string | null
+          phone?: string | null
           selfie_path?: string | null
+          two_factor?: boolean
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           birth_city?: string | null
           birth_date?: string | null
+          country?: string | null
           created_at?: string
           email?: string | null
+          filax_id?: string | null
           first_name?: string | null
           id?: string
           id_document_path?: string | null
@@ -59,7 +267,77 @@ export type Database = {
           kyc_status?: string
           kyc_validated_at?: string | null
           last_name?: string | null
+          partner_bank?: string | null
+          partner_subaccount?: string | null
+          phone?: string | null
           selfie_path?: string | null
+          two_factor?: boolean
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          counterparty: string | null
+          created_at: string
+          fee: number
+          id: string
+          label: string | null
+          method: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          counterparty?: string | null
+          created_at?: string
+          fee?: number
+          id?: string
+          label?: string | null
+          method?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          counterparty?: string | null
+          created_at?: string
+          fee?: number
+          id?: string
+          label?: string | null
+          method?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_security: {
+        Row: {
+          pin_hash: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          pin_hash?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          pin_hash?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -70,7 +348,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_pin: { Args: { _pin: string }; Returns: boolean }
+      contribute: {
+        Args: { _amount: number; _from: string; _group: string }
+        Returns: undefined
+      }
+      deposit: {
+        Args: { _account: string; _amount: number; _method: string }
+        Returns: string
+      }
+      filax_fee: { Args: { _amount: number }; Returns: number }
+      is_group_member: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
+      public_profile: {
+        Args: { _username: string }
+        Returns: {
+          filax_id: string
+          first_name: string
+          last_name: string
+        }[]
+      }
+      set_pin: { Args: { _pin: string }; Returns: undefined }
+      transfer: {
+        Args: {
+          _amount: number
+          _from: string
+          _pin: string
+          _to_filax_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
