@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { translate, useI18n } from "@/lib/i18n";
 
 const originalText = new WeakMap<Text, string>();
+// Dernière valeur écrite par la traduction : toute autre valeur vient de React et devient la nouvelle source.
+const writtenText = new WeakMap<Text, string>();
 const originalAttributes = new WeakMap<Element, Map<string, string>>();
 const ATTRIBUTES = ["aria-label", "placeholder", "title"];
 
@@ -15,12 +17,13 @@ function syncElement(root: Node, lang: "fr" | "en") {
     const parent = node.parentElement;
     if (!parent || ["SCRIPT", "STYLE"].includes(parent.tagName)) continue;
     const current = node.nodeValue ?? "";
-    if (!originalText.has(node)) originalText.set(node, current);
+    if (!originalText.has(node) || (writtenText.has(node) && writtenText.get(node) !== current)) originalText.set(node, current);
     const source = originalText.get(node) ?? current;
     const leading = source.match(/^\s*/)?.[0] ?? "";
     const trailing = source.match(/\s*$/)?.[0] ?? "";
     const core = source.trim();
     const next = core ? `${leading}${translate(core, lang)}${trailing}` : source;
+    writtenText.set(node, next);
     if (node.nodeValue !== next) node.nodeValue = next;
   }
 

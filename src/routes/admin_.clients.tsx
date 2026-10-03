@@ -78,7 +78,7 @@ function ClientsPage() {
           <div className="mt-4 grid grid-cols-3 gap-2">
             <div className="rounded-2xl bg-surface p-3 soft-shadow">
               <p className="text-[0.6rem] text-muted-foreground">Clients</p>
-              <p key={clients.length} className="text-[0.95rem] font-bold text-foreground">{clients.length}</p>
+              <p className="text-[0.95rem] font-bold text-foreground">{clients.length}</p>
             </div>
             {Object.entries(totals).map(([cur, v]) => (
               <div key={cur} className="rounded-2xl bg-surface p-3 soft-shadow">
