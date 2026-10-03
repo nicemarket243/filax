@@ -8,6 +8,13 @@
       "when": 1790992587678,
       "tag": "0000_filax_core_finance",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790993218998,
+      "tag": "0001_filax_kyc_groups_logic",
+      "breakpoints": true
     }
   ]
 }

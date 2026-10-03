@@ -358,10 +358,15 @@ export type Database = {
         Returns: string
       }
       filax_fee: { Args: { _amount: number }; Returns: number }
+      invite_to_group: {
+        Args: { _group: string; _identifier: string }
+        Returns: string
+      }
       is_group_member: {
         Args: { _group: string; _user: string }
         Returns: boolean
       }
+      leave_group: { Args: { _group: string }; Returns: undefined }
       public_profile: {
         Args: { _username: string }
         Returns: {
@@ -371,6 +376,10 @@ export type Database = {
         }[]
       }
       set_pin: { Args: { _pin: string }; Returns: undefined }
+      submit_kyc: {
+        Args: { _doc_path: string; _doc_type: string; _selfie_path: string }
+        Returns: undefined
+      }
       transfer: {
         Args: {
           _amount: number
@@ -379,6 +388,10 @@ export type Database = {
           _to_filax_id: string
         }
         Returns: string
+      }
+      validate_kyc: {
+        Args: { _approved: boolean; _user: string }
+        Returns: undefined
       }
     }
     Enums: {

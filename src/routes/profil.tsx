@@ -20,6 +20,14 @@ import { InviteModal } from "@/components/filax/action-modals";
 import { ReceiveQrModal } from "@/components/filax/qr-scanner";
 import { formatDate, useFilax } from "@/lib/filax-store";
 import { useI18n } from "@/lib/i18n";
+import {
+  saveDbProfile,
+  setDbPin,
+  setDbTwoFactor,
+  submitDbKyc,
+  useDbProfile,
+  useDbUser,
+} from "@/lib/filax-db";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -37,7 +45,11 @@ export const Route = createFileRoute("/profil")({
 
 function ProfilPage() {
   const filax = useFilax();
-  const { profile } = filax.data;
+  const userId = useDbUser();
+  const { profile: dbProfile, refresh: refreshProfile } = useDbProfile(userId);
+  // Données réelles si connecté, démonstration sinon.
+  const profile = dbProfile ?? filax.data.profile;
+  const kycStatus = dbProfile?.kycStatus ?? (filax.data.profile.verified ? "verified" : "not_started");
   const [modal, setModal] = useState<string | null>(null);
   const [firstName, setFirstName] = useState(profile.firstName);
   const [lastName, setLastName] = useState(profile.lastName);
@@ -45,6 +57,10 @@ function ProfilPage() {
   const [email, setEmail] = useState(profile.email ?? "");
   const [birthDate, setBirthDate] = useState(profile.birthDate ?? "");
   const [pin, setPin] = useState("");
+  const [kycDocType, setKycDocType] = useState("cni");
+  const [kycDoc, setKycDoc] = useState<File | null>(null);
+  const [kycSelfie, setKycSelfie] = useState<File | null>(null);
+  const [kycBusy, setKycBusy] = useState(false);
   const [kycStep, setKycStep] = useState(0);
   const { lang, setLang, t } = useI18n();
   const [code2fa, setCode2fa] = useState("");
@@ -65,8 +81,29 @@ function ProfilPage() {
     toast.success("Lien de partage copié");
   };
 
-  const runKyc = () => {
-    // Vérification en 3 étapes : pièce d'identité, selfie, validation.
+  const runKyc = async () => {
+    // Connecté : envoi réel des documents puis passage en « en cours d'examen ».
+    if (userId) {
+      if (!kycDoc || !kycSelfie) {
+        toast.error("Ajoutez la pièce d'identité et le selfie");
+        return;
+      }
+      setKycBusy(true);
+      setKycStep(1);
+      try {
+        await submitDbKyc(userId, kycDocType, kycDoc, kycSelfie);
+        setKycStep(3);
+        await refreshProfile();
+        toast.success("Documents envoyés — vérification en cours");
+      } catch (e) {
+        setKycStep(0);
+        toast.error(e instanceof Error ? e.message : "Envoi impossible");
+      } finally {
+        setKycBusy(false);
+      }
+      return;
+    }
+    // Démo locale : simulation en 3 étapes.
     setKycStep(1);
     setTimeout(() => setKycStep(2), 900);
     setTimeout(() => {
@@ -174,12 +211,23 @@ function ProfilPage() {
               </div>
             </Field>
             <PrimaryButton
-              onClick={() => {
+              onClick={async () => {
                 if (!firstName.trim() || !lastName.trim()) {
                   toast.error("Le nom et le prénom sont obligatoires");
                   return;
                 }
-                filax.updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), phone, email, birthDate });
+                const updates = { firstName: firstName.trim(), lastName: lastName.trim(), phone, email, birthDate };
+                if (userId) {
+                  try {
+                    await saveDbProfile(updates);
+                    await refreshProfile();
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Enregistrement impossible");
+                    return;
+                  }
+                } else {
+                  filax.updateProfile(updates);
+                }
                 toast.success("Informations mises à jour");
               }}
             >
@@ -199,17 +247,50 @@ function ProfilPage() {
             <div className="rounded-2xl bg-muted/50 p-3 text-[0.72rem] leading-relaxed text-muted-foreground">
               Votre identité a été vérifiée{profile.verifiedAt ? ` le ${formatDate(profile.verifiedAt)}` : ""}. Vos plafonds de
               transfert sont débloqués.
-              <button
-                type="button"
-                onClick={() => {
-                  filax.updateProfile({ verified: false, verifiedAt: undefined });
-                  setKycStep(0);
-                  toast("Vérification réinitialisée");
-                }}
-                className="press mt-2 block text-[0.7rem] font-bold text-brand-red"
-              >
-                Refaire la vérification
-              </button>
+            </div>
+          ) : userId && kycStatus === "pending" ? (
+            <div className="rounded-2xl bg-muted/50 p-3 text-[0.72rem] leading-relaxed text-muted-foreground">
+              Vos documents sont entre nos mains. La vérification est en cours d'examen — vous serez notifié dès qu'elle
+              sera terminée.
+            </div>
+          ) : userId ? (
+            <div className="space-y-3">
+              {kycStatus === "rejected" && (
+                <p className="rounded-2xl bg-brand-red/10 px-3 py-2 text-[0.7rem] font-semibold text-brand-red">
+                  Votre dernière vérification a été refusée. Renvoyez des documents lisibles.
+                </p>
+              )}
+              <Field label="Type de pièce">
+                <select
+                  value={kycDocType}
+                  onChange={(e) => setKycDocType(e.target.value)}
+                  className="w-full rounded-2xl bg-muted px-3.5 py-3 text-[0.8rem] font-semibold text-foreground outline-none"
+                >
+                  <option value="cni">Carte d'identité</option>
+                  <option value="passeport">Passeport</option>
+                  <option value="permis">Permis de conduire</option>
+                </select>
+              </Field>
+              <Field label="Photo de la pièce">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setKycDoc(e.target.files?.[0] ?? null)}
+                  className="w-full rounded-2xl bg-muted px-3.5 py-2.5 text-[0.72rem] text-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-brand-blue/15 file:px-3 file:py-1.5 file:text-[0.7rem] file:font-bold file:text-brand-blue"
+                />
+              </Field>
+              <Field label="Selfie de contrôle">
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  onChange={(e) => setKycSelfie(e.target.files?.[0] ?? null)}
+                  className="w-full rounded-2xl bg-muted px-3.5 py-2.5 text-[0.72rem] text-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-brand-blue/15 file:px-3 file:py-1.5 file:text-[0.7rem] file:font-bold file:text-brand-blue"
+                />
+              </Field>
+              <PrimaryButton color="brand-green" onClick={runKyc} disabled={kycBusy}>
+                {kycBusy ? "Envoi en cours…" : "Envoyer mes documents"}
+              </PrimaryButton>
             </div>
           ) : (
             <div className="space-y-2.5">
@@ -241,12 +322,21 @@ function ProfilPage() {
               />
             </Field>
             <PrimaryButton
-              onClick={() => {
+              onClick={async () => {
                 if (pin.length !== 4) {
                   toast.error("Le code doit contenir 4 chiffres");
                   return;
                 }
-                filax.updateProfile({ pin });
+                if (userId) {
+                  try {
+                    await setDbPin(pin);
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Enregistrement impossible");
+                    return;
+                  }
+                } else {
+                  filax.updateProfile({ pin });
+                }
                 setPin("");
                 toast.success("Code secret enregistré");
               }}
@@ -263,9 +353,19 @@ function ProfilPage() {
                 type="button"
                 role="switch"
                 aria-checked={!!profile.twoFactor}
-                onClick={() => {
+                onClick={async () => {
                   if (profile.twoFactor) {
-                    filax.updateProfile({ twoFactor: false });
+                    if (userId) {
+                      try {
+                        await setDbTwoFactor(false);
+                        await refreshProfile();
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Action impossible");
+                        return;
+                      }
+                    } else {
+                      filax.updateProfile({ twoFactor: false });
+                    }
                     toast.success("Double authentification désactivée");
                   } else {
                     setCode2fa("");
@@ -334,8 +434,18 @@ function ProfilPage() {
           />
           <PrimaryButton
             disabled={code2fa.length !== 6}
-            onClick={() => {
-              filax.updateProfile({ twoFactor: true });
+            onClick={async () => {
+              if (userId) {
+                try {
+                  await setDbTwoFactor(true);
+                  await refreshProfile();
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Action impossible");
+                  return;
+                }
+              } else {
+                filax.updateProfile({ twoFactor: true });
+              }
               setModal(null);
               toast.success("Double authentification activée");
             }}

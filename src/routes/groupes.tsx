@@ -23,6 +23,14 @@ import {
   useFilax,
   type Group,
 } from "@/lib/filax-store";
+import {
+  contributeDb,
+  createDbGroup,
+  inviteDb,
+  useDbAccounts,
+  useDbGroups,
+  useDbUser,
+} from "@/lib/filax-db";
 
 export const Route = createFileRoute("/groupes")({
   head: () => ({
@@ -80,7 +88,13 @@ function GroupHeroSlideshow() {
 
 function GroupesPage() {
   const filax = useFilax();
-  const { groups, accounts, profile } = filax.data;
+  const userId = useDbUser();
+  const { groups: dbGroups, refresh: refreshGroups } = useDbGroups(userId);
+  const { accounts: dbAccounts, refresh: refreshAccounts } = useDbAccounts(userId);
+  // Données réelles si connecté, démonstration sinon.
+  const groups = dbGroups ?? filax.data.groups;
+  const accounts = dbAccounts ?? filax.data.accounts;
+  const { profile } = filax.data;
   const [modal, setModal] = useState<string | null>(null);
   const [group, setGroup] = useState<Group | null>(null);
 
@@ -154,14 +168,23 @@ function GroupesPage() {
                       <div className="mt-2.5 flex items-center gap-1.5">
                         {sortedMembers(g)
                           .slice(0, 6)
-                          .map((m) => (
-                            <img
-                              key={m.id}
-                              src={m.avatar}
-                              alt={m.name}
-                              className="h-7 w-7 rounded-full object-cover ring-2 ring-surface"
-                            />
-                          ))}
+                          .map((m) =>
+                            m.avatar ? (
+                              <img
+                                key={m.id}
+                                src={m.avatar}
+                                alt={m.name}
+                                className="h-7 w-7 rounded-full object-cover ring-2 ring-surface"
+                              />
+                            ) : (
+                              <span
+                                key={m.id}
+                                className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-violet/15 text-[0.6rem] font-bold text-brand-violet ring-2 ring-surface"
+                              >
+                                {m.name.slice(0, 1).toUpperCase()}
+                              </span>
+                            ),
+                          )}
                       </div>
                     </button>
                   );
@@ -233,7 +256,13 @@ function GroupesPage() {
               </p>
               {sortedMembers(current).map((m) => (
                 <div key={m.id} className="flex items-center gap-2.5 rounded-2xl bg-muted/40 px-3 py-2">
-                  <img src={m.avatar} alt={m.name} className="h-8 w-8 rounded-full object-cover" />
+                  {m.avatar ? (
+                    <img src={m.avatar} alt={m.name} className="h-8 w-8 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-violet/15 text-[0.65rem] font-bold text-brand-violet">
+                      {m.name.slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
                   <div className="min-w-0 flex-1 leading-tight">
                     <p className="truncate text-[0.76rem] font-semibold text-foreground">{m.name}</p>
                     <p className="text-[0.6rem] text-muted-foreground">
@@ -268,19 +297,48 @@ function GroupesPage() {
         )}
       </Modal>
 
-      <NewGroupModal open={modal === "new"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createGroup} />
+      <NewGroupModal
+        open={modal === "new"}
+        onOpenChange={(o) => !o && setModal(null)}
+        onConfirm={async (g) => {
+          if (userId) {
+            await createDbGroup({ name: g.name, category: "Famille", target: g.target, currency: g.currency });
+            await refreshGroups();
+          } else {
+            filax.createGroup(g);
+          }
+        }}
+      />
       <ContributeModal
         open={modal === "contribute"}
         onOpenChange={(o) => !o && setModal(null)}
         group={current}
         accounts={accounts}
-        onConfirm={filax.contribute}
+        onConfirm={async (groupId, amount, accountId) => {
+          if (userId) {
+            await contributeDb(groupId, accountId, amount);
+            await Promise.all([refreshGroups(), refreshAccounts()]);
+          } else {
+            filax.contribute(groupId, amount, accountId);
+          }
+        }}
       />
       <InviteModal
         open={modal === "invite"}
         onOpenChange={(o) => !o && setModal(null)}
         filaxId={profile.filaxId}
-        onAddMember={current ? (name) => filax.addMember(current.id, name) : undefined}
+        onAddMember={
+          current
+            ? async (identifier) => {
+                if (userId) {
+                  await inviteDb(current.id, identifier);
+                  await refreshGroups();
+                } else {
+                  filax.addMember(current.id, identifier);
+                }
+              }
+            : undefined
+        }
       />
 
       <BottomNav />
