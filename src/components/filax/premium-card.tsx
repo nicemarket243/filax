@@ -6,7 +6,7 @@ import { FilaxLogo } from "@/components/filax-logo";
 import { Glyph } from "@/components/filax/glyph";
 
 import { accentVar } from "@/components/filax/ui-kit";
-import { formatMoney, isLocked, pct, type Account } from "@/lib/filax-store";
+import { formatMoney, isLocked, type Account } from "@/lib/filax-store";
 
 interface Props {
   account: Account;
@@ -25,7 +25,6 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
   useEffect(() => setMounted(true), []);
 
   const locked = mounted && isLocked(account);
-  const progress = account.target ? pct(account.balance, account.target) : null;
   const accent = accentVar(account.color);
 
   const startPress = () => {
@@ -93,16 +92,6 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
           </p>
           <p className="mt-1 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/60">Solde disponible</p>
 
-          {progress !== null && (
-            <div className="mt-2.5">
-              <div className="h-1 w-full overflow-hidden rounded-full bg-white/25">
-                <div className="h-full rounded-full bg-white" style={{ width: `${progress}%` }} />
-              </div>
-              <p className="mt-1 text-[0.58rem] text-white/70">
-                {progress}% de {formatMoney(account.target ?? 0, account.currency)}
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Statut + bouton créer un compte */}

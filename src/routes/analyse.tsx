@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, History, TrendingUp } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, History, Target, TrendingUp } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
@@ -8,10 +8,9 @@ import { Glyph } from "@/components/filax/glyph";
 import { PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import {
   METHOD_LABEL,
-  analyse,
   formatDate,
   formatMoney,
-  useActiveAccountId,
+  pct,
   useFilax,
   type Transaction,
 } from "@/lib/filax-store";
@@ -42,22 +41,39 @@ function isIn(t: Transaction) {
   return t.type === "depot" || t.type === "reception";
 }
 
+const CDF_PER_USD = 2800;
+const toUsd = (amount: number, currency: string) => (currency === "CDF" ? amount / CDF_PER_USD : amount);
+
 function AnalysePage() {
   const { data } = useFilax();
-  const { transactions, accounts } = data;
-  const { activeId, select } = useActiveAccountId(accounts);
+  const { transactions, accounts, goals } = data;
   const [periodKey, setPeriodKey] = useState("30j");
   const [point, setPoint] = useState<number | null>(null);
 
-  const active = accounts.find((a) => a.id === activeId) ?? accounts[0]!;
-  const accountTx = transactions.filter((t) => t.accountId === active.id);
   const period = PERIODS.find((p) => p.key === periodKey)!;
-  const stats = useMemo(() => analyse(accountTx, period.ms), [accountTx, period.ms]);
+  const totalUsd = accounts.reduce((s, a) => s + toUsd(a.balance, a.currency), 0);
+  const allTx = useMemo(() => [...transactions].sort((a, b) => b.at - a.at), [transactions]);
+  const accName = (id: string) => accounts.find((a) => a.id === id)?.name ?? "Compte";
 
-  // Reconstruction du solde au fil des opérations de la période sélectionnée.
+  const stats = useMemo(() => {
+    const since = period.ms ? Date.now() - period.ms : 0;
+    const list = transactions.filter((t) => t.at >= since).sort((a, b) => a.at - b.at);
+    let inflow = 0;
+    let outflow = 0;
+    const byMethod = new Map<Transaction["method"], number>();
+    for (const t of list) {
+      const v = toUsd(t.amount, t.currency);
+      if (isIn(t)) inflow += v;
+      else outflow += v;
+      byMethod.set(t.method, (byMethod.get(t.method) ?? 0) + v);
+    }
+    return { list, inflow, outflow, net: inflow - outflow, byMethod };
+  }, [transactions, period.ms]);
+
+  // Courbe agrégée de tous les comptes (en USD).
   const series = useMemo(() => {
-    const deltas = stats.list.map((t) => (isIn(t) ? t.amount : -t.amount));
-    let start = active.balance;
+    const deltas = stats.list.map((t) => (isIn(t) ? 1 : -1) * toUsd(t.amount, t.currency));
+    let start = totalUsd;
     for (const d of deltas) start -= d;
     const pts = [{ at: stats.list[0]?.at ?? Date.now(), value: start, tx: null as Transaction | null }];
     let running = start;
@@ -65,8 +81,8 @@ function AnalysePage() {
       running += deltas[i]!;
       pts.push({ at: t.at, value: running, tx: t });
     });
-    return pts.length > 1 ? pts : [pts[0]!, { at: Date.now(), value: active.balance, tx: null }];
-  }, [stats.list, active.balance]);
+    return pts.length > 1 ? pts : [pts[0]!, { at: Date.now(), value: totalUsd, tx: null }];
+  }, [stats.list, totalUsd]);
 
   const w = 300;
   const h = 120;
@@ -82,52 +98,25 @@ function AnalysePage() {
 
   const totalFlow = stats.inflow + stats.outflow || 1;
   const methods = [...stats.byMethod.entries()].sort((a, b) => b[1] - a[1]);
+  const targets = accounts.filter((a) => a.target);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <AppHeader />
 
-      <PageTitle title="Analyse" subtitle="Chaque chiffre correspond au compte sélectionné." />
-
-      {/* Sélecteur de compte — partagé avec l'accueil. */}
-      <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
-        {accounts.map((a) => {
-          const on = a.id === active.id;
-          return (
-            <button
-              key={a.id}
-              type="button"
-              onClick={() => {
-                select(a.id);
-                setPoint(null);
-              }}
-              className="press flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-[0.7rem] font-semibold transition"
-              style={{
-                backgroundColor: on ? `color-mix(in oklab, ${accentVar(a.color)} 16%, transparent)` : "var(--muted)",
-                color: on ? accentVar(a.color) : "var(--muted-foreground)",
-              }}
-            >
-              <Glyph icon={a.icon} className="h-3.5 w-3.5" />
-              {a.name}
-            </button>
-          );
-        })}
-      </div>
+      <PageTitle title="Analyse" subtitle="Vision globale de tout votre portefeuille." />
 
       <div
-        className="mt-4 rounded-3xl p-5 text-white soft-shadow"
-        style={{ background: `linear-gradient(140deg, ${accentVar(active.color)}, color-mix(in oklab, ${accentVar(active.color)} 40%, #05070f))` }}
+        className="mt-5 rounded-3xl p-5 text-white soft-shadow"
+        style={{ background: `linear-gradient(140deg, ${accentVar("brand-blue")}, color-mix(in oklab, ${accentVar("brand-blue")} 40%, #05070f))` }}
       >
-        <p className="text-[0.7rem] text-white/80">{active.name}</p>
-        <p className="mt-1 text-[1.9rem] font-extrabold leading-none tracking-tight">
-          {formatMoney(active.balance, active.currency)}
-        </p>
+        <p className="text-[0.7rem] text-white/80">Portefeuille total · {accounts.length} comptes</p>
+        <p className="mt-1 text-[1.9rem] font-extrabold leading-none tracking-tight">{formatMoney(totalUsd, "USD")}</p>
         <p className="mt-2 text-[0.65rem] text-white/80">
-          {stats.list.length} opération(s) · {period.label.toLowerCase()}
+          Converti en USD (1 $ = {CDF_PER_USD.toLocaleString("fr-FR")} FC) · {stats.list.length} opération(s)
         </p>
       </div>
 
-      {/* Périodes interactives */}
       <div className="mt-4 flex gap-1.5 rounded-full bg-muted p-1">
         {PERIODS.map((p) => (
           <button
@@ -146,16 +135,12 @@ function AnalysePage() {
         ))}
       </div>
 
-      {/* Courbe interactive : chaque point affiche l'opération correspondante. */}
       <div className="mt-4 rounded-3xl border border-border bg-surface p-4 soft-shadow">
         <div className="flex items-start justify-between">
-          <p className="text-[0.7rem] font-semibold text-muted-foreground">Évolution du solde</p>
-          <p className="text-[0.7rem] font-bold text-foreground">
-            {selected ? formatMoney(selected.value, active.currency) : formatMoney(active.balance, active.currency)}
-          </p>
+          <p className="text-[0.7rem] font-semibold text-muted-foreground">Évolution de tous les comptes</p>
+          <p className="text-[0.7rem] font-bold text-foreground">{formatMoney(selected ? selected.value : totalUsd, "USD")}</p>
         </div>
-
-        <svg viewBox={`0 0 ${w} ${h}`} className="mt-2 w-full overflow-visible" role="img" aria-label="Évolution du solde">
+        <svg viewBox={`0 0 ${w} ${h}`} className="mt-2 w-full overflow-visible" role="img" aria-label="Évolution globale">
           <defs>
             <linearGradient id="analyse-grad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--brand-blue)" stopOpacity="0.35" />
@@ -178,14 +163,12 @@ function AnalysePage() {
             />
           ))}
         </svg>
-
         <div className="mt-2 min-h-[2.2rem] rounded-2xl bg-muted/50 px-3 py-2 text-[0.66rem] leading-tight">
           {selected?.tx ? (
             <>
               <span className="font-semibold text-foreground">{selected.tx.label}</span>
               <span className="text-muted-foreground">
-                {" "}
-                · {formatDate(selected.tx.at)} · {selected.tx.origin ?? METHOD_LABEL[selected.tx.method]}
+                {" "}· {accName(selected.tx.accountId)} · {formatDate(selected.tx.at)} · {formatMoney(selected.tx.amount, selected.tx.currency)}
               </span>
             </>
           ) : (
@@ -194,19 +177,17 @@ function AnalysePage() {
         </div>
       </div>
 
-      {/* Statistiques de la période */}
       <div className="mt-4 grid grid-cols-3 gap-2">
-        <StatCard label="Entrées" value={formatMoney(stats.inflow, active.currency)} color="brand-green" icon={<ArrowDownLeft className="h-3.5 w-3.5" />} />
-        <StatCard label="Sorties" value={formatMoney(stats.outflow, active.currency)} color="brand-red" icon={<ArrowUpRight className="h-3.5 w-3.5" />} />
+        <StatCard label="Entrées" value={formatMoney(stats.inflow, "USD")} color="brand-green" icon={<ArrowDownLeft className="h-3.5 w-3.5" />} />
+        <StatCard label="Sorties" value={formatMoney(stats.outflow, "USD")} color="brand-red" icon={<ArrowUpRight className="h-3.5 w-3.5" />} />
         <StatCard
           label="Solde net"
-          value={`${stats.net >= 0 ? "+" : "−"}${formatMoney(Math.abs(stats.net), active.currency)}`}
+          value={`${stats.net >= 0 ? "+" : "−"}${formatMoney(Math.abs(stats.net), "USD")}`}
           color={stats.net >= 0 ? "brand-blue" : "brand-red"}
           icon={<TrendingUp className="h-3.5 w-3.5" />}
         />
       </div>
 
-      {/* Répartition par moyen utilisé */}
       <div className="mt-4 rounded-3xl border border-border bg-surface p-4 soft-shadow">
         <p className="text-[0.7rem] font-semibold text-muted-foreground">Répartition par moyen</p>
         <div className="mt-3 space-y-2.5">
@@ -214,45 +195,72 @@ function AnalysePage() {
             <div key={m}>
               <div className="flex items-center justify-between text-[0.68rem]">
                 <span className="font-semibold text-foreground">{METHOD_LABEL[m]}</span>
-                <span className="text-muted-foreground">{formatMoney(amount, active.currency)}</span>
+                <span className="text-muted-foreground">{formatMoney(amount, "USD")}</span>
               </div>
               <div className="mt-1">
                 <ProgressBar value={Math.round((amount / totalFlow) * 100)} color="brand-blue" />
               </div>
             </div>
           ))}
-          {methods.length === 0 && (
-            <p className="text-[0.68rem] text-muted-foreground">Aucune opération sur cette période.</p>
-          )}
+          {methods.length === 0 && <p className="text-[0.68rem] text-muted-foreground">Aucune opération sur cette période.</p>}
         </div>
       </div>
 
-      <div className="mt-4">
-        <Coffre
-          title="Historique complet"
-          subtitle={active.name}
-          icon={<History className="h-4 w-4" />}
-          badge={`${accountTx.length}`}
-        >
+      <div className="mt-4 space-y-3">
+        <Coffre title="Objectif de l'épargne" subtitle="Progression par compte et par objectif" icon={<Target className="h-4 w-4" />} badge={`${targets.length + goals.length}`}>
+          <div className="space-y-2.5">
+            {targets.map((a) => (
+              <div key={a.id} className="rounded-2xl bg-muted/40 px-3 py-2.5">
+                <div className="flex items-center justify-between text-[0.72rem]">
+                  <span className="flex items-center gap-1.5 font-semibold text-foreground">
+                    <Glyph icon={a.icon} className="h-3.5 w-3.5" /> {a.name}
+                  </span>
+                  <span className="font-bold" style={{ color: accentVar(a.color) }}>{pct(a.balance, a.target!)}%</span>
+                </div>
+                <div className="mt-1.5"><ProgressBar value={pct(a.balance, a.target!)} color={a.color} /></div>
+                <p className="mt-1 text-[0.6rem] text-muted-foreground">
+                  {formatMoney(a.balance, a.currency)} sur {formatMoney(a.target!, a.currency)}
+                </p>
+              </div>
+            ))}
+            {goals.map((g) => (
+              <div key={g.id} className="rounded-2xl bg-muted/40 px-3 py-2.5">
+                <div className="flex items-center justify-between text-[0.72rem]">
+                  <span className="flex items-center gap-1.5 font-semibold text-foreground">
+                    <Glyph icon={g.icon} className="h-3.5 w-3.5" /> {g.name}
+                  </span>
+                  <span className="font-bold text-brand-green">{pct(g.saved, g.target)}%</span>
+                </div>
+                <div className="mt-1.5"><ProgressBar value={pct(g.saved, g.target)} color="brand-green" /></div>
+                <p className="mt-1 text-[0.6rem] text-muted-foreground">
+                  {formatMoney(g.saved, g.currency)} sur {formatMoney(g.target, g.currency)} · {accName(g.accountId)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Coffre>
+
+        <Coffre title="Historique complet" subtitle="Tous les comptes, toutes devises" icon={<History className="h-4 w-4" />} badge={`${allTx.length}`}>
           <div className="space-y-2">
-            {accountTx.map((t) => (
+            {allTx.map((t) => (
               <div key={t.id} className="flex items-center justify-between rounded-2xl bg-muted/40 px-3 py-2.5">
                 <div className="min-w-0 leading-tight">
                   <p className="truncate text-[0.78rem] font-semibold text-foreground">{t.label}</p>
-                  <p className="text-[0.62rem] text-muted-foreground">
-                    {formatDate(t.at)} · {t.origin ?? METHOD_LABEL[t.method]} · {t.reference}
+                  <p className="truncate text-[0.62rem] text-muted-foreground">
+                    {accName(t.accountId)} · {formatDate(t.at)} · {t.origin ?? METHOD_LABEL[t.method]}
                   </p>
                 </div>
-                <span className="text-[0.8rem] font-bold" style={{ color: accentVar(isIn(t) ? "brand-green" : "brand-red") }}>
-                  {isIn(t) ? "+" : "−"}
-                  {formatMoney(t.amount, t.currency)}
+                <span className="shrink-0 text-right leading-tight">
+                  <span className="block text-[0.8rem] font-bold" style={{ color: accentVar(isIn(t) ? "brand-green" : "brand-red") }}>
+                    {isIn(t) ? "+" : "−"}
+                    {formatMoney(t.amount, t.currency)}
+                  </span>
+                  <span className="block text-[0.55rem] font-bold text-muted-foreground">{t.currency}</span>
                 </span>
               </div>
             ))}
-            {accountTx.length === 0 && (
-              <p className="rounded-2xl bg-muted/40 px-3 py-4 text-center text-[0.7rem] text-muted-foreground">
-                Aucune opération sur ce compte.
-              </p>
+            {allTx.length === 0 && (
+              <p className="rounded-2xl bg-muted/40 px-3 py-4 text-center text-[0.7rem] text-muted-foreground">Aucune opération.</p>
             )}
           </div>
         </Coffre>

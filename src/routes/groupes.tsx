@@ -109,16 +109,9 @@ function GroupesPage() {
                             <p className="text-[0.62rem] text-muted-foreground">{g.members.length} membres</p>
                           </div>
                         </div>
-                        <span className="text-[0.7rem] font-bold" style={{ color: accentVar("brand-violet") }}>
-                          {pct(total, g.target)}%
+                        <span className="text-[0.75rem] font-bold" style={{ color: accentVar("brand-violet") }}>
+                          {formatMoney(total, g.currency)}
                         </span>
-                      </div>
-
-                      <div className="mt-2.5">
-                        <ProgressBar value={pct(total, g.target)} color="brand-violet" />
-                        <p className="mt-1.5 text-[0.65rem] text-muted-foreground">
-                          {formatMoney(total, g.currency)} sur {formatMoney(g.target, g.currency)}
-                        </p>
                       </div>
 
                       <div className="mt-2.5 flex items-center gap-1.5">
