@@ -162,7 +162,7 @@ export function DepositModal({
   onOpenChange: (o: boolean) => void;
   accounts: Account[];
   defaultAccountId: string;
-  onConfirm: (accountId: string, amount: number, method: TxMethod) => void;
+  onConfirm: (accountId: string, amount: number, method: TxMethod) => void | Promise<void>;
 }) {
   const [accountId, setAccountId] = useState(defaultAccountId);
   const [method, setMethod] = useState<TxMethod>("mpesa");
@@ -205,13 +205,13 @@ export function DepositModal({
         <PrimaryButton
           color="brand-green"
           disabled={!ready}
-          onClick={() => {
+          onClick={async () => {
             if (beneficiary) {
               onOpenChange(false);
               toast.success("Dépôt envoyé", { description: `${value} déposés sur le compte de ${beneficiary}.` });
               return;
             }
-            onConfirm(accountId, value, method);
+            try { await onConfirm(accountId, value, method); } catch (e) { toast.error("Dépôt refusé", { description: (e as Error).message }); return; }
             onOpenChange(false);
             toast.success("Dépôt effectué", { description: `${value} crédité sur votre compte.` });
           }}
@@ -245,7 +245,7 @@ export function WithdrawModal({
   onOpenChange: (o: boolean) => void;
   accounts: Account[];
   defaultAccountId: string;
-  onConfirm: (accountId: string, amount: number, method: TxMethod) => void;
+  onConfirm: (accountId: string, amount: number, method: TxMethod) => void | Promise<void>;
 }) {
   const { data } = useFilax();
   const available = accounts.filter((a) => !isLocked(a));
@@ -286,8 +286,8 @@ export function WithdrawModal({
         <PrimaryButton
           color="brand-red"
           disabled={value <= 0 || tooMuch || !accountId || (byCard && !cardOk)}
-          onClick={() => {
-            onConfirm(accountId, value, method);
+          onClick={async () => {
+            try { await onConfirm(accountId, value, method); } catch (e) { toast.error("Retrait refusé", { description: (e as Error).message }); return; }
             onOpenChange(false);
             toast.success("Retrait envoyé", { description: `Destination : ${METHOD_LABEL[method]}.` });
           }}
@@ -327,12 +327,15 @@ export function TransferModal({
   accounts,
   defaultAccountId,
   onConfirm,
+  requirePin,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   accounts: Account[];
   defaultAccountId: string;
-  onConfirm: (accountId: string, amount: number, recipient: string) => void;
+  onConfirm: (accountId: string, amount: number, recipient: string, extra?: { filaxId?: string; pin?: string; external?: boolean }) => void | Promise<void>;
+  /** Mode base réelle : demande le code secret et accepte un ID FILAX saisi. */
+  requirePin?: boolean;
 }) {
   const [accountId, setAccountId] = useState(defaultAccountId);
   const [mode, setMode] = useState<"filax" | "bank">("filax");
@@ -340,6 +343,7 @@ export function TransferModal({
   const [recipient, setRecipient] = useState<(typeof DIRECTORY)[number] | null>(null);
   const [scan, setScan] = useState(false);
   const [amount, setAmount, value] = useAmount(open);
+  const [pin, setPin] = useState("");
 
   // Transfert vers une autre banque / carte
   const [destination, setDestination] = useState(DESTINATIONS[1]!);
@@ -355,6 +359,7 @@ export function TransferModal({
       setMode("filax");
       setBeneficiary("");
       setBankName("");
+      setPin("");
     }
   }, [defaultAccountId, open]);
 
@@ -363,7 +368,8 @@ export function TransferModal({
     : [];
 
   const bankReady = beneficiary.trim().length > 2 && bankName.trim().length > 1 && cardOk;
-  const ready = value > 0 && (mode === "filax" ? !!recipient : bankReady);
+  const ready = value > 0 && (mode === "filax" ? !!recipient : bankReady) && (!requirePin || /^\d{4}$/.test(pin));
+  const typedId = requirePin && !recipient && /^FLX-[A-Z0-9-]{4,}$/i.test(query.trim()) ? query.trim().toUpperCase() : null;
 
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Envoyer de l'argent" subtitle="Vers un membre FILAX, une autre banque ou une carte">
@@ -425,7 +431,18 @@ export function TransferModal({
                 </div>
               </div>
             ) : (
-              results.map((r) => (
+              <>
+              {typedId && !results.some((r) => r.id === typedId) && (
+                <button
+                  type="button"
+                  onClick={() => setRecipient({ name: typedId, id: typedId, phone: "—" })}
+                  className="press flex w-full items-center justify-between rounded-xl border border-border px-3 py-2.5 text-left"
+                >
+                  <span className="text-[0.78rem] font-semibold text-foreground">Envoyer à cet ID FILAX</span>
+                  <span className="text-[0.65rem] text-muted-foreground">{typedId}</span>
+                </button>
+              )}
+              {results.map((r) => (
                 <button
                   key={r.id}
                   type="button"
@@ -435,7 +452,8 @@ export function TransferModal({
                   <span className="text-[0.78rem] font-semibold text-foreground">{r.name}</span>
                   <span className="text-[0.65rem] text-muted-foreground">{r.id}</span>
                 </button>
-              ))
+              ))}
+              </>
             )}
           </>
         ) : (
@@ -475,11 +493,22 @@ export function TransferModal({
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
 
+        {requirePin && (
+          <Field label="Code secret (4 chiffres)">
+            <TextInput inputMode="numeric" type="password" maxLength={4} placeholder="••••" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} />
+          </Field>
+        )}
+
         <PrimaryButton
           disabled={!ready}
-          onClick={() => {
+          onClick={async () => {
             const label = mode === "filax" ? recipient!.name : `${beneficiary} · ${bankName} (${destination.label})`;
-            onConfirm(accountId, value, label);
+            try {
+              await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient!.id, pin } : { external: true, pin });
+            } catch (e) {
+              toast.error("Transfert refusé", { description: (e as Error).message });
+              return;
+            }
             onOpenChange(false);
             toast.success("Transfert envoyé", { description: `${value} envoyés à ${label}.` });
           }}

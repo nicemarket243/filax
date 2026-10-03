@@ -389,9 +389,17 @@ export type Database = {
         }
         Returns: string
       }
+      transfer_external: {
+        Args: { _amount: number; _from: string; _label: string; _pin: string }
+        Returns: string
+      }
       validate_kyc: {
         Args: { _approved: boolean; _user: string }
         Returns: undefined
+      }
+      withdraw: {
+        Args: { _account: string; _amount: number; _method: string }
+        Returns: string
       }
     }
     Enums: {

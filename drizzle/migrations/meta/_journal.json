@@ -15,6 +15,13 @@
       "when": 1790993218998,
       "tag": "0001_filax_kyc_groups_logic",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790993645565,
+      "tag": "0002_withdraw_and_external_transfer",
+      "breakpoints": true
     }
   ]
 }
