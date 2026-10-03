@@ -242,3 +242,64 @@ export async function inviteDb(groupId: string, identifier: string) {
   const { error } = await supabase.rpc("invite_to_group", { _group: groupId, _identifier: identifier.trim() });
   if (error) throw new Error(error.message);
 }
+
+const TX_TYPE: Record<string, import("./filax-store").TxType> = {
+  deposit: "depot",
+  withdraw: "retrait",
+  transfer_out: "envoi",
+  transfer_in: "reception",
+  contribution: "cotisation",
+};
+const KNOWN_METHODS = ["orange", "airtel", "mpesa", "banque", "carte", "filax"];
+
+/** Opérations réelles de l'utilisateur, triées de la plus récente à la plus ancienne. */
+export function useDbTransactions(userId: string | null, accounts: Account[] | null) {
+  const [txs, setTxs] = useState<import("./filax-store").Transaction[] | null>(null);
+  const refresh = useCallback(async () => {
+    if (!userId) {
+      setTxs(null);
+      return;
+    }
+    const { data } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(300);
+    setTxs(
+      (data ?? []).map((t) => ({
+        id: t.id,
+        accountId: t.account_id,
+        type: TX_TYPE[t.type] ?? "depot",
+        amount: Number(t.amount),
+        currency: (accounts?.find((a) => a.id === t.account_id)?.currency ?? "USD") as Currency,
+        method: (KNOWN_METHODS.includes(t.method ?? "") ? t.method : t.method === "groupe" ? "filax" : "banque") as import("./filax-store").TxMethod,
+        label: t.label ?? "",
+        at: new Date(t.created_at).getTime(),
+        reference: t.id.slice(0, 8).toUpperCase(),
+        origin: t.counterparty ?? undefined,
+      })),
+    );
+  }, [userId, accounts]);
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+  return { transactions: txs, refresh };
+}
+
+export async function depositDb(accountId: string, amount: number, method: string) {
+  const { error } = await supabase.rpc("deposit", { _account: accountId, _amount: amount, _method: method });
+  if (error) throw new Error(error.message);
+}
+export async function withdrawDb(accountId: string, amount: number, method: string) {
+  const { error } = await supabase.rpc("withdraw", { _account: accountId, _amount: amount, _method: method });
+  if (error) throw new Error(error.message);
+}
+export async function transferDb(accountId: string, amount: number, filaxId: string, pin: string) {
+  const { error } = await supabase.rpc("transfer", { _from: accountId, _to_filax_id: filaxId, _amount: amount, _pin: pin });
+  if (error) throw new Error(error.message);
+}
+export async function transferExternalDb(accountId: string, amount: number, label: string, pin: string) {
+  const { error } = await supabase.rpc("transfer_external", { _from: accountId, _amount: amount, _label: label, _pin: pin });
+  if (error) throw new Error(error.message);
+}
