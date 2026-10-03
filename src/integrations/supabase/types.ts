@@ -465,6 +465,17 @@ export type Database = {
     }
     Functions: {
       admin_client_detail: { Args: { _user: string }; Returns: Json }
+      admin_create_group: {
+        Args: {
+          _category: string
+          _currency: string
+          _deadline: string
+          _name: string
+          _owner: string
+          _target: number
+        }
+        Returns: string
+      }
       admin_decide_kyc: {
         Args: { _approved: boolean; _user: string }
         Returns: undefined
@@ -473,6 +484,7 @@ export type Database = {
         Args: { _approved: boolean; _id: string }
         Returns: undefined
       }
+      admin_delete_group: { Args: { _id: string }; Returns: undefined }
       admin_list_clients: {
         Args: never
         Returns: {
@@ -488,6 +500,25 @@ export type Database = {
           phone: string
           tx_count: number
           user_id: string
+        }[]
+      }
+      admin_list_groups: {
+        Args: never
+        Returns: {
+          category: string
+          collected: number
+          contributions_count: number
+          created_at: string
+          currency: string
+          deadline: string
+          id: string
+          members_count: number
+          name: string
+          owner_filax_id: string
+          owner_id: string
+          owner_name: string
+          target: number
+          withdrawals_count: number
         }[]
       }
       admin_list_kyc: {
@@ -518,6 +549,16 @@ export type Database = {
           requester: string
           status: string
         }[]
+      }
+      admin_update_group: {
+        Args: {
+          _category: string
+          _deadline: string
+          _id: string
+          _name: string
+          _target: number
+        }
+        Returns: undefined
       }
       check_pin: { Args: { _pin: string }; Returns: boolean }
       contribute: {
