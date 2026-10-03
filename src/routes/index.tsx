@@ -48,8 +48,7 @@ const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentK
 function HomePage() {
   const filax = useFilax();
   const { goals, notifications } = filax.data;
-  const { user } = useDbUser();
-  const userId = user?.id ?? null;
+  const userId = useDbUser();
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
   const live = !!userId && !!db.accounts && db.accounts.length > 0;
