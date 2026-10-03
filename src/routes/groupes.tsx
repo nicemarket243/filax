@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import { Plus, UserPlus, Users } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
@@ -42,6 +43,7 @@ function GroupesPage() {
 
   // Le groupe affiché dans le détail reste synchronisé avec le store après cotisation.
   const current = group ? (groups.find((g) => g.id === group.id) ?? group) : null;
+  const { t } = useI18n();
   const [hideAmounts, setHideAmounts] = useState(false);
   const daysLeft = (d?: number) => (d ? Math.max(0, Math.ceil((d - Date.now()) / 86400000)) : null);
 
@@ -57,7 +59,7 @@ function GroupesPage() {
           onClick={() => setModal("new")}
           className="press flex items-center gap-1 rounded-full bg-brand-violet/10 px-3 py-1.5 text-[0.7rem] font-bold text-brand-violet"
         >
-          <Plus className="h-3.5 w-3.5" /> Créer un groupe
+          <Plus className="h-3.5 w-3.5" /> {t("Créer un groupe")}
         </button>
       </div>
 
@@ -205,14 +207,14 @@ function GroupesPage() {
                 className="press rounded-xl py-2.5 text-[0.75rem] font-bold text-white"
                 style={{ backgroundColor: accentVar("brand-violet") }}
               >
-                Cotiser
+                {t("Cotiser")}
               </button>
               <button
                 type="button"
                 onClick={() => setModal("invite")}
                 className="press flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-[0.75rem] font-bold text-foreground"
               >
-                <UserPlus className="h-3.5 w-3.5" /> Inviter
+                <UserPlus className="h-3.5 w-3.5" /> {t("Inviter")}
               </button>
             </div>
           </div>
