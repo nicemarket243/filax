@@ -259,6 +259,7 @@ const TX_TYPE: Record<string, import("./filax-store").TxType> = {
   transfer_out: "envoi",
   transfer_in: "reception",
   contribution: "cotisation",
+  goal_fund: "envoi",
 };
 const KNOWN_METHODS = ["orange", "airtel", "mpesa", "banque", "carte", "filax"];
 
@@ -321,5 +322,61 @@ export async function transferDb(accountId: string, amount: number, filaxId: str
 }
 export async function transferExternalDb(accountId: string, amount: number, label: string, pin: string) {
   const { error } = await supabase.rpc("transfer_external", { _from: accountId, _amount: amount, _label: label, _pin: pin });
+  if (error) throw new Error(error.message);
+}
+
+/** Objectifs d'épargne réels, mis à jour en direct. */
+export function useDbGoals(userId: string | null) {
+  const [goals, setGoals] = useState<import("./filax-store").Goal[] | null>(null);
+  const refresh = useCallback(async () => {
+    if (!userId) {
+      setGoals(null);
+      return;
+    }
+    const { data } = await supabase.from("goals").select("*").eq("user_id", userId).order("created_at");
+    setGoals(
+      (data ?? []).map((g) => ({
+        id: g.id,
+        accountId: g.account_id,
+        name: g.name,
+        target: Number(g.target),
+        saved: Number(g.saved),
+        deadline: g.deadline ? new Date(g.deadline).getTime() : Date.now(),
+        icon: g.icon,
+        currency: g.currency as Currency,
+      })),
+    );
+  }, [userId]);
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+  useEffect(() => {
+    if (!userId) return;
+    const ch = supabase
+      .channel(`goals-${userId}-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "goals", filter: `user_id=eq.${userId}` }, () => void refresh())
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [userId, refresh]);
+  return { goals, refresh };
+}
+
+export async function createGoalDb(userId: string, g: { accountId: string; name: string; target: number; deadline: number; icon: string; currency: Currency }) {
+  const { error } = await supabase.from("goals").insert({
+    user_id: userId,
+    account_id: g.accountId,
+    name: g.name,
+    target: g.target,
+    deadline: new Date(g.deadline).toISOString().slice(0, 10),
+    icon: g.icon,
+    currency: g.currency,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function fundGoalDb(goalId: string, amount: number, accountId: string) {
+  const { error } = await supabase.rpc("fund_goal", { _goal: goalId, _from: accountId, _amount: amount });
   if (error) throw new Error(error.message);
 }

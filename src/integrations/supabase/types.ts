@@ -50,6 +50,53 @@ export type Database = {
         }
         Relationships: []
       }
+      goals: {
+        Row: {
+          account_id: string
+          created_at: string
+          currency: string
+          deadline: string | null
+          icon: string
+          id: string
+          name: string
+          saved: number
+          target: number
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          currency?: string
+          deadline?: string | null
+          icon?: string
+          id?: string
+          name: string
+          saved?: number
+          target: number
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          currency?: string
+          deadline?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          saved?: number
+          target?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_contributions: {
         Row: {
           amount: number
@@ -358,6 +405,10 @@ export type Database = {
         Returns: string
       }
       filax_fee: { Args: { _amount: number }; Returns: number }
+      fund_goal: {
+        Args: { _amount: number; _from: string; _goal: string }
+        Returns: undefined
+      }
       invite_to_group: {
         Args: { _group: string; _identifier: string }
         Returns: string

@@ -835,7 +835,7 @@ export function NewGoalModal({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onConfirm: (g: { name: string; target: number; deadline: number; icon: string; currency: Currency }) => void;
+  onConfirm: (g: { name: string; target: number; deadline: number; icon: string; currency: Currency }) => void | Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [target, setTarget] = useState("");
@@ -878,8 +878,13 @@ export function NewGoalModal({
         </Field>
         <PrimaryButton
           disabled={!name.trim() || Number(target) <= 0 || !date}
-          onClick={() => {
-            onConfirm({ name: name.trim(), target: Number(target), deadline: new Date(date).getTime(), icon, currency: "USD" });
+          onClick={async () => {
+            try {
+              await onConfirm({ name: name.trim(), target: Number(target), deadline: new Date(date).getTime(), icon, currency: "USD" });
+            } catch (e) {
+              toast.error("Objectif refusé", { description: (e as Error).message });
+              return;
+            }
             onOpenChange(false);
             toast.success("Objectif créé");
           }}
@@ -902,7 +907,7 @@ export function FundGoalModal({
   onOpenChange: (o: boolean) => void;
   goal: Goal | null;
   accounts: Account[];
-  onConfirm: (goalId: string, amount: number, accountId: string) => void;
+  onConfirm: (goalId: string, amount: number, accountId: string) => void | Promise<void>;
 }) {
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(available[0]?.id ?? "");
@@ -919,8 +924,8 @@ export function FundGoalModal({
         <PrimaryButton
           color="brand-green"
           disabled={!goal || value <= 0 || !accountId}
-          onClick={() => {
-            onConfirm(goal!.id, value, accountId);
+          onClick={async () => {
+            try { await onConfirm(goal!.id, value, accountId); } catch (e) { toast.error("Épargne refusée", { description: (e as Error).message }); return; }
             onOpenChange(false);
             toast.success("Épargne ajoutée");
           }}
