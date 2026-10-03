@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SplashScreen } from "../components/splash-screen";
+import { I18nDomSync } from "../components/filax/i18n-dom-sync";
 
 function NotFoundComponent() {
   return (
@@ -78,15 +79,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { title: "FILAX — Finance connectée" },
       { name: "description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
+      { name: "author", content: "FILAX" },
+      { property: "og:title", content: "FILAX — Finance connectée" },
       { property: "og:description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:title", content: "FILAX — Finance connectée" },
       { name: "twitter:description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/huAzq9cUcQh9YLLeaO9wY0kG83z2/social-images/social-1780717378361-cool.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/huAzq9cUcQh9YLLeaO9wY0kG83z2/social-images/social-1780717378361-cool.webp" },
@@ -107,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <HeadContent />
       </head>
@@ -124,6 +124,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <I18nDomSync />
       <SplashScreen />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
