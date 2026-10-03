@@ -13,7 +13,7 @@ import {
   useIsAdmin,
 } from "@/lib/filax-db";
 
-export const Route = createFileRoute("/admin/groupes")({
+export const Route = createFileRoute("/admin_/groupes")({
   head: () => ({
     meta: [
       { title: "Back-office FILAX — Groupes" },

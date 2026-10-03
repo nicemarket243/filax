@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Banknote, ShieldCheck, Users } from "lucide-react";
+import { ArrowLeft, Banknote, Layers, ShieldCheck, Users } from "lucide-react";
 import { Coffre } from "@/components/filax/coffre";
 import { PageTitle } from "@/components/filax/ui-kit";
 import {
