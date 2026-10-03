@@ -1,6 +1,8 @@
 # FILAX roadmap (backend phase)
-- [ ] Domaine : filax.com vérifié (voir résultat recherche)
-- [ ] Comptes + inscription en base : profils, KYC, banque partenaire, PIN, comptes, transactions, micro-frais 0,5 % (min 0,10 $)
-- [ ] Groupes de cotisation en temps réel + notifications instantanées
-- [ ] Partage de profil : lien public /user/pseudo + WhatsApp/SMS
-- [ ] Analyse mise à jour automatiquement à chaque transaction
+- [x] Domaine : filax.com déjà pris — l'utilisateur doit choisir une alternative (filax.app / filax.money)
+- [x] Base de données : profils, banque partenaire, ID FILAX, PIN chiffré, comptes, transactions, micro-frais, groupes, notifications, temps réel
+- [x] Page publique de partage /user/pseudo
+- [ ] Brancher l'accueil, les dépôts/transferts et l'inscription sur la base (aujourd'hui données locales)
+- [ ] Brancher Groupes + notifications en temps réel sur la base
+- [ ] Boutons WhatsApp/SMS sur le profil vers le lien public
+- [ ] Analyse mise à jour automatiquement depuis la base
