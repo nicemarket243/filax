@@ -32,7 +32,7 @@ const TYPE: Record<string, string> = {
   goal_fund: "Épargne objectif",
   group_withdraw: "Retrait cagnotte",
 };
-const KYC: Record<string, string> = { not_started: "Non vérifié", pending: "En attente", verified: "Vérifié", rejected: "Refusé" };
+const KYC: Record<string, string> = { not_started: "Non vérifié", pending: "En cours", verified: "Validé", rejected: "Refusé" };
 const money = (n: number, c: string) => `${Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} ${c === "CDF" ? "FC" : "$"}`;
 const nameOf = (c: Client) => `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || c.email || "Client";
 

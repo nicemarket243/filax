@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { BadgeCheck, Copy, Landmark, Languages, Lock, LogOut, Moon, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import avatarImg from "@/assets/profile-avatar.jpg";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";

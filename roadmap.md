@@ -1,12 +1,12 @@
 # FILAX roadmap
 
 ## En cours — Accès public, banques et KYC
-- [ ] Remplacer les FAQ bancaires inventées par les textes officiels fournis pour Equity BCDC, UBA RDC, BCC, Rawbank et TMB
-- [ ] Rendre les tiroirs du Profil strictement exclusifs et fermés par défaut
-- [ ] Créer une page d'accueil publique avec inscription et connexion par téléphone + code SMS
-- [ ] Conserver et rattacher les profils FILAX existants après connexion téléphonique
-- [ ] Afficher le statut KYC sur l'accueil et dans la fiche client du back-office
-- [ ] Vérifier que le back-office affiche uniquement les vrais fichiers KYC téléversés, avec états de chargement/erreur
+- [x] Remplacer les FAQ bancaires inventées par les textes officiels fournis pour Equity BCDC, UBA RDC, BCC, Rawbank et TMB
+- [x] Rendre les tiroirs du Profil strictement exclusifs et fermés par défaut
+- [x] Créer une page d'accueil publique avec inscription et connexion par téléphone + code SMS
+- [x] Conserver et rattacher les profils FILAX existants après connexion téléphonique
+- [x] Afficher le statut KYC sur l'accueil et dans la fiche client du back-office
+- [x] Vérifier que le back-office affiche uniquement les vrais fichiers KYC téléversés, avec états de chargement/erreur
 - [ ] Tester un parcours KYC complet avec fichiers explicitement marqués TEST, puis nettoyer les fichiers et données de test
 
 ## Fait

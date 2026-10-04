@@ -33,7 +33,7 @@ type Kyc = Awaited<ReturnType<typeof adminListKyc>>[number];
 type Wd = Awaited<ReturnType<typeof adminListWithdrawals>>[number];
 
 const STATUS: Record<string, string> = {
-  pending: "En attente",
+  pending: "En cours",
   verified: "Validé",
   approved: "Validé",
   rejected: "Refusé",
