@@ -32,7 +32,7 @@ const TYPE: Record<string, string> = {
   goal_fund: "Épargne objectif",
   group_withdraw: "Retrait cagnotte",
 };
-const KYC: Record<string, string> = { not_started: "Non vérifié", pending: "En attente", verified: "Vérifié", rejected: "Refusé" };
+const KYC: Record<string, string> = { not_started: "Non vérifié", pending: "En cours", verified: "Validé", rejected: "Refusé" };
 const money = (n: number, c: string) => `${Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} ${c === "CDF" ? "FC" : "$"}`;
 const nameOf = (c: Client) => `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || c.email || "Client";
 
@@ -117,6 +117,13 @@ function ClientsPage() {
       <Modal open={!!sel} onOpenChange={(o) => !o && setSel(null)} title={sel ? nameOf(sel) : ""} subtitle={sel ? `${sel.filax_id ?? "—"} · ${sel.phone ?? sel.email ?? ""}` : ""}>
         {sel && (
           <div className="space-y-4">
+            <section className="flex items-center justify-between rounded-xl bg-muted/50 px-3 py-2.5">
+              <div>
+                <p className="text-[0.62rem] text-muted-foreground">Statut KYC</p>
+                <p className="text-[0.76rem] font-bold text-foreground">{KYC[sel.kyc_status] ?? sel.kyc_status}</p>
+              </div>
+              <span className={`h-2.5 w-2.5 rounded-full ${sel.kyc_status === "verified" ? "bg-brand-green" : sel.kyc_status === "rejected" ? "bg-brand-red" : "bg-brand-gold"}`} />
+            </section>
             <section>
               <p className="mb-1.5 text-[0.7rem] font-bold text-muted-foreground">Comptes</p>
               <div className="space-y-1.5">

@@ -33,6 +33,26 @@ export function useDbUser() {
   return userId;
 }
 
+/** État d'authentification avec indicateur de résolution, pour éviter un écran public fugace. */
+export function useDbAuthState() {
+  const [state, setState] = useState<{ userId: string | null; ready: boolean }>({ userId: null, ready: false });
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (alive) setState({ userId: data.user?.id ?? null, ready: true });
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!["INITIAL_SESSION", "SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
+      setState({ userId: session?.user.id ?? null, ready: true });
+    });
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+  return state;
+}
+
 /** Profil réel depuis la base, null si non connecté. */
 export function useDbProfile(userId: string | null) {
   const [profile, setProfile] = useState<DbProfile | null>(null);

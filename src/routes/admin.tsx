@@ -33,7 +33,7 @@ type Kyc = Awaited<ReturnType<typeof adminListKyc>>[number];
 type Wd = Awaited<ReturnType<typeof adminListWithdrawals>>[number];
 
 const STATUS: Record<string, string> = {
-  pending: "En attente",
+  pending: "En cours",
   verified: "Validé",
   approved: "Validé",
   rejected: "Refusé",
@@ -54,8 +54,13 @@ function DecisionButtons({ onDecide }: { onDecide: (ok: boolean) => void }) {
 
 function KycRow({ k, onDone }: { k: Kyc; onDone: () => void }) {
   const [urls, setUrls] = useState<{ doc: string | null; selfie: string | null }>({ doc: null, selfie: null });
+  const [filesReady, setFilesReady] = useState(false);
   useEffect(() => {
-    void Promise.all([kycFileUrl(k.id_document_path), kycFileUrl(k.selfie_path)]).then(([doc, selfie]) => setUrls({ doc, selfie }));
+    setFilesReady(false);
+    void Promise.all([kycFileUrl(k.id_document_path), kycFileUrl(k.selfie_path)]).then(([doc, selfie]) => {
+      setUrls({ doc, selfie });
+      setFilesReady(true);
+    }).catch(() => setFilesReady(true));
   }, [k.id_document_path, k.selfie_path]);
   return (
     <div className="rounded-2xl bg-muted/40 p-3">
@@ -69,7 +74,7 @@ function KycRow({ k, onDone }: { k: Kyc; onDone: () => void }) {
       <div className="mt-2 grid grid-cols-2 gap-2">
         {[["Pièce d'identité", urls.doc], ["Selfie", urls.selfie]].map(([label, url]) => (
           <a key={label} href={url ?? undefined} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl bg-muted">
-            {url ? <img src={url} alt={label ?? ""} className="h-24 w-full object-cover" /> : <div className="h-24" />}
+            {url ? <img src={url} alt={label ?? ""} className="h-24 w-full object-cover" /> : <div className="flex h-24 items-center justify-center px-2 text-center text-[0.62rem] text-muted-foreground">{filesReady ? "Fichier absent ou inaccessible" : "Chargement du fichier…"}</div>}
             <p className="px-2 py-1 text-[0.6rem] text-muted-foreground">{label}</p>
           </a>
         ))}

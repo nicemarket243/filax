@@ -7,18 +7,25 @@ interface CoffreProps {
   icon?: ReactNode;
   badge?: string;
   defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   children: ReactNode;
 }
 
 /** Tiroir « Coffre » — fermé par défaut, animation fluide façon iOS. */
-export function Coffre({ title, subtitle, icon, badge, defaultOpen = false, children }: CoffreProps) {
-  const [open, setOpen] = useState(defaultOpen);
+export function Coffre({ title, subtitle, icon, badge, defaultOpen = false, open: controlledOpen, onOpenChange, children }: CoffreProps) {
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (controlledOpen === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
 
   return (
     <section className="overflow-hidden rounded-3xl bg-surface soft-shadow">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpen(!open)}
         aria-expanded={open}
         className="press flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
       >
