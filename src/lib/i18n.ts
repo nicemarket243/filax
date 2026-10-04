@@ -312,7 +312,6 @@ const EN: Record<string, string> = {
   "Nom complet": "Full name",
   "Code à 6 chiffres": "6-digit code",
   "Recevoir mon code": "Get my code",
-  "Valider le code": "Verify code",
   "Modifier le numéro": "Change phone number",
   "En continuant, vous acceptez les conditions d’utilisation et la politique de confidentialité FILAX.": "By continuing, you accept FILAX's terms of use and privacy policy.",
   "KYC en cours": "KYC in progress",
