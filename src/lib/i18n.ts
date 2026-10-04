@@ -314,6 +314,7 @@ const EN: Record<string, string> = {
   "Nom complet": "Full name",
   "Code à 6 chiffres": "6-digit code",
   "Recevoir mon code": "Get my code",
+  "Se connecter": "Sign in",
   "Modifier le numéro": "Change phone number",
   "S'inscrire avec Gmail": "Sign up with Gmail",
   "Continuer avec Gmail": "Continue with Gmail",
