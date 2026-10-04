@@ -251,6 +251,8 @@ export function PublicWelcome({ onAuthenticated }: { onAuthenticated: () => void
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : sent ? (
               "Valider le code"
+            ) : mode === "login" ? (
+              "Se connecter"
             ) : (
               "Recevoir mon code"
             )}
