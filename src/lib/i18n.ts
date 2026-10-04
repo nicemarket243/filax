@@ -316,7 +316,9 @@ const EN: Record<string, string> = {
   "Code à 6 chiffres": "6-digit code",
   "Recevoir mon code": "Get my code",
   "Modifier le numéro": "Change phone number",
+  "En continuant, vous recevrez un code de vérification par SMS. Vous acceptez les conditions d'utilisation et la politique de confidentialité FILAX.": "By continuing, you will receive a verification code by SMS. You accept FILAX's terms of use and privacy policy.",
   "En continuant, vous acceptez les conditions d’utilisation et la politique de confidentialité FILAX.": "By continuing, you accept FILAX's terms of use and privacy policy.",
+
   "KYC en cours": "KYC in progress",
   "Vos documents sont en cours d'examen.": "Your documents are being reviewed.",
   "KYC validé": "KYC approved",
