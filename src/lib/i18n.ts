@@ -308,7 +308,6 @@ const EN: Record<string, string> = {
   Connexion: "Sign in",
   "Créer votre compte FILAX": "Create your FILAX account",
   "L'excellence financière, simplifiée.": "Financial excellence, simplified.",
-  Téléphone: "Phone",
   "Retrouver votre compte": "Access your account",
 
   "Un code confidentiel vous sera envoyé par SMS.": "A secure code will be sent to you by SMS.",
