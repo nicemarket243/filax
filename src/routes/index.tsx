@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, History, LineChart, Lock, Send, Target, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, BadgeCheck, History, LineChart, Lock, Send, ShieldAlert, ShieldCheck, Target, Wallet } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { PremiumCard, lockedWithdrawToast } from "@/components/filax/premium-card";
@@ -10,6 +10,7 @@ import { AccountChart } from "@/components/filax/account-chart";
 import { Coffre } from "@/components/filax/coffre";
 import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { Glyph } from "@/components/filax/glyph";
+import { PublicWelcome } from "@/components/filax/public-welcome";
 import {
   DepositModal,
   FundGoalModal,
@@ -18,7 +19,7 @@ import {
   TransferModal,
   WithdrawModal,
 } from "@/components/filax/action-modals";
-import { useDbUser, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb } from "@/lib/filax-db";
+import { useDbAuthState, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb, useDbProfile } from "@/lib/filax-db";
 import { formatDate, formatMoney, isLocked, pct, useFilax, type AccentKey, type Goal } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/")({
@@ -48,7 +49,8 @@ const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentK
 function HomePage() {
   const filax = useFilax();
   const { notifications } = filax.data;
-  const userId = useDbUser();
+  const { userId, ready } = useDbAuthState();
+  const { profile: dbProfile } = useDbProfile(userId);
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
   const live = !!userId && !!db.accounts && db.accounts.length > 0;
@@ -76,6 +78,21 @@ function HomePage() {
     setModal(key);
   };
 
+  if (!ready) {
+    return <main className="flex min-h-screen items-center justify-center bg-background"><span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-blue border-t-transparent" aria-label="Chargement" /></main>;
+  }
+
+  if (!userId) return <PublicWelcome onAuthenticated={() => window.location.reload()} />;
+
+  const kycStatus = dbProfile?.kycStatus ?? "not_started";
+  const kycMeta = {
+    not_started: { label: "Identité non vérifiée", detail: "Vérifiez votre identité depuis le Profil.", icon: ShieldAlert, tone: "brand-gold" },
+    pending: { label: "KYC en cours", detail: "Vos documents sont en cours d'examen.", icon: ShieldAlert, tone: "brand-gold" },
+    verified: { label: "KYC validé", detail: "Votre identité a été vérifiée.", icon: ShieldCheck, tone: "brand-green" },
+    rejected: { label: "KYC refusé", detail: "Renvoyez des documents lisibles depuis le Profil.", icon: ShieldAlert, tone: "brand-red" },
+  }[kycStatus];
+  const KycIcon = kycMeta.icon;
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <AppHeader
@@ -90,6 +107,17 @@ function HomePage() {
         title="Prenez le contrôle de vos finances"
         subtitle="Vos fonds sont sécurisés par notre banque partenaire."
       />
+
+      <Link to="/profil" className="press mt-4 flex items-center gap-3 rounded-2xl bg-surface px-3.5 py-3 soft-shadow">
+        <span className={`flex h-9 w-9 items-center justify-center rounded-xl bg-${kycMeta.tone}/10 text-${kycMeta.tone}`}>
+          <KycIcon className="h-4 w-4" />
+        </span>
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="block text-[0.76rem] font-bold text-foreground">{kycMeta.label}</span>
+          <span className="block text-[0.64rem] text-muted-foreground">{kycMeta.detail}</span>
+        </span>
+        {kycStatus === "verified" && <BadgeCheck className="h-4 w-4 text-brand-green" />}
+      </Link>
 
 
       <div className="mt-5">
