@@ -7,7 +7,7 @@
 - [x] Conserver et rattacher les profils FILAX existants après connexion téléphonique
 - [x] Afficher le statut KYC sur l'accueil et dans la fiche client du back-office
 - [x] Vérifier que le back-office affiche uniquement les vrais fichiers KYC téléversés, avec états de chargement/erreur
-- [ ] Tester un parcours KYC complet avec fichiers explicitement marqués TEST, puis nettoyer les fichiers et données de test
+- [x] Tester un parcours KYC complet avec fichiers explicitement marqués TEST, puis nettoyer les fichiers et données de test
 
 ## Fait
 - [x] Base de données : profils, banque partenaire, ID FILAX, PIN chiffré, comptes, transactions, micro-frais, groupes, notifications, temps réel
