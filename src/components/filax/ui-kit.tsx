@@ -149,17 +149,21 @@ export function Modal({
   title,
   subtitle,
   children,
+  display = "sheet",
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   title: string;
   subtitle?: string;
   children: ReactNode;
+  display?: "sheet" | "responsive";
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="bottom-0 top-auto max-h-[88vh] w-full max-w-md translate-y-0 gap-0 overflow-y-auto rounded-t-[2rem] rounded-b-none border-x-0 border-b-0 border-white/20 bg-surface/90 p-5 pb-8 backdrop-blur-2xl data-[state=open]:slide-in-from-bottom-full data-[state=open]:zoom-in-100 data-[state=closed]:slide-out-to-bottom-full data-[state=closed]:zoom-out-100"
+        className={display === "responsive"
+          ? "bottom-0 top-auto max-h-[92vh] w-full max-w-3xl translate-y-0 gap-0 overflow-y-auto rounded-t-[2rem] rounded-b-none border-x-0 border-b-0 border-border bg-surface/95 p-6 pb-8 backdrop-blur-2xl data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full sm:bottom-auto sm:top-1/2 sm:w-[68vw] sm:-translate-y-1/2 sm:rounded-2xl sm:border sm:p-8 sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=open]:zoom-in-95 sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=closed]:zoom-out-95"
+          : "bottom-0 top-auto max-h-[88vh] w-full max-w-md translate-y-0 gap-0 overflow-y-auto rounded-t-[2rem] rounded-b-none border-x-0 border-b-0 border-border bg-surface/90 p-5 pb-8 backdrop-blur-2xl data-[state=open]:slide-in-from-bottom-full data-[state=open]:zoom-in-100 data-[state=closed]:slide-out-to-bottom-full data-[state=closed]:zoom-out-100"}
       >
         <div className="mx-auto -mt-1 mb-4 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/30" />
         <div className="mb-4 pr-6">
