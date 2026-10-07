@@ -13,6 +13,8 @@ import { NotificationsModal } from "@/components/filax/notifications";
 import { AccountChart } from "@/components/filax/account-chart";
 import { Coffre } from "@/components/filax/coffre";
 import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { VisualPicker } from "@/components/filax/visual-picker";
+import { Modal } from "@/components/filax/ui-kit";
 import { Glyph } from "@/components/filax/glyph";
 import { AUTH_INTENT_KEY, PublicWelcome } from "@/components/filax/public-welcome";
 import {
@@ -23,7 +25,7 @@ import {
   TransferModal,
   WithdrawModal,
 } from "@/components/filax/action-modals";
-import { useDbAuthState, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb, useDbProfile } from "@/lib/filax-db";
+import { useDbAuthState, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb, useDbProfile, createDbAccount, setAccountVisualDb } from "@/lib/filax-db";
 import { formatDate, formatMoney, isLocked, pct, useFilax, type AccentKey, type Goal } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/")({
@@ -58,7 +60,7 @@ function HomePage() {
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
   const live = !!userId && !!db.accounts && db.accounts.length > 0;
-  const accounts = live ? db.accounts! : filax.data.accounts;
+  const accounts = live && db.accounts ? db.accounts : filax.data.accounts;
   const dbGoals = useDbGoals(userId);
   const goals = live ? dbGoals.goals ?? [] : filax.data.goals;
   const transactions = live ? dbTx.transactions ?? [] : filax.data.transactions;
@@ -67,6 +69,7 @@ function HomePage() {
   };
   const [activeIndex, setActiveIndex] = useState(0);
   const [modal, setModal] = useState<string | null>(null);
+  const [visualBusy, setVisualBusy] = useState(false);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [checkingLogin, setCheckingLogin] = useState(false);
   const discardFresh = useServerFn(discardFreshGoogleAccount);
@@ -93,7 +96,8 @@ function HomePage() {
     })();
   }, [userId, discardFresh]);
 
-  const active = accounts[activeIndex] ?? accounts[0]!;
+  const active = accounts[activeIndex] ?? accounts[0];
+  if (!active) return <main aria-label="Chargement" />;
   const unread = notifications.filter((n) => !n.read).length;
   const accountTx = transactions.filter((t) => t.accountId === active.id);
   const accountGoals = goals.filter((g) => g.accountId === active.id);
@@ -137,6 +141,7 @@ function HomePage() {
           onNext={() => setActiveIndex((i) => (i + 1) % accounts.length)}
           onShowAll={() => setModal("all")}
           onCreate={() => setModal("account")}
+          onChangeVisual={() => setModal("visual")}
         />
       </div>
 
@@ -285,7 +290,7 @@ function HomePage() {
         onOpenChange={(o) => !o && setModal(null)}
         accounts={accounts}
         defaultAccountId={active.id}
-        onConfirm={live ? async (id, amt, m) => { await withdrawDb(id, amt, m); await reload(); } : filax.withdraw}
+        onConfirm={live ? async (id, amt, m, pin) => { await withdrawDb(id, amt, m, pin); await reload(); } : filax.withdraw}
       />
       <TransferModal
         open={modal === "transfer"}
@@ -296,19 +301,28 @@ function HomePage() {
         onConfirm={
           live
             ? async (id, amt, label, extra) => {
-                if (extra?.external) await transferExternalDb(id, amt, label, extra.pin ?? "");
-                else await transferDb(id, amt, extra?.filaxId ?? "", extra?.pin ?? "");
+                if (extra?.external) await transferExternalDb(id, amt, label, extra.pin ?? "", extra.accountPin ?? "");
+                else await transferDb(id, amt, extra?.filaxId ?? "", extra?.pin ?? "", extra?.accountPin ?? "");
                 await reload();
               }
             : filax.transfer
         }
       />
-      <NewAccountModal open={modal === "account"} onOpenChange={(o) => !o && setModal(null)} onConfirm={filax.createAccount} />
+      <NewAccountModal open={modal === "account"} accounts={accounts} defaultParentId={active.parentAccountId ?? active.id} onOpenChange={(o) => !o && setModal(null)} onConfirm={async (input) => { if (!userId) throw new Error("Connectez-vous pour créer un sous-compte"); await createDbAccount(input); await reload(); }} />
+      <Modal open={modal === "visual"} onOpenChange={(o) => !o && setModal(null)} title="Choisir le visuel">
+        <VisualPicker value={active.visualKey ?? ""} disabled={visualBusy} onChange={async (key) => {
+          if (visualBusy) return;
+          setVisualBusy(true);
+          try { if (!userId) throw new Error("Non connecté"); await setAccountVisualDb(active.id, key); await reload(); setModal(null); toast.success("Visuel enregistré"); }
+          catch (e) { toast.error(e instanceof Error ? e.message : "Enregistrement impossible"); }
+          finally { setVisualBusy(false); }
+        }} />
+      </Modal>
       
       <NewGoalModal
         open={modal === "goal"}
         onOpenChange={(o) => !o && setModal(null)}
-        onConfirm={(g) => live ? createGoalDb(userId!, { ...g, accountId: active.id, currency: active.currency }).then(() => dbGoals.refresh()) : filax.createGoal({ ...g, accountId: active.id, currency: active.currency })}
+        onConfirm={(g) => live ? createGoalDb(userId ?? "", { ...g, accountId: active.id, currency: active.currency }).then(() => dbGoals.refresh()) : filax.createGoal({ ...g, accountId: active.id, currency: active.currency })}
       />
 
       <FundGoalModal
@@ -316,7 +330,7 @@ function HomePage() {
         onOpenChange={(o) => !o && setModal(null)}
         goal={goal}
         accounts={accounts}
-        onConfirm={live ? async (gid, amt, acc) => { await fundGoalDb(gid, amt, acc); await Promise.all([dbGoals.refresh(), reload()]); } : filax.fundGoal}
+        onConfirm={live ? async (gid, amt, acc, pin) => { await fundGoalDb(gid, amt, acc, pin); await Promise.all([dbGoals.refresh(), reload()]); } : filax.fundGoal}
       />
       <AllAccountsModal
         open={modal === "all"}
