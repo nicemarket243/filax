@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 const idSchema = z.string().trim().toUpperCase().regex(/^FLX[-A-Z0-9]{3,32}$/);
@@ -59,4 +60,32 @@ export const verifyFilaxIdCode = createServerFn({ method: "POST" })
       : await sb.auth.verifyOtp({ phone: contact.phone!, token: data.token, type: "sms" });
     if (error || !res.session) return { ok: false as const, error: "Code invalide ou expiré" };
     return { ok: true as const, access_token: res.session.access_token, refresh_token: res.session.refresh_token };
+  });
+
+/**
+ * Connexion Google en mode « Connexion » : si l'adresse Gmail choisie ne correspond à aucun
+ * compte FILAX existant, le compte vide qui vient d'être créé automatiquement est supprimé,
+ * pour ne jamais basculer sur un profil vide à 0 $.
+ */
+export const discardFreshGoogleAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.auth.admin.getUserById(context.userId);
+    const user = data?.user;
+    if (!user) return { discarded: false as const };
+    const ageMs = Date.now() - new Date(user.created_at).getTime();
+    if (ageMs > 10 * 60 * 1000) return { discarded: false as const, email: user.email ?? null };
+    const [{ data: accts }, { count: txCount }, { count: groupCount }] = await Promise.all([
+      supabaseAdmin.from("accounts").select("balance").eq("user_id", context.userId),
+      supabaseAdmin.from("transactions").select("id", { count: "exact", head: true }).eq("user_id", context.userId),
+      supabaseAdmin.from("groups").select("id", { count: "exact", head: true }).eq("owner_id", context.userId),
+    ]);
+    const empty = (accts ?? []).every((a) => Number(a.balance) === 0) && !txCount && !groupCount;
+    if (!empty) return { discarded: false as const, email: user.email ?? null };
+    await supabaseAdmin.from("accounts").delete().eq("user_id", context.userId);
+    await supabaseAdmin.from("notifications").delete().eq("user_id", context.userId);
+    await supabaseAdmin.from("profiles").delete().eq("user_id", context.userId);
+    await supabaseAdmin.auth.admin.deleteUser(context.userId);
+    return { discarded: true as const, email: user.email ?? null };
   });
