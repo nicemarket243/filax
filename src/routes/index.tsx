@@ -14,7 +14,7 @@ import { AccountChart } from "@/components/filax/account-chart";
 import { Coffre } from "@/components/filax/coffre";
 import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { Glyph } from "@/components/filax/glyph";
-import { PublicWelcome } from "@/components/filax/public-welcome";
+import { AUTH_INTENT_KEY, PublicWelcome } from "@/components/filax/public-welcome";
 import {
   DepositModal,
   FundGoalModal,
