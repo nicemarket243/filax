@@ -315,6 +315,7 @@ const EN: Record<string, string> = {
   "Code à 6 chiffres": "6-digit code",
   "Recevoir mon code": "Get my code",
   "Se connecter": "Sign in",
+  "Aucun compte FILAX lié à ce Gmail": "No FILAX account is linked to this Gmail",
   "Modifier le numéro": "Change phone number",
   "S'inscrire avec Gmail": "Sign up with Gmail",
   "Continuer avec Gmail": "Continue with Gmail",
