@@ -32,6 +32,10 @@ export const Route = createFileRoute("/inscription")({
   head: () => ({
     meta: [
       { title: "Vérification et Inscription — FILAX" },
+      { property: "og:title", content: "Inscription et vérification FILAX" },
+      { property: "og:description", content: "Créez votre compte FILAX et vérifiez votre identité en toute sécurité." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         name: "description",
         content:

@@ -514,7 +514,8 @@ export function TransferModal({
         <PrimaryButton
           disabled={!ready}
           onClick={async () => {
-            const label = mode === "filax" ? recipient!.name : `${beneficiary} · ${bankName} (${destination.label})`;
+            if (mode === "filax" && !recipient) return;
+            const label = mode === "filax" ? recipient?.name ?? "" : `${beneficiary} · ${bankName} (${destination.label})`;
             try {
               await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient?.id, pin, accountPin } : { external: true, pin, accountPin });
             } catch (e) {
