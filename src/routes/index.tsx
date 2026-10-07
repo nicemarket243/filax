@@ -1,5 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { discardFreshGoogleAccount } from "@/lib/filax-auth.functions";
 import { ArrowDownLeft, ArrowUpRight, BadgeCheck, History, LineChart, Lock, Send, ShieldAlert, ShieldCheck, Target, Wallet } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
@@ -64,6 +68,30 @@ function HomePage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [modal, setModal] = useState<string | null>(null);
   const [goal, setGoal] = useState<Goal | null>(null);
+  const [checkingLogin, setCheckingLogin] = useState(false);
+  const discardFresh = useServerFn(discardFreshGoogleAccount);
+
+  // Connexion Google : un Gmail non lié à un compte FILAX ne doit jamais ouvrir un profil vide.
+  useEffect(() => {
+    if (!userId) return;
+    if (sessionStorage.getItem(AUTH_INTENT_KEY) !== "login") return;
+    sessionStorage.removeItem(AUTH_INTENT_KEY);
+    setCheckingLogin(true);
+    void (async () => {
+      try {
+        const r = await discardFresh();
+        if (r.discarded) {
+          await supabase.auth.signOut();
+          toast.error("Aucun compte FILAX lié à ce Gmail", {
+            description: `${r.email ?? "Cette adresse"} n'a pas de compte. Choisissez l'adresse Gmail de votre compte ou connectez-vous avec votre ID FILAX.`,
+            duration: 9000,
+          });
+        }
+      } finally {
+        setCheckingLogin(false);
+      }
+    })();
+  }, [userId, discardFresh]);
 
   const active = accounts[activeIndex] ?? accounts[0]!;
   const unread = notifications.filter((n) => !n.read).length;
@@ -78,7 +106,7 @@ function HomePage() {
     setModal(key);
   };
 
-  if (!ready) {
+  if (!ready || checkingLogin) {
     return <main className="flex min-h-screen items-center justify-center bg-background"><span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-blue border-t-transparent" aria-label="Chargement" /></main>;
   }
 
