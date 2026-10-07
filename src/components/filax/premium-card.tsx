@@ -75,8 +75,18 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
         {/* Ligne du haut : identité du compte à gauche, logo FILAX à droite */}
         <div className="relative flex items-start justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md">
-              <Glyph icon={account.icon} className="h-[1.15rem] w-[1.15rem]" />
+            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white/15 ring-1 ring-white/20 backdrop-blur-md">
+              {themeImg ? (
+                <img
+                  src={themeImg}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  draggable={false}
+                />
+              ) : (
+                <Glyph icon={account.icon} className="h-[1.15rem] w-[1.15rem]" />
+              )}
             </span>
             <span className="leading-tight">
               <span className="block text-[0.82rem] font-bold tracking-tight">{account.name}</span>
@@ -85,6 +95,10 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
           </div>
           <FilaxLogo height={20} className="text-white opacity-90" />
         </div>
+
+        {/* Fine ligne de séparation sous l'en-tête */}
+        <div className="relative h-px w-full bg-white/15" />
+
 
 
         {/* Solde */}
