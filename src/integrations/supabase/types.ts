@@ -14,41 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_security: {
+        Row: {
+          account_id: string
+          pin_hash: string
+        }
+        Insert: {
+          account_id: string
+          pin_hash: string
+        }
+        Update: {
+          account_id?: string
+          pin_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_security_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accounts: {
         Row: {
           balance: number
           created_at: string
           currency: string
+          has_dedicated_pin: boolean
           id: string
           kind: string
           locked_until: string | null
           name: string
+          parent_account_id: string | null
           status: string
+          target: number | null
           user_id: string
+          visual_key: string | null
         }
         Insert: {
           balance?: number
           created_at?: string
           currency?: string
+          has_dedicated_pin?: boolean
           id?: string
           kind?: string
           locked_until?: string | null
           name: string
+          parent_account_id?: string | null
           status?: string
+          target?: number | null
           user_id: string
+          visual_key?: string | null
         }
         Update: {
           balance?: number
           created_at?: string
           currency?: string
+          has_dedicated_pin?: boolean
           id?: string
           kind?: string
           locked_until?: string | null
           name?: string
+          parent_account_id?: string | null
           status?: string
+          target?: number | null
           user_id?: string
+          visual_key?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "accounts_parent_account_id_fkey"
+            columns: ["parent_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       goals: {
         Row: {
@@ -464,6 +507,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      account_outflow: {
+        Args: {
+          _account: string
+          _amount: number
+          _destination?: string
+          _global_pin?: string
+          _operation: string
+          _pin?: string
+          _related?: string
+        }
+        Returns: Json
+      }
       admin_client_detail: { Args: { _user: string }; Returns: Json }
       admin_create_group: {
         Args: {
@@ -565,6 +620,17 @@ export type Database = {
         Args: { _amount: number; _from: string; _group: string }
         Returns: undefined
       }
+      create_subaccount: {
+        Args: {
+          _locked_until?: string
+          _name: string
+          _parent: string
+          _pin: string
+          _target: number
+          _visual: string
+        }
+        Returns: string
+      }
       deposit: {
         Args: { _account: string; _amount: number; _method: string }
         Returns: string
@@ -607,6 +673,10 @@ export type Database = {
         }
         Returns: string
       }
+      set_account_visual: {
+        Args: { _account: string; _visual: string }
+        Returns: undefined
+      }
       set_pin: { Args: { _pin: string }; Returns: undefined }
       submit_kyc: {
         Args: { _doc_path: string; _doc_type: string; _selfie_path: string }
@@ -625,6 +695,7 @@ export type Database = {
         Args: { _amount: number; _from: string; _label: string; _pin: string }
         Returns: string
       }
+      valid_account_visual: { Args: { _key: string }; Returns: boolean }
       validate_kyc: {
         Args: { _approved: boolean; _user: string }
         Returns: undefined
