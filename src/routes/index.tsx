@@ -84,15 +84,6 @@ function HomePage() {
 
   if (!userId) return <PublicWelcome onAuthenticated={() => window.location.reload()} />;
 
-  const kycStatus = dbProfile?.kycStatus ?? "not_started";
-  const kycMeta = {
-    not_started: { label: "Identité non vérifiée", detail: "Vérifiez votre identité depuis le Profil.", icon: ShieldAlert, tone: "brand-gold" },
-    pending: { label: "KYC en cours", detail: "Vos documents sont en cours d'examen.", icon: ShieldAlert, tone: "brand-gold" },
-    verified: { label: "KYC validé", detail: "Votre identité a été vérifiée.", icon: ShieldCheck, tone: "brand-green" },
-    rejected: { label: "KYC refusé", detail: "Renvoyez des documents lisibles depuis le Profil.", icon: ShieldAlert, tone: "brand-red" },
-  }[kycStatus];
-  const KycIcon = kycMeta.icon;
-
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
       <AppHeader
@@ -108,16 +99,6 @@ function HomePage() {
         subtitle="Vos fonds sont sécurisés par notre banque partenaire."
       />
 
-      <Link to="/profil" className="press mt-4 flex items-center gap-3 rounded-2xl bg-surface px-3.5 py-3 soft-shadow">
-        <span className={`flex h-9 w-9 items-center justify-center rounded-xl bg-${kycMeta.tone}/10 text-${kycMeta.tone}`}>
-          <KycIcon className="h-4 w-4" />
-        </span>
-        <span className="min-w-0 flex-1 leading-tight">
-          <span className="block text-[0.76rem] font-bold text-foreground">{kycMeta.label}</span>
-          <span className="block text-[0.64rem] text-muted-foreground">{kycMeta.detail}</span>
-        </span>
-        {kycStatus === "verified" && <BadgeCheck className="h-4 w-4 text-brand-green" />}
-      </Link>
 
 
       <div className="mt-5">
