@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { FilaxLogo } from "@/components/filax-logo";
 import { Glyph } from "@/components/filax/glyph";
+import { themeImageFor } from "@/components/filax/account-theme";
 
 import { accentVar } from "@/components/filax/ui-kit";
 import { formatMoney, isLocked, type Account } from "@/lib/filax-store";
@@ -26,6 +27,7 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
 
   const locked = mounted && isLocked(account);
   const accent = accentVar(account.color);
+  const themeImg = themeImageFor(account);
 
   const startPress = () => {
     pressTimer.current = setTimeout(onShowAll, 550);
@@ -73,8 +75,18 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
         {/* Ligne du haut : identité du compte à gauche, logo FILAX à droite */}
         <div className="relative flex items-start justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md">
-              <Glyph icon={account.icon} className="h-[1.15rem] w-[1.15rem]" />
+            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white/15 ring-1 ring-white/20 backdrop-blur-md">
+              {themeImg ? (
+                <img
+                  src={themeImg}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  draggable={false}
+                />
+              ) : (
+                <Glyph icon={account.icon} className="h-[1.15rem] w-[1.15rem]" />
+              )}
             </span>
             <span className="leading-tight">
               <span className="block text-[0.82rem] font-bold tracking-tight">{account.name}</span>
@@ -83,6 +95,10 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
           </div>
           <FilaxLogo height={20} className="text-white opacity-90" />
         </div>
+
+        {/* Fine ligne de séparation sous l'en-tête */}
+        <div className="relative h-px w-full bg-white/15" />
+
 
 
         {/* Solde */}
