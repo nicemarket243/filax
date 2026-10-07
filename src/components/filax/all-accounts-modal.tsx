@@ -1,6 +1,7 @@
 import { Lock, ShieldCheck } from "lucide-react";
 import { Modal, accentVar } from "@/components/filax/ui-kit";
 import { formatMoney, isLocked, type Account } from "@/lib/filax-store";
+import { themeImageFor } from "./account-theme";
 
 export function AllAccountsModal({
   open,
@@ -36,7 +37,7 @@ export function AllAccountsModal({
                 className="flex h-10 w-10 items-center justify-center rounded-full text-base text-white"
                 style={{ backgroundColor: accentVar(a.color) }}
               >
-                {a.icon}
+                <img src={themeImageFor(a)} alt="" className="h-full w-full rounded-full object-cover" loading="lazy" />
               </span>
               <span className="min-w-0 flex-1 leading-tight">
                 <span className="block truncate text-[0.8rem] font-bold text-foreground">{a.name}</span>

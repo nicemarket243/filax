@@ -377,9 +377,9 @@ function GroupesPage() {
         onOpenChange={(o) => !o && setModal(null)}
         group={current}
         accounts={accounts}
-        onConfirm={async (groupId, amount, accountId) => {
+        onConfirm={async (groupId, amount, accountId, pin) => {
           if (userId) {
-            await contributeDb(groupId, accountId, amount);
+            await contributeDb(groupId, accountId, amount, pin);
             await Promise.all([refreshGroups(), refreshAccounts()]);
           } else {
             filax.contribute(groupId, amount, accountId);

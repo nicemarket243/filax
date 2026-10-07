@@ -1,9 +1,4 @@
-import mariageImg from "@/assets/account-themes/mariage.jpg";
-import familleImg from "@/assets/account-themes/famille.jpg";
-import businessImg from "@/assets/account-themes/business.jpg";
-import usdImg from "@/assets/account-themes/principal-usd.jpg";
-import cdfImg from "@/assets/account-themes/principal-cdf.jpg";
-import epargneImg from "@/assets/account-themes/epargne.jpg";
+import { ACCOUNT_VISUALS } from "./account-visuals";
 import type { Account } from "@/lib/filax-store";
 
 /**
@@ -12,12 +7,10 @@ import type { Account } from "@/lib/filax-store";
  * mallette pour Business…). Retourne null quand aucun thème ne correspond —
  * l'appelant garde alors le pictogramme par défaut.
  */
-export function themeImageFor(account: Pick<Account, "name" | "currency" | "lockedUntil">): string | null {
+export function themeImageFor(account: Pick<Account, "name" | "currency" | "lockedUntil" | "visualKey">): string {
+  const selected = ACCOUNT_VISUALS.find((v) => v.key === account.visualKey);
+  if (selected) return selected.src;
   const n = account.name.toLowerCase();
-  if (/mariage|wedding/.test(n)) return mariageImg;
-  if (/famil/.test(n)) return familleImg;
-  if (/business|entreprise/.test(n)) return businessImg;
-  if (/épargne|epargne|saving/.test(n)) return epargneImg;
-  if (/principal|courant|main/.test(n)) return account.currency === "CDF" ? cdfImg : usdImg;
-  return null;
+  const key = /mariage|wedding/.test(n) ? "wedding" : /famil/.test(n) ? "family" : /business|entreprise/.test(n) ? "business" : /voyage/.test(n) ? "airplane" : /étud|etud/.test(n) ? "studies" : /moto/.test(n) ? "motorcycle" : /terrain/.test(n) ? "land" : account.currency === "CDF" ? "bank-classic" : "bank-modern";
+  return ACCOUNT_VISUALS.find((v) => v.key === key)?.src ?? ACCOUNT_VISUALS[0]?.src ?? "";
 }

@@ -2,6 +2,7 @@
 // Chaque hook renvoie null tant qu'aucun utilisateur n'est connecté :
 // les pages gardent alors leurs données de démonstration locales.
 import { useCallback, useEffect, useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import type { Account, Currency, Group, GroupCategory, GroupMember, Profile } from "./filax-store";
 
@@ -154,6 +155,11 @@ export function useDbAccounts(userId: string | null) {
         icon: a.kind === "savings" ? "piggy" : "wallet",
         color: a.currency === "USD" ? "brand-blue" : "brand-green",
         balance: Number(a.balance),
+        visualKey: a.visual_key,
+        parentAccountId: a.parent_account_id,
+        hasDedicatedPin: a.has_dedicated_pin,
+        target: a.target,
+        kind: a.kind,
         lockedUntil: a.locked_until ? new Date(a.locked_until).getTime() : null,
         status: a.status,
       })) as Account[],
@@ -263,8 +269,8 @@ export async function createDbGroup(input: { name: string; category: GroupCatego
 }
 
 /** Cotisation réelle : débit du compte, frais 0,5 %, notification des membres. */
-export async function contributeDb(groupId: string, accountId: string, amount: number) {
-  const { error } = await supabase.rpc("contribute", { _group: groupId, _from: accountId, _amount: amount });
+export async function contributeDb(groupId: string, accountId: string, amount: number, pin = "") {
+  const { error } = await supabase.rpc("account_outflow", { _operation: "contribute", _related: groupId, _account: accountId, _amount: amount, _pin: pin });
   if (error) throw new Error(error.message);
 }
 
@@ -334,16 +340,16 @@ export async function depositDb(accountId: string, amount: number, method: strin
   const { error } = await supabase.rpc("deposit", { _account: accountId, _amount: amount, _method: method });
   if (error) throw new Error(error.message);
 }
-export async function withdrawDb(accountId: string, amount: number, method: string) {
-  const { error } = await supabase.rpc("withdraw", { _account: accountId, _amount: amount, _method: method });
+export async function withdrawDb(accountId: string, amount: number, method: string, pin = "") {
+  const { error } = await supabase.rpc("account_outflow", { _operation: "withdraw", _account: accountId, _amount: amount, _destination: method, _pin: pin });
   if (error) throw new Error(error.message);
 }
-export async function transferDb(accountId: string, amount: number, filaxId: string, pin: string) {
-  const { error } = await supabase.rpc("transfer", { _from: accountId, _to_filax_id: filaxId, _amount: amount, _pin: pin });
+export async function transferDb(accountId: string, amount: number, filaxId: string, pin: string, accountPin = "") {
+  const { error } = await supabase.rpc("account_outflow", { _operation: "transfer", _account: accountId, _destination: filaxId, _amount: amount, _global_pin: pin, _pin: accountPin });
   if (error) throw new Error(error.message);
 }
-export async function transferExternalDb(accountId: string, amount: number, label: string, pin: string) {
-  const { error } = await supabase.rpc("transfer_external", { _from: accountId, _amount: amount, _label: label, _pin: pin });
+export async function transferExternalDb(accountId: string, amount: number, label: string, pin: string, accountPin = "") {
+  const { error } = await supabase.rpc("account_outflow", { _operation: "external", _account: accountId, _amount: amount, _destination: label, _global_pin: pin, _pin: accountPin });
   if (error) throw new Error(error.message);
 }
 
@@ -398,8 +404,8 @@ export async function createGoalDb(userId: string, g: { accountId: string; name:
   if (error) throw new Error(error.message);
 }
 
-export async function fundGoalDb(goalId: string, amount: number, accountId: string) {
-  const { error } = await supabase.rpc("fund_goal", { _goal: goalId, _from: accountId, _amount: amount });
+export async function fundGoalDb(goalId: string, amount: number, accountId: string, pin = "") {
+  const { error } = await supabase.rpc("account_outflow", { _operation: "goal", _related: goalId, _account: accountId, _amount: amount, _pin: pin });
   if (error) throw new Error(error.message);
 }
 
@@ -413,16 +419,21 @@ export async function setPartnerBank(bank: string) {
 }
 
 /** Crée un compte réel (épargne libre ou bloquée). */
-export async function createDbAccount(input: { name: string; currency: Currency; lockedUntil?: number | null }) {
-  const userId = (await supabase.auth.getUser()).data.user?.id;
-  if (!userId) throw new Error("Non connecté");
-  const { error } = await supabase.from("accounts").insert({
-    user_id: userId,
-    name: input.name,
-    currency: input.currency,
-    kind: input.lockedUntil ? "locked" : "savings",
-    locked_until: input.lockedUntil ? new Date(input.lockedUntil).toISOString() : null,
-  });
+export const subaccountSchema = z.object({
+  parentAccountId: z.string().uuid(), name: z.string().trim().min(2).max(80),
+  target: z.number().finite().positive().max(1000000000000), pin: z.string().regex(/^\d{4}$/),
+  visualKey: z.string().min(1).max(30), currency: z.enum(["USD", "CDF"]),
+  icon: z.string(), color: z.string(), lockedUntil: z.number().nullable().optional(),
+});
+export type SubaccountInput = z.infer<typeof subaccountSchema>;
+export async function createDbAccount(input: SubaccountInput) {
+  const a = subaccountSchema.parse(input);
+  const { data, error } = await supabase.rpc("create_subaccount", { _parent: a.parentAccountId, _name: a.name, _target: a.target, _pin: a.pin, _visual: a.visualKey, _locked_until: a.lockedUntil ? new Date(a.lockedUntil).toISOString() : undefined });
+  if (error) throw new Error(error.message);
+  return data;
+}
+export async function setAccountVisualDb(accountId: string, visualKey: string) {
+  const { error } = await supabase.rpc("set_account_visual", { _account: z.string().uuid().parse(accountId), _visual: z.string().max(30).parse(visualKey) });
   if (error) throw new Error(error.message);
 }
 

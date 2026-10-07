@@ -20,6 +20,8 @@ import {
 } from "@/lib/filax-store";
 
 import { Field, Modal, PrimaryButton, TextInput, accentVar } from "@/components/filax/ui-kit";
+import { VisualPicker } from "./visual-picker";
+import { subaccountSchema, type SubaccountInput } from "@/lib/filax-db";
 import { QrScanModal, ReceiveQrModal } from "@/components/filax/qr-scanner";
 
 
@@ -44,7 +46,7 @@ function AccountSelect({
       >
         {list.map((a) => (
           <option key={a.id} value={a.id}>
-            {a.icon} {a.name} — {formatMoney(a.balance, a.currency)}
+            {a.name} — {formatMoney(a.balance, a.currency)}
           </option>
         ))}
       </select>
@@ -245,11 +247,15 @@ export function WithdrawModal({
   onOpenChange: (o: boolean) => void;
   accounts: Account[];
   defaultAccountId: string;
-  onConfirm: (accountId: string, amount: number, method: TxMethod) => void | Promise<void>;
+  onConfirm: (accountId: string, amount: number, method: TxMethod, accountPin?: string) => void | Promise<void>;
 }) {
   const { data } = useFilax();
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(defaultAccountId);
+  const [accountPin, setAccountPin] = useState("");
+  useEffect(() => setAccountPin(""), [open, accountId]);
+  const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
+  const accountPinReady = !needsAccountPin || /^\d{4}$/.test(accountPin);
   const [method, setMethod] = useState<TxMethod>("orange");
   const [amount, setAmount, value] = useAmount(open);
   const [receive, setReceive] = useState(false);
@@ -268,6 +274,7 @@ export function WithdrawModal({
     <Modal open={open} onOpenChange={onOpenChange} title="Retirer de l'argent" subtitle="Mobile Money, banque partenaire, carte ou QR code">
       <div className="space-y-4">
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
+        {needsAccountPin && <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" maxLength={4} autoComplete="off" value={accountPin} onChange={(e) => setAccountPin(e.target.value.replace(/\D/g, ""))} /></Field>}
         <MethodPicker value={method} onChange={setMethod} />
         {byCard && <CardFields card={card} setCard={setCard} />}
 
@@ -285,9 +292,9 @@ export function WithdrawModal({
         {tooMuch && <p className="text-[0.7rem] font-semibold text-brand-red">Solde insuffisant.</p>}
         <PrimaryButton
           color="brand-red"
-          disabled={value <= 0 || tooMuch || !accountId || (byCard && !cardOk)}
+          disabled={!accountPinReady || value <= 0 || tooMuch || !accountId || (byCard && !cardOk)}
           onClick={async () => {
-            try { await onConfirm(accountId, value, method); } catch (e) { toast.error("Retrait refusé", { description: (e as Error).message }); return; }
+            try { await onConfirm(accountId, value, method, accountPin); } catch (e) { toast.error("Retrait refusé", { description: (e as Error).message }); return; }
             onOpenChange(false);
             toast.success("Retrait envoyé", { description: `Destination : ${METHOD_LABEL[method]}.` });
           }}
@@ -333,11 +340,15 @@ export function TransferModal({
   onOpenChange: (o: boolean) => void;
   accounts: Account[];
   defaultAccountId: string;
-  onConfirm: (accountId: string, amount: number, recipient: string, extra?: { filaxId?: string; pin?: string; external?: boolean }) => void | Promise<void>;
+  onConfirm: (accountId: string, amount: number, recipient: string, extra?: { filaxId?: string; pin?: string; accountPin?: string; external?: boolean }) => void | Promise<void>;
   /** Mode base réelle : demande le code secret et accepte un ID FILAX saisi. */
   requirePin?: boolean;
 }) {
   const [accountId, setAccountId] = useState(defaultAccountId);
+  const [accountPin, setAccountPin] = useState("");
+  useEffect(() => setAccountPin(""), [open, accountId]);
+  const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
+  const accountPinReady = !needsAccountPin || /^\d{4}$/.test(accountPin);
   const [mode, setMode] = useState<"filax" | "bank">("filax");
   const [query, setQuery] = useState("");
   const [recipient, setRecipient] = useState<(typeof DIRECTORY)[number] | null>(null);
@@ -368,7 +379,7 @@ export function TransferModal({
     : [];
 
   const bankReady = beneficiary.trim().length > 2 && bankName.trim().length > 1 && cardOk;
-  const ready = value > 0 && (mode === "filax" ? !!recipient : bankReady) && (!requirePin || /^\d{4}$/.test(pin));
+  const ready = accountPinReady && value > 0 && (mode === "filax" ? !!recipient : bankReady) && (!requirePin || /^\d{4}$/.test(pin));
   const typedId = requirePin && !recipient && /^FLX-[A-Z0-9-]{4,}$/i.test(query.trim()) ? query.trim().toUpperCase() : null;
 
   return (
@@ -489,6 +500,7 @@ export function TransferModal({
         )}
 
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
+        {needsAccountPin && <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" maxLength={4} autoComplete="off" value={accountPin} onChange={(e) => setAccountPin(e.target.value.replace(/\D/g, ""))} /></Field>}
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
@@ -502,9 +514,10 @@ export function TransferModal({
         <PrimaryButton
           disabled={!ready}
           onClick={async () => {
-            const label = mode === "filax" ? recipient!.name : `${beneficiary} · ${bankName} (${destination.label})`;
+            if (mode === "filax" && !recipient) return;
+            const label = mode === "filax" ? recipient?.name ?? "" : `${beneficiary} · ${bankName} (${destination.label})`;
             try {
-              await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient!.id, pin } : { external: true, pin });
+              await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient?.id, pin, accountPin } : { external: true, pin, accountPin });
             } catch (e) {
               toast.error("Transfert refusé", { description: (e as Error).message });
               return;
@@ -540,106 +553,41 @@ export function TransferModal({
 
 /* ---------------- Créer un compte ---------------- */
 
-export function NewAccountModal({
-  open,
-  onOpenChange,
-  onConfirm,
-}: {
-  open: boolean;
-  onOpenChange: (o: boolean) => void;
-  onConfirm: (a: { name: string; currency: Currency; icon: string; color: AccentKey; target?: number | null; lockedUntil?: number | null }) => void;
+export function NewAccountModal({ open, onOpenChange, onConfirm, accounts, defaultParentId }: {
+  open: boolean; onOpenChange: (o: boolean) => void; accounts: Account[]; defaultParentId?: string;
+  onConfirm: (a: SubaccountInput) => void | Promise<void>;
 }) {
+  const principals = accounts.filter((a) => a.kind === "main" || /principal|courant/i.test(a.name));
+  const [parentId, setParentId] = useState("");
   const [name, setName] = useState("");
-  const [currency, setCurrency] = useState<Currency>("USD");
-  const [icon, setIcon] = useState(ACCOUNT_ICONS[0]!);
-  const [color, setColor] = useState<AccentKey>("brand-blue");
   const [target, setTarget] = useState("");
+  const [pin, setPin] = useState("");
+  const [visualKey, setVisualKey] = useState("bank-modern");
+  const [color, setColor] = useState<AccentKey>("brand-blue");
   const [lockDate, setLockDate] = useState("");
-
-  useEffect(() => {
-    if (!open) {
-      setName("");
-      setTarget("");
-      setLockDate("");
-    }
-  }, [open]);
-
-  return (
-    <Modal open={open} onOpenChange={onOpenChange} title="Créer un compte" subtitle="Épargne libre ou bloquée jusqu'à une date">
-      <div className="space-y-4">
-        <Field label="Nom du compte">
-          <TextInput placeholder="Compte Vacances" value={name} onChange={(e) => setName(e.target.value)} />
-        </Field>
-        <Field label="Devise">
-          <div className="grid grid-cols-2 gap-2">
-            {(["USD", "CDF"] as Currency[]).map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCurrency(c)}
-                className={`press rounded-xl border px-3 py-2.5 text-sm font-semibold ${
-                  currency === c ? "border-transparent bg-brand-blue text-white" : "border-border text-foreground"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </Field>
-        <Field label="Icône">
-          <div className="flex flex-wrap gap-2">
-            {ACCOUNT_ICONS.map((i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setIcon(i)}
-                className={`press h-9 w-9 rounded-xl border text-base ${icon === i ? "border-brand-blue bg-accent" : "border-border"}`}
-              >
-                {i}
-              </button>
-            ))}
-          </div>
-        </Field>
-        <Field label="Couleur">
-          <div className="flex gap-2">
-            {ACCENTS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                aria-label={c}
-                onClick={() => setColor(c)}
-                className={`press h-8 w-8 rounded-full ${color === c ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""}`}
-                style={{ backgroundColor: accentVar(c) }}
-              />
-            ))}
-          </div>
-        </Field>
-        <Field label="Objectif (optionnel)">
-          <TextInput inputMode="decimal" placeholder="1500" value={target} onChange={(e) => setTarget(e.target.value)} />
-        </Field>
-        <Field label="Bloquer jusqu'au (optionnel)">
-          <TextInput type="date" value={lockDate} onChange={(e) => setLockDate(e.target.value)} />
-        </Field>
-        <PrimaryButton
-          disabled={!name.trim()}
-          onClick={() => {
-            onConfirm({
-              name: name.trim(),
-              currency,
-              icon,
-              color,
-              target: Number(target) || null,
-              lockedUntil: lockDate ? new Date(lockDate).getTime() : null,
-            });
-            onOpenChange(false);
-            toast.success("Compte créé", { description: name.trim() });
-          }}
-        >
-          Créer le compte
-        </PrimaryButton>
-      </div>
-    </Modal>
-  );
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { if (open) { setParentId(principals.find((a) => a.id === defaultParentId)?.id ?? principals[0]?.id ?? ""); setName(""); setTarget(""); setPin(""); setLockDate(""); } }, [open, defaultParentId]);
+  const parent = principals.find((a) => a.id === parentId);
+  const valid = !!parent && name.trim().length >= 2 && name.trim().length <= 80 && Number(target) > 0 && Number(target) <= 1000000000000 && /^\d{4}$/.test(pin) && (!lockDate || new Date(lockDate).getTime() > Date.now());
+  return <Modal open={open} onOpenChange={onOpenChange} title="Créer un sous-compte">
+    <div className="space-y-4">
+      <Field label="Compte Principal de rattachement"><select value={parentId} onChange={(e) => setParentId(e.target.value)} className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground">{principals.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></Field>
+      {!parent && <p className="text-sm text-destructive">Choisissez votre Compte Principal</p>}
+      <Field label="Nom du sous-compte"><TextInput maxLength={80} placeholder="Compte Mariage" value={name} onChange={(e) => setName(e.target.value)} /></Field>
+      <Field label="Objectif financier"><TextInput inputMode="decimal" placeholder={parent?.currency ?? "USD"} value={target} onChange={(e) => setTarget(e.target.value)} /></Field>
+      <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" autoComplete="new-password" maxLength={4} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} /></Field>
+      <Field label="Visuel"><VisualPicker value={visualKey} onChange={setVisualKey} /></Field>
+      <Field label="Couleur"><div className="flex gap-2">{ACCENTS.map((c) => <button key={c} type="button" aria-label={c} onClick={() => setColor(c)} className={`press h-8 w-8 rounded-full ${color === c ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""}`} style={{ backgroundColor: accentVar(c) }} />)}</div></Field>
+      <Field label="Bloquer jusqu'au (optionnel)"><TextInput type="date" value={lockDate} onChange={(e) => setLockDate(e.target.value)} /></Field>
+      <PrimaryButton disabled={!valid || busy} onClick={async () => {
+        if (!parent || busy) return;
+        setBusy(true);
+        try { const input = subaccountSchema.parse({ name, parentAccountId: parent.id, currency: parent.currency, target: Number(target), pin, visualKey, icon: "wallet", color, lockedUntil: lockDate ? new Date(lockDate).getTime() : null }); await onConfirm(input); setPin(""); onOpenChange(false); toast.success("Sous-compte créé"); }
+        catch (e) { toast.error(e instanceof Error ? e.message : "Création impossible"); }
+        finally { setBusy(false); }
+      }}>{busy ? "Création en cours…" : "Créer le sous-compte"}</PrimaryButton>
+    </div>
+  </Modal>;
 }
 
 /* ---------------- Créer un groupe ---------------- */
@@ -724,10 +672,14 @@ export function ContributeModal({
   onOpenChange: (o: boolean) => void;
   group: Group | null;
   accounts: Account[];
-  onConfirm: (groupId: string, amount: number, accountId: string) => void | Promise<void>;
+  onConfirm: (groupId: string, amount: number, accountId: string, accountPin?: string) => void | Promise<void>;
 }) {
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(available[0]?.id ?? "");
+  const [accountPin, setAccountPin] = useState("");
+  useEffect(() => setAccountPin(""), [open, accountId]);
+  const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
+  const accountPinReady = !needsAccountPin || /^\d{4}$/.test(accountPin);
   const [amount, setAmount, value] = useAmount(open);
   useEffect(() => setAccountId(available[0]?.id ?? ""), [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -735,15 +687,16 @@ export function ContributeModal({
     <Modal open={open} onOpenChange={onOpenChange} title={`Cotiser — ${group?.name ?? ""}`} subtitle="Votre part rejoint la cagnotte du groupe">
       <div className="space-y-4">
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
+        {needsAccountPin && <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" maxLength={4} autoComplete="off" value={accountPin} onChange={(e) => setAccountPin(e.target.value.replace(/\D/g, ""))} /></Field>}
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
         <PrimaryButton
           color="brand-green"
-          disabled={!group || value <= 0 || !accountId}
+          disabled={!accountPinReady || !group || value <= 0 || !accountId}
           onClick={async () => {
             try {
-              await onConfirm(group!.id, value, accountId);
+              await onConfirm(group?.id ?? "", value, accountId, accountPin);
               onOpenChange(false);
               toast.success("Cotisation enregistrée");
             } catch (e) {
@@ -907,10 +860,14 @@ export function FundGoalModal({
   onOpenChange: (o: boolean) => void;
   goal: Goal | null;
   accounts: Account[];
-  onConfirm: (goalId: string, amount: number, accountId: string) => void | Promise<void>;
+  onConfirm: (goalId: string, amount: number, accountId: string, accountPin?: string) => void | Promise<void>;
 }) {
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(available[0]?.id ?? "");
+  const [accountPin, setAccountPin] = useState("");
+  useEffect(() => setAccountPin(""), [open, accountId]);
+  const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
+  const accountPinReady = !needsAccountPin || /^\d{4}$/.test(accountPin);
   const [amount, setAmount, value] = useAmount(open);
   useEffect(() => setAccountId(available[0]?.id ?? ""), [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -918,14 +875,15 @@ export function FundGoalModal({
     <Modal open={open} onOpenChange={onOpenChange} title={`Épargner — ${goal?.name ?? ""}`} subtitle="Dépôt vers votre épargne bloquée">
       <div className="space-y-4">
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
+        {needsAccountPin && <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" maxLength={4} autoComplete="off" value={accountPin} onChange={(e) => setAccountPin(e.target.value.replace(/\D/g, ""))} /></Field>}
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
         <PrimaryButton
           color="brand-green"
-          disabled={!goal || value <= 0 || !accountId}
+          disabled={!accountPinReady || !goal || value <= 0 || !accountId}
           onClick={async () => {
-            try { await onConfirm(goal!.id, value, accountId); } catch (e) { toast.error("Épargne refusée", { description: (e as Error).message }); return; }
+            try { await onConfirm(goal?.id ?? "", value, accountId, accountPin); } catch (e) { toast.error("Épargne refusée", { description: (e as Error).message }); return; }
             onOpenChange(false);
             toast.success("Épargne ajoutée");
           }}
