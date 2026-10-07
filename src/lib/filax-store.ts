@@ -11,6 +11,10 @@ export interface Account {
   icon: string;
   color: AccentKey;
   balance: number;
+  visualKey?: string | null;
+  parentAccountId?: string | null;
+  hasDedicatedPin?: boolean;
+  kind?: string;
   /** Épargne bloquée : objectif + échéance. Retrait impossible avant la date. */
   lockedUntil?: number | null;
   target?: number | null;

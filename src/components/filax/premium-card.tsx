@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { FilaxLogo } from "@/components/filax-logo";
 import { Glyph } from "@/components/filax/glyph";
+import { Button } from "@/components/ui/button";
 import { themeImageFor } from "@/components/filax/account-theme";
 
 import { accentVar } from "@/components/filax/ui-kit";
@@ -16,12 +17,16 @@ interface Props {
   onNext: () => void;
   onShowAll: () => void;
   onCreate: () => void;
+  onChangeVisual: () => void;
 }
 
 /** Carte bancaire premium FILAX — une seule carte à la fois. */
-export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate }: Props) {
+export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate, onChangeVisual }: Props) {
   const [mounted, setMounted] = useState(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visualTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const endVisualPress = () => { if (visualTimer.current) clearTimeout(visualTimer.current); };
+  useEffect(() => () => { if (pressTimer.current) clearTimeout(pressTimer.current); if (visualTimer.current) clearTimeout(visualTimer.current); }, []);
 
   useEffect(() => setMounted(true), []);
 
@@ -75,7 +80,7 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
         {/* Ligne du haut : identité du compte à gauche, logo FILAX à droite */}
         <div className="relative flex items-start justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white/15 ring-1 ring-white/20 backdrop-blur-md">
+            <Button variant="ghost" aria-label={`Changer le visuel de ${account.name}`} title="Changer le visuel" onPointerDown={(e) => { e.stopPropagation(); endVisualPress(); visualTimer.current = setTimeout(onChangeVisual, 1000); }} onPointerUp={(e) => { e.stopPropagation(); endVisualPress(); }} onPointerLeave={endVisualPress} onPointerCancel={endVisualPress} onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }} onKeyDown={(e) => { e.stopPropagation(); }} onClick={(e) => { e.stopPropagation(); if (e.detail === 0) onChangeVisual(); }} onDoubleClick={(e) => e.stopPropagation()} className="flex h-10 w-10 shrink-0 touch-none items-center justify-center overflow-hidden rounded-2xl bg-white/15 p-0 ring-1 ring-white/20 backdrop-blur-md">
               {themeImg ? (
                 <img
                   src={themeImg}
@@ -87,7 +92,7 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
               ) : (
                 <Glyph icon={account.icon} className="h-[1.15rem] w-[1.15rem]" />
               )}
-            </span>
+            </Button>
             <span className="leading-tight">
               <span className="block text-[0.82rem] font-bold tracking-tight">{account.name}</span>
               <span className="block text-[0.62rem] font-semibold tracking-[0.16em] text-white/70">{account.currency}</span>
@@ -96,8 +101,6 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
           <FilaxLogo height={20} className="text-white opacity-90" />
         </div>
 
-        {/* Fine ligne de séparation sous l'en-tête */}
-        <div className="relative h-px w-full bg-white/15" />
 
 
 
