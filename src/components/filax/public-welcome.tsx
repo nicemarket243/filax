@@ -8,6 +8,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { sendFilaxIdCode, verifyFilaxIdCode } from "@/lib/filax-auth.functions";
 
 type Mode = "signup" | "login";
+export const AUTH_INTENT_KEY = "filax-auth-intent";
 type Method = "phone" | "filax";
 
 function normalizePhone(value: string) {
@@ -32,7 +33,12 @@ export function PublicWelcome({ onAuthenticated }: { onAuthenticated: () => void
 
   const google = async () => {
     setBusy(true);
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    // En mode Connexion, on vérifiera au retour que ce Gmail correspond à un compte existant.
+    sessionStorage.setItem(AUTH_INTENT_KEY, mode);
+    const r = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+      extraParams: { prompt: "select_account" },
+    });
     if ((r as { error?: Error })?.error) {
       setBusy(false);
       toast.error("Connexion Google impossible");
