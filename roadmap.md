@@ -1,10 +1,10 @@
 # FILAX roadmap
 
 ## En cours — Visuels et sous-comptes
-- [ ] Bibliothèque de 24 photos et suppression de la ligne
-- [ ] Création rattachée à un Principal, objectif, code dédié et image persistante
-- [ ] Appui long d’une seconde et changement de photo persistant
-- [ ] Protection des sorties par code et vérifications de bout en bout
+- [x] Bibliothèque de 24 photos et suppression de la ligne
+- [x] Création rattachée à un Principal, objectif, code dédié et image persistante
+- [x] Appui long d’une seconde et changement de photo persistant
+- [x] Protection des sorties par code et vérifications de bout en bout
 
 ## En cours — Accès public, banques et KYC
 - [x] Remplacer les FAQ bancaires inventées par les textes officiels fournis pour Equity BCDC, UBA RDC, BCC, Rawbank et TMB
