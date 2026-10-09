@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "@tanstack/react-router";
-import { BookOpen, Building2, Headphones, Landmark, LifeBuoy, Send } from "lucide-react";
+import { BookOpen, Building2, Download, Share2, Headphones, Landmark, LifeBuoy, Send } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FilaxLogo } from "@/components/filax-logo";
@@ -153,5 +153,70 @@ export function FilaxInformation({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+const MEMO_PATH = "/filax-memorandum-2026.pdf";
+const MEMO_NAME = "FILAX-Memorandum-Officiel-2026.pdf";
+
+function MemorandumActions() {
+  const { t } = useI18n();
+  const [menu, setMenu] = useState(false);
+  const url = typeof window === "undefined" ? MEMO_PATH : `${window.location.origin}${MEMO_PATH}`;
+  const text = `${t("FILAX — Mémorandum officiel 2026")} : ${url}`;
+  const share = async () => {
+    try {
+      const blob = await (await fetch(MEMO_PATH)).blob();
+      const file = new File([blob], MEMO_NAME, { type: "application/pdf" });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: t("FILAX — Mémorandum officiel 2026") });
+        return;
+      }
+    } catch (e) {
+      if ((e as Error).name === "AbortError") return;
+    }
+    setMenu((v) => !v);
+  };
+  const links = [
+    ["WhatsApp", `https://wa.me/?text=${encodeURIComponent(text)}`],
+    [t("E-mail"), `mailto:?subject=${encodeURIComponent(t("FILAX — Mémorandum officiel 2026"))}&body=${encodeURIComponent(text)}`],
+    ["Telegram", `https://t.me/share/url?url=${encodeURIComponent(url)}`],
+    ["SMS", `sms:?&body=${encodeURIComponent(text)}`],
+  ];
+  return (
+    <div className="mt-5 space-y-3 border-t border-border pt-4">
+      <Button asChild className="magnetide-tap h-auto w-full whitespace-normal py-3">
+        <a href={MEMO_PATH} download={MEMO_NAME}>
+          <Download className="h-4 w-4 shrink-0" />
+          {t("Télécharger le Mémorandum Officiel de l’Entreprise (PDF)")}
+        </a>
+      </Button>
+      <Button variant="outline" className="w-full" onClick={() => void share()}>
+        <Share2 className="h-4 w-4" />
+        {t("Partager le mémorandum")}
+      </Button>
+      {menu && (
+        <div className="grid grid-cols-2 gap-2">
+          {links.map(([label, href]) => (
+            <Button key={label} asChild variant="secondary" size="sm">
+              <a href={href} target="_blank" rel="noopener noreferrer">
+                {label}
+              </a>
+            </Button>
+          ))}
+          <Button
+            variant="secondary"
+            size="sm"
+            className="col-span-2"
+            onClick={() => void navigator.clipboard?.writeText(url)}
+          >
+            {t("Copier le lien")}
+          </Button>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">
+        {t("15 pages · Identité, modèle économique, technique, transactions, support et cadre juridique.")}
+      </p>
+    </div>
   );
 }
