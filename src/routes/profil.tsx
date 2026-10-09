@@ -123,19 +123,21 @@ function ProfilPage() {
 
   const verified = !!profile.verified;
 
-  const share = async () => {
-    const text = `Envoyez-moi de l'argent sur FILAX : ${profile.filaxId}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Mon ID FILAX", text });
-        return;
-      } catch {
-        /* partage annulé */
-      }
-    }
-    await navigator.clipboard?.writeText(text);
-    toast.success("Lien de partage copié");
-  };
+  const [shareOpen, setShareOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<"personal" | "kyc" | "security">("personal");
+  const profileLink =
+    typeof window !== "undefined"
+      ? `${window.location.origin}${dbProfile?.username ? `/user/${dbProfile.username}` : ""}`
+      : "";
+  const shareText = `Envoyez-moi de l'argent sur FILAX — ID : ${profile.filaxId} ${profileLink}`;
+  const shareTargets = [
+    { label: "WhatsApp", href: `https://wa.me/?text=${encodeURIComponent(shareText)}` },
+    { label: "Messenger", href: `https://www.facebook.com/dialog/send?link=${encodeURIComponent(profileLink)}&app_id=291494419107518&redirect_uri=${encodeURIComponent(profileLink)}` },
+    { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileLink)}` },
+    { label: "Telegram", href: `https://t.me/share/url?url=${encodeURIComponent(profileLink)}&text=${encodeURIComponent(shareText)}` },
+    { label: "X", href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}` },
+    { label: "SMS", href: `sms:?&body=${encodeURIComponent(shareText)}` },
+  ];
 
   const runKyc = async () => {
     // Connecté : envoi réel des documents puis passage en « en cours d'examen ».
@@ -215,50 +217,14 @@ function ProfilPage() {
           </button>
           <button
             type="button"
-            aria-label="Partager mon ID"
-            onClick={share}
+            aria-label="Partager mon profil"
+            onClick={() => setShareOpen(true)}
             className="press flex h-8 w-8 items-center justify-center rounded-xl border border-border text-foreground"
           >
             <Share2 className="h-3.5 w-3.5" />
           </button>
         </div>
       </section>
-
-      {/* Partage direct de l'ID FILAX */}
-      <div className="mt-3 grid grid-cols-2 gap-2.5">
-        <a
-          href={`https://wa.me/?text=${encodeURIComponent(`Envoyez-moi de l'argent sur FILAX : ${profile.filaxId}`)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="press flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-2.5 text-[0.72rem] font-bold text-foreground soft-shadow"
-        >
-          <MessageCircle className="h-4 w-4 text-brand-green" /> WhatsApp
-        </a>
-        <a
-          href={`sms:?&body=${encodeURIComponent(`Envoyez-moi de l'argent sur FILAX : ${profile.filaxId}`)}`}
-          className="press flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-2.5 text-[0.72rem] font-bold text-foreground soft-shadow"
-        >
-          <MessageSquare className="h-4 w-4 text-brand-blue" /> SMS
-        </a>
-      </div>
-
-      {/* Deux QR distincts : profil (identité) et réception (transaction). */}
-      <div className="mt-3 grid grid-cols-2 gap-2.5">
-        <button
-          type="button"
-          onClick={() => setModal("qr-profil")}
-          className="press flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-2.5 text-[0.72rem] font-bold text-foreground soft-shadow"
-        >
-          <User className="h-4 w-4 text-brand-blue" /> QR profil
-        </button>
-        <button
-          type="button"
-          onClick={() => setModal("qr-recevoir")}
-          className="press flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-2.5 text-[0.72rem] font-bold text-foreground soft-shadow"
-        >
-          <QrCode className="h-4 w-4 text-brand-green" /> QR de réception
-        </button>
-      </div>
 
       <div className="mt-4 space-y-3">
         {/* Banque partenaire — bien visible, au-dessus des informations personnelles */}
@@ -353,8 +319,18 @@ function ProfilPage() {
           )}
         </Modal>
 
-        {/* Informations personnelles dans un tiroir */}
-        <Coffre {...drawer("personal")} title="Informations personnelles" subtitle="Nom, contact, naissance" icon={<User className="h-4 w-4" />}>
+        {/* Paramètres du compte : informations, KYC et sécurité dans un seul tiroir */}
+        <Coffre {...drawer("settings")} title="Paramètres du compte" subtitle="Informations, vérification d'identité, sécurité" icon={<User className="h-4 w-4" />} badge={verified ? "OK" : "!"}>
+          <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-muted/50 p-1">
+            {([["personal", "Informations"], ["kyc", "Identité"], ["security", "Sécurité"]] as const).map(([k, label]) => (
+              <button key={k} type="button" onClick={() => setSettingsTab(k)}
+                className={`press rounded-xl py-2 text-[0.68rem] font-bold ${settingsTab === k ? "bg-surface text-foreground soft-shadow" : "text-muted-foreground"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {settingsTab === "personal" && (
           <div className="space-y-3">
             <Field label="Prénom">
               <TextInput value={firstName} onChange={(e) => setFirstName(e.target.value)} />
@@ -401,16 +377,11 @@ function ProfilPage() {
               Enregistrer
             </PrimaryButton>
           </div>
-        </Coffre>
+          )}
 
-        {/* Vérification d'identité réellement dynamique */}
-        <Coffre
-          {...drawer("kyc")}
-          title="Vérification d'identité"
-          subtitle={verified ? "Compte vérifié" : "Action requise"}
-          icon={<BadgeCheck className="h-4 w-4" />}
-          badge={verified ? "OK" : "!"}
-        >
+          {settingsTab === "kyc" && (
+          <div>
+
           {verified ? (
             <div className="rounded-2xl bg-muted/50 p-3 text-[0.72rem] leading-relaxed text-muted-foreground">
               Votre identité a été vérifiée{profile.verifiedAt ? ` le ${formatDate(profile.verifiedAt)}` : ""}. Vos plafonds de
@@ -475,17 +446,10 @@ function ProfilPage() {
               </PrimaryButton>
             </div>
           )}
-        </Coffre>
+          </div>
+          )}
 
-        {isAdmin && (
-          <Link to="/admin" className="press flex items-center justify-between rounded-2xl bg-surface px-4 py-3 soft-shadow">
-            <span className="text-[0.8rem] font-bold text-foreground">Back-office (KYC et retraits)</span>
-            <ShieldCheck className="h-4 w-4 text-brand-green" />
-          </Link>
-        )}
-
-        {/* Sécurité */}
-        <Coffre {...drawer("security")} title="Sécurité" subtitle="Code secret et double authentification" icon={<Lock className="h-4 w-4" />}>
+          {settingsTab === "security" && (
           <div className="space-y-3">
             <Field label="Code secret à 4 chiffres">
               <TextInput
@@ -557,7 +521,16 @@ function ProfilPage() {
               </button>
             </div>
           </div>
+          )}
+          </div>
         </Coffre>
+
+        {isAdmin && (
+          <Link to="/admin" className="press flex items-center justify-between rounded-2xl bg-surface px-4 py-3 soft-shadow">
+            <span className="text-[0.8rem] font-bold text-foreground">Back-office (KYC et retraits)</span>
+            <ShieldCheck className="h-4 w-4 text-brand-green" />
+          </Link>
+        )}
 
         <Coffre {...drawer("appearance")} title="Apparence" subtitle="Mode clair ou sombre" icon={<Moon className="h-4 w-4" />}>
           <div className="flex items-center justify-between rounded-2xl bg-muted/50 px-3 py-2.5">
