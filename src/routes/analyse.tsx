@@ -201,9 +201,9 @@ function AnalysePage() {
         />
       </div>
 
-      <div className="mt-4 rounded-3xl border border-border bg-surface p-4 soft-shadow">
-        <p className="text-[0.7rem] font-semibold text-muted-foreground">Répartition par moyen</p>
-        <div className="mt-3 space-y-2.5">
+      <div className="mt-4">
+        <Coffre title="Répartition par moyen" subtitle="Montants par moyen de paiement" icon={<TrendingUp className="h-4 w-4" />} badge={`${methods.length}`}>
+        <div className="space-y-2.5">
           {methods.map(([m, amount]) => (
             <div key={m}>
               <div className="flex items-center justify-between text-[0.68rem]">
@@ -217,6 +217,7 @@ function AnalysePage() {
           ))}
           {methods.length === 0 && <p className="text-[0.68rem] text-muted-foreground">Aucune opération sur cette période.</p>}
         </div>
+        </Coffre>
       </div>
 
       <div className="mt-4 space-y-3">

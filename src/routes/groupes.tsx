@@ -9,7 +9,11 @@ import groupSlideThree from "@/assets/groups-solidarity-3.jpg";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
-import { Glyph } from "@/components/filax/glyph";
+import { themeImageFor } from "@/components/filax/account-theme";
+
+/** Même visuel que la carte de compte correspondante dans l'accueil. */
+const groupVisual = (g: Group) =>
+  themeImageFor({ name: g.name, currency: g.currency, lockedUntil: null, visualKey: g.visualKey ?? null } as never);
 import { Field, Modal, PrimaryButton, TextInput, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { ContributeModal, InviteModal, NewGroupModal } from "@/components/filax/action-modals";
 import {
@@ -109,7 +113,6 @@ function GroupesPage() {
   const [wdReason, setWdReason] = useState("");
   const [wdAccount, setWdAccount] = useState("");
   const wdAccounts = current ? accounts.filter((a) => a.currency === current.currency) : [];
-  const daysLeft = (d?: number) => (d ? Math.max(0, Math.ceil((d - Date.now()) / 86400000)) : null);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
@@ -157,9 +160,7 @@ function GroupesPage() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2.5">
-                          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-surface">
-                            <Glyph icon={g.icon} className="h-4 w-4 text-brand-violet" />
-                          </span>
+                          <img src={groupVisual(g)} alt="" className="h-9 w-9 rounded-2xl object-cover" />
                           <div className="leading-tight">
                             <p className="text-[0.85rem] font-bold text-foreground">{g.name}</p>
                              <p className="text-[0.62rem] text-muted-foreground">
@@ -241,11 +242,6 @@ function GroupesPage() {
               <div className="mt-2">
                 <ProgressBar value={pct(groupTotal(current), current.target)} color="brand-violet" />
               </div>
-              {daysLeft(current.deadline) !== null && (
-                <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-brand-violet/10 px-2.5 py-1 text-[0.65rem] font-bold text-brand-violet">
-                  ⏳ {daysLeft(current.deadline)} jours restants
-                </span>
-              )}
               <p className="mt-2 text-[0.65rem] text-muted-foreground">
                 Votre contribution : {formatMoney(myContribution(current), current.currency)}
               </p>
@@ -291,6 +287,26 @@ function GroupesPage() {
                 </div>
               ))}
             </div>
+
+            <div className="space-y-2">
+              <p className="text-[0.68rem] font-semibold text-muted-foreground">Historique des contributions</p>
+              {(current.contributions ?? []).length === 0 && (
+                <p className="rounded-2xl bg-muted/40 px-3 py-2 text-[0.68rem] text-muted-foreground">Aucune contribution enregistrée.</p>
+              )}
+              {(current.contributions ?? []).map((c) => (
+                <div key={c.id} className="flex items-center gap-2.5 rounded-2xl bg-muted/40 px-3 py-2">
+                  <img src={c.avatar} alt={c.name} className="h-7 w-7 rounded-full object-cover" />
+                  <div className="min-w-0 flex-1 leading-tight">
+                    <p className="truncate text-[0.74rem] font-semibold text-foreground">{c.name}</p>
+                    <p className="text-[0.6rem] text-muted-foreground">{formatDate(c.at)}</p>
+                  </div>
+                  <span className="text-[0.74rem] font-bold" style={{ color: accentVar("brand-violet") }}>
+                    {hideAmounts ? "•••" : formatMoney(c.amount, current.currency)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
 
             <div className="grid grid-cols-2 gap-2">
               <button

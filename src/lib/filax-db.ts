@@ -199,15 +199,16 @@ export function useDbGroups(userId: string | null) {
       rows.map(async (g) => {
         const [{ data: members }, { data: contribs }] = await Promise.all([
           supabase.from("group_members").select("user_id, joined_at").eq("group_id", g.id),
-          supabase.from("group_contributions").select("user_id, contributor_name, amount, created_at").eq("group_id", g.id),
+          supabase.from("group_contributions").select("id, user_id, contributor_name, amount, created_at").eq("group_id", g.id).order("created_at", { ascending: false }),
         ]);
+        const avatarFor = (seed: string) => `https://i.pravatar.cc/96?u=${encodeURIComponent(seed)}`;
         const byUser = new Map<string, GroupMember>();
         for (const m of members ?? []) {
           byUser.set(m.user_id, {
             id: m.user_id,
             name: "Membre FILAX",
             amount: 0,
-            avatar: "",
+            avatar: avatarFor(m.user_id),
             lastAt: new Date(m.joined_at).getTime(),
           });
         }
@@ -218,7 +219,7 @@ export function useDbGroups(userId: string | null) {
             id: c.user_id,
             name: c.contributor_name || existing?.name || "Membre FILAX",
             amount: (existing?.amount ?? 0) + Number(c.amount),
-            avatar: "",
+            avatar: avatarFor(c.contributor_name || c.user_id),
             lastAt: Math.max(existing?.lastAt ?? 0, at),
           });
         }
@@ -233,7 +234,15 @@ export function useDbGroups(userId: string | null) {
           category: (g.category as GroupCategory) ?? "Famille",
           deadline: g.deadline ? new Date(g.deadline).getTime() : undefined,
           collected: Number(g.collected),
+          visualKey: (g as { visual_key?: string | null }).visual_key ?? null,
           members: [...byUser.values()],
+          contributions: (contribs ?? []).map((c) => ({
+            id: c.id,
+            name: c.contributor_name || "Membre FILAX",
+            avatar: avatarFor(c.contributor_name || c.user_id),
+            amount: Number(c.amount),
+            at: new Date(c.created_at).getTime(),
+          })),
         } as Group;
       }),
     );

@@ -263,6 +263,7 @@ export type Database = {
           name: string
           owner_id: string
           target: number | null
+          visual_key: string | null
         }
         Insert: {
           category?: string
@@ -274,6 +275,7 @@ export type Database = {
           name: string
           owner_id: string
           target?: number | null
+          visual_key?: string | null
         }
         Update: {
           category?: string
@@ -285,6 +287,7 @@ export type Database = {
           name?: string
           owner_id?: string
           target?: number | null
+          visual_key?: string | null
         }
         Relationships: []
       }
