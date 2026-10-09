@@ -22,6 +22,7 @@ import { Route as AdminGroupesRouteImport } from './routes/admin_.groupes'
 import { Route as AdminNotificationsRouteImport } from './routes/admin_.notifications'
 import { Route as GroupesIdRouteImport } from './routes/groupes_.$id'
 import { Route as UserUsernameRouteImport } from './routes/user.$username'
+import { Route as ApiPublicFilaxSupportRouteImport } from './routes/api/public/filax-support'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -88,6 +89,11 @@ const UserUsernameRoute = UserUsernameRouteImport.update({
   path: '/user/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicFilaxSupportRoute = ApiPublicFilaxSupportRouteImport.update({
+  id: '/api/public/filax-support',
+  path: '/api/public/filax-support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/admin/notifications': typeof AdminNotificationsRoute
   '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
+  '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/admin/notifications': typeof AdminNotificationsRoute
   '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
+  '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/admin_/notifications': typeof AdminNotificationsRoute
   '/groupes_/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
+  '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/admin/notifications'
     | '/groupes/$id'
     | '/user/$username'
+    | '/api/public/filax-support'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/admin/notifications'
     | '/groupes/$id'
     | '/user/$username'
+    | '/api/public/filax-support'
   id:
     | '__root__'
     | '/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/admin_/notifications'
     | '/groupes_/$id'
     | '/user/$username'
+    | '/api/public/filax-support'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,6 +209,7 @@ export interface RootRouteChildren {
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   GroupesIdRoute: typeof GroupesIdRoute
   UserUsernameRoute: typeof UserUsernameRoute
+  ApiPublicFilaxSupportRoute: typeof ApiPublicFilaxSupportRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/filax-support': {
+      id: '/api/public/filax-support'
+      path: '/api/public/filax-support'
+      fullPath: '/api/public/filax-support'
+      preLoaderRoute: typeof ApiPublicFilaxSupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,6 +329,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminNotificationsRoute: AdminNotificationsRoute,
   GroupesIdRoute: GroupesIdRoute,
   UserUsernameRoute: UserUsernameRoute,
+  ApiPublicFilaxSupportRoute: ApiPublicFilaxSupportRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
