@@ -102,6 +102,7 @@ export function FilaxInformation({
                     </div>
                   ))}
                 </div>
+                {index === 4 && <MemorandumActions />}
                 {index === 4 && (
                   <address className="mt-5 space-y-3 border-t border-border pt-4 text-sm not-italic">
                     <a
