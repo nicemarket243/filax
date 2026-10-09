@@ -21,7 +21,9 @@ export function SupportChat({ onClose }: { onClose: () => void }) {
     body: () => ({ language: language.current }),
     headers: async () => {
       const { data } = await supabase.auth.getSession();
-      return data.session ? { Authorization: `Bearer ${data.session.access_token}` } : {};
+      const headers = new Headers();
+      if (data.session) headers.set("Authorization", `Bearer ${data.session.access_token}`);
+      return headers;
     },
     prepareSendMessagesRequest: ({ messages, body, headers, api }) => ({ api, headers, body: { ...body, messages: messages.map(message => ({ ...message, parts: message.parts.filter(part => part.type === "text") })) } }),
   }), []);
