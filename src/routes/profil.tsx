@@ -189,16 +189,17 @@ function ProfilPage() {
             {profile.firstName} {profile.lastName}
           </p>
           <p className="truncate text-[0.68rem] text-muted-foreground">{profile.filaxId}</p>
-          <span
-            className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.58rem] font-bold"
+          <Link
+            to="/verification"
+            className="press mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.58rem] font-bold"
             style={{
-              backgroundColor: `color-mix(in oklab, ${accentVar(verified ? "brand-green" : "brand-gold")} 14%, transparent)`,
-              color: accentVar(verified ? "brand-green" : "brand-gold"),
+              backgroundColor: `color-mix(in oklab, ${accentVar(verified || kycStatus === "verified" ? "brand-green" : "brand-blue")} 14%, transparent)`,
+              color: accentVar(verified || kycStatus === "verified" ? "brand-green" : "brand-blue"),
             }}
           >
-            {verified ? <ShieldCheck className="h-3 w-3" /> : <ShieldAlert className="h-3 w-3" />}
-            {verified ? "Identité vérifiée" : "Identité non vérifiée"}
-          </span>
+            {verified || kycStatus === "verified" ? <ShieldCheck className="h-3 w-3" /> : <ShieldAlert className="h-3 w-3" />}
+            {verified || kycStatus === "verified" ? "Identité vérifiée" : kycStatus === "pending" ? "Vérification en cours" : "Vérifier mon identité"}
+          </Link>
         </div>
         <div className="flex flex-col gap-1.5">
           <button

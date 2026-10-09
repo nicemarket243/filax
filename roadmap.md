@@ -26,3 +26,11 @@
 - [x] Notifications temps réel dans l'app
 - [x] Boutons WhatsApp/SMS sur le profil
 - [ ] Nettoyage des données de test (KYC fictif, groupe « Test Back-office », dépôt 100 $)
+
+## Fait — 9 oct.
+- [x] Notification de dépôt en haut de l'écran (testée avec 1 $)
+- [x] Page Vérification d'identité
+- [x] Page membres de groupe + solde partagé
+- [x] Détail des opérations dans l'historique
+- [x] Back-office : comptes FILAX et notifications
+- [ ] Compte admin séparé — attend l'e-mail de l'utilisateur

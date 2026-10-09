@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { Plus, UserPlus, Users, Banknote } from "lucide-react";
@@ -217,6 +217,15 @@ function GroupesPage() {
       >
         {current && (
           <div className="space-y-4">
+            {dbGroups && (
+              <Link
+                to="/groupes/$id"
+                params={{ id: current.id }}
+                className="press flex items-center justify-center gap-2 rounded-2xl border border-border py-2.5 text-[0.75rem] font-bold text-foreground"
+              >
+                <Users className="h-4 w-4 text-brand-violet" /> Gérer les membres et le solde partagé
+              </Link>
+            )}
             <div className="rounded-2xl bg-muted/50 p-3">
               <div className="flex items-end justify-between">
                 <div className="leading-tight">

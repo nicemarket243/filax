@@ -540,6 +540,22 @@ export type Database = {
         Returns: undefined
       }
       admin_delete_group: { Args: { _id: string }; Returns: undefined }
+      admin_delete_notification: { Args: { _id: string }; Returns: undefined }
+      admin_list_accounts: {
+        Args: never
+        Returns: {
+          balance: number
+          created_at: string
+          currency: string
+          filax_id: string
+          id: string
+          kind: string
+          name: string
+          owner: string
+          status: string
+          user_id: string
+        }[]
+      }
       admin_list_clients: {
         Args: never
         Returns: {
@@ -591,6 +607,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_list_notifications: {
+        Args: never
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          read: boolean
+          recipient: string
+          title: string
+        }[]
+      }
       admin_list_withdrawals: {
         Args: never
         Returns: {
@@ -604,6 +631,14 @@ export type Database = {
           requester: string
           status: string
         }[]
+      }
+      admin_send_notification: {
+        Args: { _body: string; _title: string; _user: string }
+        Returns: number
+      }
+      admin_set_account_status: {
+        Args: { _account: string; _status: string }
+        Returns: undefined
       }
       admin_update_group: {
         Args: {
@@ -640,6 +675,17 @@ export type Database = {
         Args: { _amount: number; _from: string; _goal: string }
         Returns: undefined
       }
+      group_member_list: {
+        Args: { _group: string }
+        Returns: {
+          contributed: number
+          filax_id: string
+          is_owner: boolean
+          joined_at: string
+          name: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -656,6 +702,10 @@ export type Database = {
         Returns: boolean
       }
       leave_group: { Args: { _group: string }; Returns: undefined }
+      owner_update_group: {
+        Args: { _deadline: string; _id: string; _name: string; _target: number }
+        Returns: undefined
+      }
       public_profile: {
         Args: { _username: string }
         Returns: {
