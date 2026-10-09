@@ -1,4 +1,5 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from "@tanstack/react-router";
 import { Camera, Images, FolderOpen } from "lucide-react";
 import {
   DropdownMenu,
@@ -20,6 +21,14 @@ interface AddPhotoMenuProps {
  * gallery or the file manager — each wired to a real hidden file input.
  */
 export function AddPhotoMenu({ onFile, allowPdf, children, className }: AddPhotoMenuProps) {
+  const [open, setOpen] = useState(false);
+  const pathname = useLocation({ select: (location) => location.pathname });
+  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    const close = () => setOpen(false);
+    document.addEventListener("filax:drawer-open", close);
+    return () => document.removeEventListener("filax:drawer-open", close);
+  }, []);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -32,7 +41,7 @@ export function AddPhotoMenu({ onFile, allowPdf, children, className }: AddPhoto
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild className={className}>
           {children}
         </DropdownMenuTrigger>
