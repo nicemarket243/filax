@@ -23,7 +23,7 @@ export function GoalEvolution({ goal, transactions }: { goal: GeneralGoal; trans
   const delta = (tx: Transaction) => goal.kind === "goal" ? tx.amount
     : tx.type === "depot" || tx.type === "reception" ? tx.amount : -(tx.amount + (tx.fee ?? 0));
   let running = goal.saved - movements.reduce((sum, tx) => sum + delta(tx), 0);
-  const points = movements.length ? [{ value: running, at: movements[0]?.at }] : [];
+  const points: { value: number; at: number | undefined }[] = movements.length ? [{ value: running, at: movements[0]?.at }] : [];
   for (const tx of movements) { running += delta(tx); points.push({ value: running, at: tx.at }); }
   if (!points.length) points.push({ value: goal.saved, at: undefined });
   const min = Math.min(0, ...points.map((p) => p.value));
