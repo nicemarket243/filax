@@ -6,3 +6,4 @@
 - Use the shared account-visuals catalog and VisualPicker for creation and existing-card editing so photographic choices remain consistent across both flows.
 - Centralize closed-by-default, exclusive, outside-click and route-change behavior in Coffre; keep photo menus controlled so they reset on navigation.
 - Load personal transaction history in stable paginated batches without a fixed row cap; derive objective charts only from recorded movements and show a single current-value point when history is unavailable.
+- Keep logo information and support in dedicated shared modules; use authenticated streaming AI routes with server-only curated knowledge and session-only UIMessage history, so assistance cannot alter financial records or expose credentials.
