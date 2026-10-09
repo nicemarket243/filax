@@ -4,8 +4,9 @@ import { ArrowDownLeft, ArrowUpRight, History, Target, TrendingUp } from "lucide
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
-import { Glyph } from "@/components/filax/glyph";
-import { PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { Button } from "@/components/ui/button";
+import { GoalEvolution, type GeneralGoal } from "@/components/filax/goal-evolution";
+import { Modal, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { useI18n } from "@/lib/i18n";
 import { useDbUser, useDbAccounts, useDbTransactions, useDbGoals } from "@/lib/filax-db";
 import {
@@ -52,15 +53,16 @@ function AnalysePage() {
   const userId = useDbUser();
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
-  const live = !!userId && !!db.accounts && db.accounts.length > 0;
-  const accounts = live ? db.accounts! : data.accounts;
+  const live = !!userId;
+  const accounts = live ? db.accounts ?? [] : data.accounts;
   const dbGoals = useDbGoals(userId);
   const goals = live ? dbGoals.goals ?? [] : data.goals;
   const transactions = live ? dbTx.transactions ?? [] : data.transactions;
   const [periodKey, setPeriodKey] = useState("30j");
   const [point, setPoint] = useState<number | null>(null);
+  const [goalId, setGoalId] = useState<string | null>(null);
 
-  const period = PERIODS.find((p) => p.key === periodKey)!;
+  const period = PERIODS.find((p) => p.key === periodKey) ?? PERIODS[1] ?? { ms: null };
   const totalUsd = accounts.reduce((s, a) => s + toUsd(a.balance, a.currency), 0);
   const allTx = useMemo(() => [...transactions].sort((a, b) => b.at - a.at), [transactions]);
   const accName = (id: string) => accounts.find((a) => a.id === id)?.name ?? "Compte";
@@ -88,10 +90,10 @@ function AnalysePage() {
     const pts = [{ at: stats.list[0]?.at ?? Date.now(), value: start, tx: null as Transaction | null }];
     let running = start;
     stats.list.forEach((t, i) => {
-      running += deltas[i]!;
+      running += deltas[i] ?? 0;
       pts.push({ at: t.at, value: running, tx: t });
     });
-    return pts.length > 1 ? pts : [pts[0]!, { at: Date.now(), value: totalUsd, tx: null }];
+    return pts.length > 1 ? pts : [...pts, { at: Date.now(), value: totalUsd, tx: null }];
   }, [stats.list, totalUsd]);
 
   const w = 300;
@@ -108,7 +110,11 @@ function AnalysePage() {
 
   const totalFlow = stats.inflow + stats.outflow || 1;
   const methods = [...stats.byMethod.entries()].sort((a, b) => b[1] - a[1]);
-  const targets = accounts.filter((a) => a.target);
+  const generalGoals: GeneralGoal[] = [
+    ...accounts.flatMap((a) => a.target && a.target > 0 ? [{ id: `account-${a.id}`, name: a.name, accountId: a.id, target: a.target, saved: a.balance, currency: a.currency, kind: "account" as const }] : []),
+    ...goals.map((g) => ({ ...g, id: `goal-${g.id}`, kind: "goal" as const })),
+  ];
+  const selectedGoal = generalGoals.find((g) => g.id === goalId);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
@@ -116,10 +122,7 @@ function AnalysePage() {
 
       <PageTitle title="Analyse" subtitle="Vision globale de tout votre portefeuille." />
 
-      <div
-        className="mt-5 rounded-3xl p-5 text-white soft-shadow"
-        style={{ background: `linear-gradient(140deg, ${accentVar("brand-blue")}, color-mix(in oklab, ${accentVar("brand-blue")} 40%, #05070f))` }}
-      >
+      <div className="mt-5 rounded-3xl p-5 text-primary-foreground soft-shadow" style={{ background: "var(--gradient-magnetide, var(--gradient-blue))" }}>
         <p className="text-[0.7rem] text-white/80">{t("Portefeuille total")} · {accounts.length} {t("comptes")}</p>
         <p className="mt-1 text-[1.9rem] font-extrabold leading-none tracking-tight">{formatMoney(totalUsd, "USD")}</p>
         <p className="mt-2 text-[0.65rem] text-white/80">
@@ -217,41 +220,29 @@ function AnalysePage() {
       </div>
 
       <div className="mt-4 space-y-3">
-        <Coffre title="Objectif de l'épargne" subtitle="Progression par compte et par objectif" icon={<Target className="h-4 w-4" />} badge={`${targets.length + goals.length}`}>
-          <div className="space-y-2.5">
-            {targets.map((a) => (
-              <div key={a.id} className="rounded-2xl bg-muted/40 px-3 py-2.5">
-                <div className="flex items-center justify-between text-[0.72rem]">
-                  <span className="flex items-center gap-1.5 font-semibold text-foreground">
-                    <Glyph icon={a.icon} className="h-3.5 w-3.5" /> {a.name}
-                  </span>
-                  <span className="font-bold" style={{ color: accentVar(a.color) }}>{pct(a.balance, a.target!)}%</span>
-                </div>
-                <div className="mt-1.5"><ProgressBar value={pct(a.balance, a.target!)} color={a.color} /></div>
-                <p className="mt-1 text-[0.6rem] text-muted-foreground">
-                  {formatMoney(a.balance, a.currency)} sur {formatMoney(a.target!, a.currency)}
-                </p>
-              </div>
-            ))}
-            {goals.map((g) => (
-              <div key={g.id} className="rounded-2xl bg-muted/40 px-3 py-2.5">
-                <div className="flex items-center justify-between text-[0.72rem]">
-                  <span className="flex items-center gap-1.5 font-semibold text-foreground">
-                    <Glyph icon={g.icon} className="h-3.5 w-3.5" /> {g.name}
-                  </span>
-                  <span className="font-bold text-brand-green">{pct(g.saved, g.target)}%</span>
-                </div>
-                <div className="mt-1.5"><ProgressBar value={pct(g.saved, g.target)} color="brand-green" /></div>
-                <p className="mt-1 text-[0.6rem] text-muted-foreground">
-                  {formatMoney(g.saved, g.currency)} sur {formatMoney(g.target, g.currency)} · {accName(g.accountId)}
-                </p>
-              </div>
-            ))}
+        <Coffre title="Objectifs Généraux" subtitle="Tous les comptes, toutes devises" icon={<Target className="h-4 w-4" />} badge={`${generalGoals.length}`}>
+          <div className="space-y-4">
+            {accounts.map((account) => {
+              const list = generalGoals.filter((g) => g.accountId === account.id);
+              return <div key={account.id}>
+                <h3 className="mb-2 text-xs font-semibold text-muted-foreground">{account.name}</h3>
+                {list.length ? <div className="space-y-2">{list.map((goal) => (
+                  <Button key={goal.id} variant="ghost" onClick={() => setGoalId(goal.id)} className="h-auto w-full flex-col items-stretch gap-1.5 whitespace-normal rounded-2xl bg-muted/40 px-3 py-2.5 text-left">
+                    <span className="flex items-center justify-between gap-2 text-xs"><span className="min-w-0 break-words font-semibold">{goal.name}</span><span className="shrink-0 font-bold text-brand-green">{pct(goal.saved, goal.target)}%</span></span>
+                    <ProgressBar value={pct(goal.saved, goal.target)} color={account.color} />
+                    <span className="text-[0.65rem] text-muted-foreground">{formatMoney(goal.saved, goal.currency)} / {formatMoney(goal.target, goal.currency)}</span>
+                  </Button>
+                ))}</div> : <p className="text-[0.65rem] text-muted-foreground">Aucun objectif sur ce compte pour l'instant.</p>}
+              </div>;
+            })}
+            {!accounts.length && <p className="text-xs text-muted-foreground">Aucun objectif sur ce compte pour l'instant.</p>}
           </div>
         </Coffre>
 
-        <Coffre title="Historique complet" subtitle="Tous les comptes, toutes devises" icon={<History className="h-4 w-4" />} badge={`${allTx.length}`}>
+        <Coffre title="Historique" subtitle="Tous les comptes, toutes devises" icon={<History className="h-4 w-4" />} badge={`${allTx.length}`}>
           <div className="space-y-2">
+            {dbTx.error && <div role="alert" className="text-xs text-brand-red"><p>Impossible de charger l’historique.</p><Button variant="ghost" onClick={() => void dbTx.refresh()}>Réessayer</Button></div>}
+            {live && !dbTx.transactions && !dbTx.error && <p className="text-xs text-muted-foreground">Chargement…</p>}
             {allTx.map((t) => (
               <div key={t.id} className="flex items-center justify-between rounded-2xl bg-muted/40 px-3 py-2.5">
                 <div className="min-w-0 leading-tight">
@@ -276,6 +267,12 @@ function AnalysePage() {
         </Coffre>
       </div>
 
+      <Modal open={!!selectedGoal} onOpenChange={(open) => { if (!open) setGoalId(null); }} title={selectedGoal?.name ?? "Objectif"} subtitle={selectedGoal ? accName(selectedGoal.accountId) : undefined}>
+        {selectedGoal && <div className="space-y-5">
+          <div><p className="text-2xl font-bold text-brand-green">{formatMoney(selectedGoal.saved, selectedGoal.currency)}</p><p className="mt-1 text-xs text-muted-foreground">{t("Objectif financier")} · {formatMoney(selectedGoal.target, selectedGoal.currency)}</p><div className="mt-3"><ProgressBar value={pct(selectedGoal.saved, selectedGoal.target)} /></div></div>
+          <GoalEvolution goal={selectedGoal} transactions={transactions} />
+        </div>}
+      </Modal>
       <BottomNav />
     </main>
   );

@@ -294,19 +294,23 @@ const KNOWN_METHODS = ["orange", "airtel", "mpesa", "banque", "carte", "filax"];
 /** Opérations réelles de l'utilisateur, triées de la plus récente à la plus ancienne. */
 export function useDbTransactions(userId: string | null, accounts: Account[] | null) {
   const [txs, setTxs] = useState<import("./filax-store").Transaction[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const refresh = useCallback(async () => {
     if (!userId) {
       setTxs(null);
       return;
     }
-    const { data } = await supabase
-      .from("transactions")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(300);
+    const rows: import("@/integrations/supabase/types").Database["public"]["Tables"]["transactions"]["Row"][] = [];
+    for (let offset = 0; ; offset += 500) {
+      const result = await supabase.from("transactions").select("*").eq("user_id", userId)
+        .order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + 499);
+      if (result.error) { setError(result.error.message); return; }
+      rows.push(...(result.data ?? []));
+      if ((result.data?.length ?? 0) < 500) break;
+    }
+    setError(null);
     setTxs(
-      (data ?? []).map((t) => ({
+      rows.map((t) => ({
         id: t.id,
         accountId: t.account_id,
         type: TX_TYPE[t.type] ?? "depot",
@@ -317,6 +321,8 @@ export function useDbTransactions(userId: string | null, accounts: Account[] | n
         at: new Date(t.created_at).getTime(),
         reference: t.id.slice(0, 8).toUpperCase(),
         origin: t.counterparty ?? undefined,
+        sourceType: t.type,
+        fee: Number(t.fee),
       })),
     );
   }, [userId, accounts]);
@@ -333,7 +339,7 @@ export function useDbTransactions(userId: string | null, accounts: Account[] | n
       void supabase.removeChannel(ch);
     };
   }, [userId, refresh]);
-  return { transactions: txs, refresh };
+  return { transactions: txs, refresh, error };
 }
 
 export async function depositDb(accountId: string, amount: number, method: string) {

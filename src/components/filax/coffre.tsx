@@ -1,5 +1,7 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useLocation } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface CoffreProps {
   title: string;
@@ -13,21 +15,58 @@ interface CoffreProps {
 }
 
 /** Tiroir « Coffre » — fermé par défaut, animation fluide façon iOS. */
-export function Coffre({ title, subtitle, icon, badge, defaultOpen = false, open: controlledOpen, onOpenChange, children }: CoffreProps) {
-  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+export function Coffre({ title, subtitle, icon, badge, open: controlledOpen, onOpenChange, children }: CoffreProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const root = useRef<HTMLElement>(null);
+  const id = useId();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const callback = useRef(onOpenChange);
+  callback.current = onOpenChange;
+  const openRef = useRef(controlledOpen ?? internalOpen);
+  openRef.current = controlledOpen ?? internalOpen;
+  const close = () => {
+    if (!openRef.current) return;
+    openRef.current = false;
+    setInternalOpen(false);
+    callback.current?.(false);
+  };
+  useEffect(() => {
+    close();
+  }, [pathname]);
+  useEffect(() => {
+    const outside = (event: MouseEvent) => {
+      if (event.target instanceof Node && !root.current?.contains(event.target)) close();
+    };
+    const exclusive = (event: Event) => {
+      if ((event as CustomEvent<string>).detail !== id) close();
+    };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") close(); };
+    document.addEventListener("click", outside, true);
+    document.addEventListener("filax:drawer-open", exclusive);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("click", outside, true);
+      document.removeEventListener("filax:drawer-open", exclusive);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [id]);
   const open = controlledOpen ?? internalOpen;
   const setOpen = (next: boolean) => {
+    openRef.current = next;
+    if (next) document.dispatchEvent(new CustomEvent("filax:drawer-open", { detail: id }));
     if (controlledOpen === undefined) setInternalOpen(next);
     onOpenChange?.(next);
   };
 
   return (
-    <section className="overflow-hidden rounded-3xl bg-surface soft-shadow">
-      <button
+    <section ref={root} className="overflow-hidden rounded-3xl bg-surface soft-shadow">
+      <Button
+        variant="ghost"
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        className="press flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
+        aria-controls={`${id}-content`}
+        className="press flex h-auto w-full items-center justify-between gap-3 whitespace-normal rounded-none px-4 py-3.5 text-left"
       >
         <span className="flex items-center gap-3">
           {icon && (
@@ -47,9 +86,10 @@ export function Coffre({ title, subtitle, icon, badge, defaultOpen = false, open
             style={{ transform: open ? "rotate(180deg)" : undefined }}
           />
         </span>
-      </button>
+      </Button>
 
       <div
+        id={`${id}-content`}
         className="grid transition-[grid-template-rows,opacity] duration-400 ease-out"
         style={{ gridTemplateRows: open ? "1fr" : "0fr", opacity: open ? 1 : 0 }}
       >

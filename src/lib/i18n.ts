@@ -5,6 +5,12 @@ const LANG_KEY = "filax-lang";
 
 /** Dictionnaire FR → EN. La clé est le texte français affiché. */
 const EN: Record<string, string> = {
+  "Objectifs Généraux": "Overall goals",
+  "Évolution de l’objectif": "Goal evolution",
+  "Aucun mouvement enregistré pour cet objectif.": "No recorded movements for this goal.",
+  "Impossible de charger l’historique.": "Unable to load history.",
+  "Réessayer": "Try again",
+  "Chargement…": "Loading…",
   "Créer un sous-compte": "Create a subaccount",
   "Créer le sous-compte": "Create subaccount",
   "Compte Principal de rattachement": "Parent main account",
