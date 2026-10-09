@@ -23,6 +23,6 @@
 
 ## Plus tard
 - [ ] Domaine filax.money : achat mis en pause par l'utilisateur
-- [ ] Notifications temps réel dans l'app
-- [ ] Boutons WhatsApp/SMS sur le profil
+- [x] Notifications temps réel dans l'app
+- [x] Boutons WhatsApp/SMS sur le profil
 - [ ] Nettoyage des données de test (KYC fictif, groupe « Test Back-office », dépôt 100 $)
