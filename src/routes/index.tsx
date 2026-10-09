@@ -47,6 +47,8 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
+const TX_TYPE_LABEL: Record<string, string> = { depot: "Dépôt", retrait: "Retrait", envoi: "Transfert envoyé", reception: "Transfert reçu", cotisation: "Cotisation" };
+
 const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentKey }[] = [
   { key: "deposit", label: "Dépôt", icon: ArrowDownLeft, color: "brand-green" },
   { key: "withdraw", label: "Retrait", icon: ArrowUpRight, color: "brand-red" },
@@ -70,6 +72,7 @@ function HomePage() {
     await db.refresh();
   };
   const [activeIndex, setActiveIndex] = useState(0);
+  const [txDetail, setTxDetail] = useState<(typeof transactions)[number] | null>(null);
   const [modal, setModal] = useState<string | null>(null);
   const [visualBusy, setVisualBusy] = useState(false);
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -240,11 +243,11 @@ function HomePage() {
               {accountTx.map((t) => {
                 const positive = t.type === "depot" || t.type === "reception";
                 return (
-                  <div key={t.id} className="flex items-center justify-between rounded-2xl bg-muted/40 px-3 py-2.5">
+                  <button type="button" key={t.id} onClick={() => setTxDetail(t)} className="press flex w-full items-center justify-between rounded-2xl bg-muted/40 px-3 py-2.5 text-left">
                     <div className="min-w-0 leading-tight">
                       <p className="truncate text-[0.76rem] font-semibold text-foreground">{t.label}</p>
                       <p className="text-[0.6rem] text-muted-foreground">
-                        {formatDate(t.at)} · {t.origin ?? t.reference}
+                        {TX_TYPE_LABEL[t.type] ?? t.type} · {formatDate(t.at)} · {active.name}
                       </p>
                     </div>
                     <span
@@ -254,7 +257,7 @@ function HomePage() {
                       {positive ? "+" : "−"}
                       {formatMoney(t.amount, t.currency)}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
               {accountTx.length === 0 && (
@@ -341,6 +344,26 @@ function HomePage() {
         activeId={active.id}
         onSelect={setActiveIndex}
       />
+      <Modal open={!!txDetail} onOpenChange={(o) => !o && setTxDetail(null)} title="Détail de l'opération" subtitle={txDetail?.label}>
+        {txDetail && (
+          <dl className="space-y-2">
+            {[
+              ["Type", TX_TYPE_LABEL[txDetail.type] ?? txDetail.type],
+              ["Montant", `${txDetail.type === "depot" || txDetail.type === "reception" ? "+" : "−"}${formatMoney(txDetail.amount, txDetail.currency)}`],
+              ["Date", new Date(txDetail.at).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })],
+              ["Compte concerné", accounts.find((a) => a.id === txDetail.accountId)?.name ?? active.name],
+              ["Moyen", txDetail.method],
+              ...(txDetail.origin ? [["Contrepartie", txDetail.origin]] : []),
+              ["Référence", txDetail.reference],
+            ].map(([k, v]) => (
+              <div key={k} className="flex items-center justify-between rounded-2xl bg-muted/50 px-3 py-2.5">
+                <dt className="text-[0.7rem] text-muted-foreground">{k}</dt>
+                <dd className="text-[0.78rem] font-bold text-foreground">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </Modal>
       <NotificationsModal
         open={modal === "notifications"}
         onOpenChange={(o) => !o && setModal(null)}
