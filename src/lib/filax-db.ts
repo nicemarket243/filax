@@ -517,3 +517,49 @@ export async function adminDeleteGroup(id: string) {
   const { error } = await supabase.rpc("admin_delete_group", { _id: id });
   if (error) throw new Error(error.message);
 }
+
+/** Notifications réelles, mises à jour en direct. */
+export function useDbNotifications(userId: string | null) {
+  const [items, setItems] = useState<import("./filax-store").AppNotification[] | null>(null);
+  const refresh = useCallback(async () => {
+    if (!userId) return setItems(null);
+    const { data } = await supabase
+      .from("notifications")
+      .select("id,title,body,read,created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setItems(
+      (data ?? []).map((n) => {
+        const t = n.title.toLowerCase();
+        const kind = t.includes("dépôt") ? "depot" : t.includes("retrait") ? "retrait" : t.includes("reçu") ? "reception" : t.includes("cotis") ? "cotisation" : t.includes("envoi") || t.includes("transfert") ? "envoi" : "systeme";
+        return { id: n.id, title: n.title, body: n.body ?? "", read: n.read, at: new Date(n.created_at).getTime(), kind };
+      }),
+    );
+  }, [userId]);
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+  useEffect(() => {
+    if (!userId) return;
+    const ch = supabase
+      .channel(`notifications-${userId}-${Math.random().toString(36).slice(2)}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` }, (p) => {
+        if (p.eventType === "INSERT") {
+          const n = p.new as { title?: string; body?: string };
+          void import("sonner").then(({ toast }) => toast(n.title ?? "Notification", { description: n.body ?? undefined }));
+        }
+        void refresh();
+      })
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+  }, [userId, refresh]);
+  const markAllRead = useCallback(async () => {
+    if (!userId) return;
+    await supabase.from("notifications").update({ read: true }).eq("user_id", userId).eq("read", false);
+    await refresh();
+  }, [userId, refresh]);
+  return { notifications: items, markAllRead };
+}

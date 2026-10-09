@@ -25,7 +25,8 @@ import {
   TransferModal,
   WithdrawModal,
 } from "@/components/filax/action-modals";
-import { useDbAuthState, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb, useDbProfile, createDbAccount, setAccountVisualDb } from "@/lib/filax-db";
+import { useDbAuthState,
+  useDbNotifications, useDbAccounts, useDbTransactions, depositDb, withdrawDb, transferDb, transferExternalDb, useDbGoals, createGoalDb, fundGoalDb, useDbProfile, createDbAccount, setAccountVisualDb } from "@/lib/filax-db";
 import { formatDate, formatMoney, isLocked, pct, useFilax, type AccentKey, type Goal } from "@/lib/filax-store";
 
 export const Route = createFileRoute("/")({
@@ -54,8 +55,9 @@ const ACTIONS: { key: string; label: string; icon: typeof Wallet; color: AccentK
 
 function HomePage() {
   const filax = useFilax();
-  const { notifications } = filax.data;
   const { userId, ready } = useDbAuthState();
+  const dbNotif = useDbNotifications(userId);
+  const notifications = userId && dbNotif.notifications ? dbNotif.notifications : filax.data.notifications;
   const { profile: dbProfile } = useDbProfile(userId);
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
@@ -343,7 +345,7 @@ function HomePage() {
         open={modal === "notifications"}
         onOpenChange={(o) => !o && setModal(null)}
         notifications={notifications}
-        onClear={filax.clearNotifications}
+        onClear={userId ? () => void dbNotif.markAllRead() : filax.clearNotifications}
       />
 
       <BottomNav />
