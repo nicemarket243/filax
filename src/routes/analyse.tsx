@@ -122,7 +122,7 @@ function AnalysePage() {
 
       <PageTitle title="Analyse" subtitle="Vision globale de tout votre portefeuille." />
 
-      <div className="magnetide mt-5 rounded-3xl p-5 soft-shadow">
+      <div className="mt-5 rounded-3xl bg-magnetide p-5 text-primary-foreground soft-shadow">
         <p className="text-[0.7rem] text-white/80">{t("Portefeuille total")} · {accounts.length} {t("comptes")}</p>
         <p className="mt-1 text-[1.9rem] font-extrabold leading-none tracking-tight">{formatMoney(totalUsd, "USD")}</p>
         <p className="mt-2 text-[0.65rem] text-white/80">
