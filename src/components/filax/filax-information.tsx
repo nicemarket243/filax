@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "@tanstack/react-router";
-import { BookOpen, Building2, Download, Share2, Headphones, Landmark, LifeBuoy, Send } from "lucide-react";
+import { BookOpen, Building2, Copy, Download, Share2, Headphones, Landmark, LifeBuoy, Send } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FilaxLogo } from "@/components/filax-logo";
@@ -183,14 +183,61 @@ function MemorandumActions() {
     ["Telegram", `https://t.me/share/url?url=${encodeURIComponent(url)}`],
     ["SMS", `sms:?&body=${encodeURIComponent(text)}`],
   ];
+  const [status, setStatus] = useState("");
+  const getBlob = async () => {
+    const res = await fetch(MEMO_PATH, { cache: "force-cache" });
+    if (!res.ok) throw new Error("download");
+    return new Blob([await res.arrayBuffer()], { type: "application/pdf" });
+  };
+  const download = async () => {
+    if (!window.confirm(t("Autoriser le téléchargement du Mémorandum FILAX (PDF) sur cet appareil ?"))) return;
+    try {
+      const blob = await getBlob();
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = MEMO_NAME;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(href), 4000);
+      setStatus(t("Téléchargement lancé. Retrouvez le fichier dans vos Téléchargements."));
+    } catch {
+      window.open(MEMO_PATH, "_blank", "noopener");
+      setStatus(t("Le PDF s’est ouvert : utilisez « Enregistrer » de votre navigateur."));
+    }
+  };
+  const copyFile = async () => {
+    try {
+      const blob = await getBlob();
+      if (typeof ClipboardItem !== "undefined" && ClipboardItem.supports?.("application/pdf")) {
+        await navigator.clipboard.write([new ClipboardItem({ "application/pdf": blob })]);
+        setStatus(t("Fichier PDF copié : collez-le où vous voulez."));
+        return;
+      }
+      const file = new File([blob], MEMO_NAME, { type: "application/pdf" });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: MEMO_NAME });
+        setStatus(t("Fichier envoyé vers l’application choisie."));
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setStatus(t("Lien du fichier copié : collez-le où vous voulez."));
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") setStatus(t("Copie impossible sur cet appareil."));
+    }
+  };
   return (
     <div className="mt-5 space-y-3 border-t border-border pt-4">
-      <Button asChild className="magnetide-tap h-auto w-full whitespace-normal py-3">
-        <a href={MEMO_PATH} download={MEMO_NAME}>
-          <Download className="h-4 w-4 shrink-0" />
-          {t("Télécharger le Mémorandum Officiel de l’Entreprise (PDF)")}
-        </a>
+      <Button className="magnetide-tap h-auto w-full whitespace-normal py-3" onClick={() => void download()}>
+        <Download className="h-4 w-4 shrink-0" />
+        {t("Télécharger le Mémorandum Officiel de l’Entreprise (PDF)")}
       </Button>
+      <Button variant="outline" className="w-full" onClick={() => void copyFile()}>
+        <Copy className="h-4 w-4" />
+        {t("Copier le fichier PDF")}
+      </Button>
+      {status && <p role="status" className="text-xs text-brand-green">{status}</p>}
       <Button variant="outline" className="w-full" onClick={() => void share()}>
         <Share2 className="h-4 w-4" />
         {t("Partager le mémorandum")}
