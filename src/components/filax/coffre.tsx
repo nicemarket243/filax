@@ -34,18 +34,18 @@ export function Coffre({ title, subtitle, icon, badge, open: controlledOpen, onO
     close();
   }, [pathname]);
   useEffect(() => {
-    const outside = (event: PointerEvent) => {
+    const outside = (event: MouseEvent) => {
       if (event.target instanceof Node && !root.current?.contains(event.target)) close();
     };
     const exclusive = (event: Event) => {
       if ((event as CustomEvent<string>).detail !== id) close();
     };
     const escape = (event: KeyboardEvent) => { if (event.key === "Escape") close(); };
-    document.addEventListener("pointerdown", outside, true);
+    document.addEventListener("click", outside, true);
     document.addEventListener("filax:drawer-open", exclusive);
     document.addEventListener("keydown", escape);
     return () => {
-      document.removeEventListener("pointerdown", outside, true);
+      document.removeEventListener("click", outside, true);
       document.removeEventListener("filax:drawer-open", exclusive);
       document.removeEventListener("keydown", escape);
     };
