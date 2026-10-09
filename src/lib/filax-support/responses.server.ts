@@ -46,7 +46,14 @@ export function createResponsesCall(
   return {
     result,
     response: () =>
-      withLovableAiGatewayRunIdHeader(result.toUIMessageStreamResponse({ originalMessages, sendReasoning: true, onError: safeAiError }), runIdFetch),
+      withLovableAiGatewayRunIdHeader(
+        result.toUIMessageStreamResponse({
+          originalMessages,
+          sendReasoning: true,
+          onError: safeAiError,
+        }),
+        runIdFetch,
+      ),
   };
 }
 
@@ -56,7 +63,9 @@ export function safeAiError(error: unknown): string {
       const parsed = JSON.parse(error.responseBody);
       const message = parsed.message ?? parsed.error?.message;
       if (typeof message === "string") return message;
-    } catch { /* Non-JSON upstream error: use safe fallback. */ }
+    } catch {
+      /* Non-JSON upstream error: use safe fallback. */
+    }
   }
   return "L’assistant est momentanément indisponible. Contactez le support sur WhatsApp ou réessayez plus tard.";
 }
