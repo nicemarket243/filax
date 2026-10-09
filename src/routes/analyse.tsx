@@ -43,7 +43,7 @@ function isIn(t: Transaction) {
   return t.type === "depot" || t.type === "reception";
 }
 
-const CDF_PER_USD = 2800;
+const CDF_PER_USD = 2299;
 const toUsd = (amount: number, currency: string) => (currency === "CDF" ? amount / CDF_PER_USD : amount);
 
 function AnalysePage() {
