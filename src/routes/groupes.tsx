@@ -288,6 +288,26 @@ function GroupesPage() {
               ))}
             </div>
 
+            <div className="space-y-2">
+              <p className="text-[0.68rem] font-semibold text-muted-foreground">Historique des contributions</p>
+              {(current.contributions ?? []).length === 0 && (
+                <p className="rounded-2xl bg-muted/40 px-3 py-2 text-[0.68rem] text-muted-foreground">Aucune contribution enregistrée.</p>
+              )}
+              {(current.contributions ?? []).map((c) => (
+                <div key={c.id} className="flex items-center gap-2.5 rounded-2xl bg-muted/40 px-3 py-2">
+                  <img src={c.avatar} alt={c.name} className="h-7 w-7 rounded-full object-cover" />
+                  <div className="min-w-0 flex-1 leading-tight">
+                    <p className="truncate text-[0.74rem] font-semibold text-foreground">{c.name}</p>
+                    <p className="text-[0.6rem] text-muted-foreground">{formatDate(c.at)}</p>
+                  </div>
+                  <span className="text-[0.74rem] font-bold" style={{ color: accentVar("brand-violet") }}>
+                    {hideAmounts ? "•••" : formatMoney(c.amount, current.currency)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
