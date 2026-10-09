@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { BadgeCheck, Copy, Landmark, Languages, Lock, LogOut, Moon, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
+import { BadgeCheck, Copy, MessageCircle, MessageSquare, Landmark, Languages, Lock, LogOut, Moon, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import avatarImg from "@/assets/profile-avatar.jpg";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -222,6 +222,24 @@ function ProfilPage() {
           </button>
         </div>
       </section>
+
+      {/* Partage direct de l'ID FILAX */}
+      <div className="mt-3 grid grid-cols-2 gap-2.5">
+        <a
+          href={`https://wa.me/?text=${encodeURIComponent(`Envoyez-moi de l'argent sur FILAX : ${profile.filaxId}`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="press flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-2.5 text-[0.72rem] font-bold text-foreground soft-shadow"
+        >
+          <MessageCircle className="h-4 w-4 text-brand-green" /> WhatsApp
+        </a>
+        <a
+          href={`sms:?&body=${encodeURIComponent(`Envoyez-moi de l'argent sur FILAX : ${profile.filaxId}`)}`}
+          className="press flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-2.5 text-[0.72rem] font-bold text-foreground soft-shadow"
+        >
+          <MessageSquare className="h-4 w-4 text-brand-blue" /> SMS
+        </a>
+      </div>
 
       {/* Deux QR distincts : profil (identité) et réception (transaction). */}
       <div className="mt-3 grid grid-cols-2 gap-2.5">
