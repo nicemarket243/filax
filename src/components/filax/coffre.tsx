@@ -22,7 +22,11 @@ export function Coffre({ title, subtitle, icon, badge, open: controlledOpen, onO
   const pathname = useLocation({ select: (location) => location.pathname });
   const callback = useRef(onOpenChange);
   callback.current = onOpenChange;
+  const openRef = useRef(controlledOpen ?? internalOpen);
+  openRef.current = controlledOpen ?? internalOpen;
   const close = () => {
+    if (!openRef.current) return;
+    openRef.current = false;
     setInternalOpen(false);
     callback.current?.(false);
   };
@@ -48,6 +52,7 @@ export function Coffre({ title, subtitle, icon, badge, open: controlledOpen, onO
   }, [id]);
   const open = controlledOpen ?? internalOpen;
   const setOpen = (next: boolean) => {
+    openRef.current = next;
     if (next) document.dispatchEvent(new CustomEvent("filax:drawer-open", { detail: id }));
     if (controlledOpen === undefined) setInternalOpen(next);
     onOpenChange?.(next);

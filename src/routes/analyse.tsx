@@ -4,8 +4,9 @@ import { ArrowDownLeft, ArrowUpRight, History, Target, TrendingUp } from "lucide
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
-import { Glyph } from "@/components/filax/glyph";
-import { PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
+import { Button } from "@/components/ui/button";
+import { GoalEvolution, type GeneralGoal } from "@/components/filax/goal-evolution";
+import { Modal, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { useI18n } from "@/lib/i18n";
 import { useDbUser, useDbAccounts, useDbTransactions, useDbGoals } from "@/lib/filax-db";
 import {
@@ -52,15 +53,16 @@ function AnalysePage() {
   const userId = useDbUser();
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
-  const live = !!userId && !!db.accounts && db.accounts.length > 0;
-  const accounts = live ? db.accounts! : data.accounts;
+  const live = !!userId;
+  const accounts = live ? db.accounts ?? [] : data.accounts;
   const dbGoals = useDbGoals(userId);
   const goals = live ? dbGoals.goals ?? [] : data.goals;
   const transactions = live ? dbTx.transactions ?? [] : data.transactions;
   const [periodKey, setPeriodKey] = useState("30j");
   const [point, setPoint] = useState<number | null>(null);
+  const [goalId, setGoalId] = useState<string | null>(null);
 
-  const period = PERIODS.find((p) => p.key === periodKey)!;
+  const period = PERIODS.find((p) => p.key === periodKey) ?? PERIODS[1] ?? { ms: null };
   const totalUsd = accounts.reduce((s, a) => s + toUsd(a.balance, a.currency), 0);
   const allTx = useMemo(() => [...transactions].sort((a, b) => b.at - a.at), [transactions]);
   const accName = (id: string) => accounts.find((a) => a.id === id)?.name ?? "Compte";
@@ -88,10 +90,10 @@ function AnalysePage() {
     const pts = [{ at: stats.list[0]?.at ?? Date.now(), value: start, tx: null as Transaction | null }];
     let running = start;
     stats.list.forEach((t, i) => {
-      running += deltas[i]!;
+      running += deltas[i] ?? 0;
       pts.push({ at: t.at, value: running, tx: t });
     });
-    return pts.length > 1 ? pts : [pts[0]!, { at: Date.now(), value: totalUsd, tx: null }];
+    return pts.length > 1 ? pts : [...pts, { at: Date.now(), value: totalUsd, tx: null }];
   }, [stats.list, totalUsd]);
 
   const w = 300;
@@ -108,7 +110,11 @@ function AnalysePage() {
 
   const totalFlow = stats.inflow + stats.outflow || 1;
   const methods = [...stats.byMethod.entries()].sort((a, b) => b[1] - a[1]);
-  const targets = accounts.filter((a) => a.target);
+  const generalGoals: GeneralGoal[] = [
+    ...accounts.flatMap((a) => a.target && a.target > 0 ? [{ id: `account-${a.id}`, name: a.name, accountId: a.id, target: a.target, saved: a.balance, currency: a.currency, kind: "account" as const }] : []),
+    ...goals.map((g) => ({ ...g, id: `goal-${g.id}`, kind: "goal" as const })),
+  ];
+  const selectedGoal = generalGoals.find((g) => g.id === goalId);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
@@ -116,10 +122,7 @@ function AnalysePage() {
 
       <PageTitle title="Analyse" subtitle="Vision globale de tout votre portefeuille." />
 
-      <div
-        className="mt-5 rounded-3xl p-5 text-white soft-shadow"
-        style={{ background: `linear-gradient(140deg, ${accentVar("brand-blue")}, color-mix(in oklab, ${accentVar("brand-blue")} 40%, #05070f))` }}
-      >
+      <div className="magnetide mt-5 rounded-3xl p-5 soft-shadow">
         <p className="text-[0.7rem] text-white/80">{t("Portefeuille total")} · {accounts.length} {t("comptes")}</p>
         <p className="mt-1 text-[1.9rem] font-extrabold leading-none tracking-tight">{formatMoney(totalUsd, "USD")}</p>
         <p className="mt-2 text-[0.65rem] text-white/80">
