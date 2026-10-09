@@ -615,6 +615,20 @@ function ProfilPage() {
       </Modal>
 
       <InviteModal open={modal === "invite"} onOpenChange={(o) => !o && setModal(null)} filaxId={profile.filaxId} />
+      <Modal open={shareOpen} onOpenChange={setShareOpen} title="Partager mon profil" subtitle={profile.filaxId}>
+        <div className="grid grid-cols-3 gap-2">
+          {shareTargets.map((s) => (
+            <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" onClick={() => setShareOpen(false)}
+              className="press rounded-2xl border border-border bg-surface py-3 text-center text-[0.72rem] font-bold text-foreground">
+              {s.label}
+            </a>
+          ))}
+        </div>
+        <PrimaryButton className="mt-3" onClick={async () => {
+          if (navigator.share) { try { await navigator.share({ title: "Mon profil FILAX", text: shareText, url: profileLink }); return; } catch { /* annulé */ } }
+          await navigator.clipboard?.writeText(shareText); toast.success("Lien copié");
+        }}>Autres applications</PrimaryButton>
+      </Modal>
       <ReceiveQrModal
         open={modal === "qr-profil"}
         onOpenChange={(o) => !o && setModal(null)}
