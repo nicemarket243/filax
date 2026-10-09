@@ -35,6 +35,9 @@ export interface Transaction {
   reference: string;
   /** Provenance / destination lisible : personne, banque, opérateur. */
   origin?: string;
+  /** Type brut et frais pour les graphiques issus de l'historique réel. */
+  sourceType?: string;
+  fee?: number;
 }
 
 export interface Goal {
