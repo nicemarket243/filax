@@ -1,5 +1,11 @@
 # FILAX roadmap
 
+## En cours — Tiroirs et Analyse
+- [ ] Fermeture globale exclusive des tiroirs, au clic extérieur et changement d’onglet
+- [ ] Objectifs Généraux de tous les comptes avec graphique détaillé
+- [ ] Historique complet de tous les comptes sans limite de période
+- [ ] Vérifier le parcours connecté et préserver les données financières
+
 ## En cours — Visuels et sous-comptes
 - [x] Bibliothèque de 24 photos et suppression de la ligne
 - [x] Création rattachée à un Principal, objectif, code dédié et image persistante
