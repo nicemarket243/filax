@@ -23,7 +23,7 @@ export function FilaxInformation({ open, onOpenChange }: { open: boolean; onOpen
   const { t } = useI18n();
   const [chat, setChat] = useState(false);
   const pathname = useLocation({ select: location => location.pathname });
-  useEffect(() => { setChat(false); onOpenChange(false); }, [pathname]);
+  useEffect(() => { setChat(false); onOpenChange(false); }, [pathname, onOpenChange]);
   useEffect(() => { if (!open) setChat(false); }, [open]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

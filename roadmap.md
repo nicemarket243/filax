@@ -1,9 +1,9 @@
 # FILAX roadmap
 
 ## 9 oct. — Fenêtre FILAX et support
-- [ ] Remplacer la fenêtre du logo par cinq tiroirs détaillés avec guide visuel et liens de support
-- [ ] Ajouter un assistant IA flottant, conversation unique sans conservation, base de plus de 1 000 formulations de questions-réponses
-- [ ] Vérifier ouverture, fermeture, liens et conversation réelle sans modifier les comptes
+- [x] Remplacer la fenêtre du logo par cinq tiroirs détaillés avec guide visuel et liens de support
+- [x] Ajouter un assistant IA flottant, conversation unique sans conservation, 1 100 formulations de questions-réponses couvrant 50 sujets
+- [x] Vérifier ouverture, fermeture, liens et conversation réelle sans modifier les comptes
 
 ## En cours — Tiroirs et Analyse
 - [x] Fermeture globale exclusive des tiroirs, au clic extérieur et changement d’onglet
