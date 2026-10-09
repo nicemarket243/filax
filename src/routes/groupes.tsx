@@ -157,9 +157,7 @@ function GroupesPage() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2.5">
-                          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-surface">
-                            <Glyph icon={g.icon} className="h-4 w-4 text-brand-violet" />
-                          </span>
+                          <img src={groupVisual(g)} alt="" className="h-9 w-9 rounded-2xl object-cover" />
                           <div className="leading-tight">
                             <p className="text-[0.85rem] font-bold text-foreground">{g.name}</p>
                              <p className="text-[0.62rem] text-muted-foreground">
@@ -241,11 +239,6 @@ function GroupesPage() {
               <div className="mt-2">
                 <ProgressBar value={pct(groupTotal(current), current.target)} color="brand-violet" />
               </div>
-              {daysLeft(current.deadline) !== null && (
-                <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-brand-violet/10 px-2.5 py-1 text-[0.65rem] font-bold text-brand-violet">
-                  ⏳ {daysLeft(current.deadline)} jours restants
-                </span>
-              )}
               <p className="mt-2 text-[0.65rem] text-muted-foreground">
                 Votre contribution : {formatMoney(myContribution(current), current.currency)}
               </p>
