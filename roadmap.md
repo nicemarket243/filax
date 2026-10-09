@@ -31,7 +31,7 @@
 - [ ] Domaine filax.money : achat mis en pause par l'utilisateur
 - [x] Notifications temps réel dans l'app
 - [x] Boutons WhatsApp/SMS sur le profil
-- [ ] Nettoyage des données de test (KYC fictif, groupe « Test Back-office », dépôt 100 $)
+- [x] Nettoyage du groupe « Test Back-office »
 
 ## Fait — 9 oct.
 - [x] Notification de dépôt en haut de l'écran (testée avec 1 $)
@@ -40,3 +40,9 @@
 - [x] Détail des opérations dans l'historique
 - [x] Back-office : comptes FILAX et notifications
 - [ ] Compte admin séparé — attend l'e-mail de l'utilisateur
+
+## 9 oct. — Analyse, groupes, profil
+- [x] Répartition par moyen en tiroir
+- [x] Groupes : badge jours restants retiré, photos membres, historique des contributions, visuel identique aux cartes
+- [x] Profil : menu de partage, copie d'ID, tiroir unique « Paramètres du compte »
+- [ ] Groupes affichés comme cartes sur l'accueil (max 10) — à faire au prochain tour
