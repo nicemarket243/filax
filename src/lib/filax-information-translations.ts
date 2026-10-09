@@ -125,4 +125,9 @@ export const FILAX_INFORMATION_EN: Record<string, string> = {
   "Votre question…": "Your question…",
   Arrêter: "Stop",
   Envoyer: "Send",
+  "FILAX — Mémorandum officiel 2026": "FILAX — Official Memorandum 2026",
+  "Télécharger le Mémorandum Officiel de l’Entreprise (PDF)": "Download the Company’s Official Memorandum (PDF)",
+  "Partager le mémorandum": "Share the memorandum",
+  "Copier le lien": "Copy link",
+  "15 pages · Identité, modèle économique, technique, transactions, support et cadre juridique.": "15 pages · Identity, business model, technology, transactions, support and legal framework (in French).",
 };
