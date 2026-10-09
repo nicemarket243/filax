@@ -9,7 +9,11 @@ import groupSlideThree from "@/assets/groups-solidarity-3.jpg";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
-import { Glyph } from "@/components/filax/glyph";
+import { themeImageFor } from "@/components/filax/account-theme";
+
+/** Même visuel que la carte de compte correspondante dans l'accueil. */
+const groupVisual = (g: Group) =>
+  themeImageFor({ name: g.name, currency: g.currency, lockedUntil: null, visualKey: g.visualKey ?? null } as never);
 import { Field, Modal, PrimaryButton, TextInput, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { ContributeModal, InviteModal, NewGroupModal } from "@/components/filax/action-modals";
 import {
@@ -109,7 +113,6 @@ function GroupesPage() {
   const [wdReason, setWdReason] = useState("");
   const [wdAccount, setWdAccount] = useState("");
   const wdAccounts = current ? accounts.filter((a) => a.currency === current.currency) : [];
-  const daysLeft = (d?: number) => (d ? Math.max(0, Math.ceil((d - Date.now()) / 86400000)) : null);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">

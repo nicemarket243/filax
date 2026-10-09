@@ -64,6 +64,13 @@
       "when": 1791504689101,
       "tag": "0008_notifications_groups_admin_tools",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791508425308,
+      "tag": "0009_groups_visual_key",
+      "breakpoints": true
     }
   ]
 }

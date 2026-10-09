@@ -78,6 +78,10 @@ export interface Group {
   category?: GroupCategory;
   /** Date limite de la cotisation. */
   deadline?: number;
+  /** Visuel partagé avec la carte de compte correspondante. */
+  visualKey?: string | null;
+  /** Historique : qui a mis quoi, combien et quand. */
+  contributions?: { id: string; name: string; avatar: string; amount: number; at: number }[];
 }
 
 export interface Profile {
