@@ -1,14 +1,20 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Bell, Home, PieChart, User, Users } from "lucide-react";
 import { FilaxLogo } from "@/components/filax-logo";
 import { useI18n } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { FilaxInformation } from "@/components/filax/filax-information";
 
 export function AppHeader({ unread = 0, onNotifications }: { unread?: number; onNotifications?: () => void }) {
+  const [information, setInformation] = useState(false);
+  const { t } = useI18n();
   return (
     <header className="flex items-center justify-between">
-      <Link to="/profil" aria-label="Centre de gestion du compte FILAX" className="press">
+      <Button variant="ghost" aria-label={t("À propos de FILAX")} className="press h-auto p-0 hover:bg-transparent" onClick={() => setInformation(true)}>
         <FilaxLogo height={22} />
-      </Link>
+      </Button>
+      <FilaxInformation open={information} onOpenChange={setInformation} />
       <button
         type="button"
         aria-label="Notifications"
