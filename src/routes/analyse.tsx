@@ -220,41 +220,29 @@ function AnalysePage() {
       </div>
 
       <div className="mt-4 space-y-3">
-        <Coffre title="Objectif de l'épargne" subtitle="Progression par compte et par objectif" icon={<Target className="h-4 w-4" />} badge={`${targets.length + goals.length}`}>
-          <div className="space-y-2.5">
-            {targets.map((a) => (
-              <div key={a.id} className="rounded-2xl bg-muted/40 px-3 py-2.5">
-                <div className="flex items-center justify-between text-[0.72rem]">
-                  <span className="flex items-center gap-1.5 font-semibold text-foreground">
-                    <Glyph icon={a.icon} className="h-3.5 w-3.5" /> {a.name}
-                  </span>
-                  <span className="font-bold" style={{ color: accentVar(a.color) }}>{pct(a.balance, a.target!)}%</span>
-                </div>
-                <div className="mt-1.5"><ProgressBar value={pct(a.balance, a.target!)} color={a.color} /></div>
-                <p className="mt-1 text-[0.6rem] text-muted-foreground">
-                  {formatMoney(a.balance, a.currency)} sur {formatMoney(a.target!, a.currency)}
-                </p>
-              </div>
-            ))}
-            {goals.map((g) => (
-              <div key={g.id} className="rounded-2xl bg-muted/40 px-3 py-2.5">
-                <div className="flex items-center justify-between text-[0.72rem]">
-                  <span className="flex items-center gap-1.5 font-semibold text-foreground">
-                    <Glyph icon={g.icon} className="h-3.5 w-3.5" /> {g.name}
-                  </span>
-                  <span className="font-bold text-brand-green">{pct(g.saved, g.target)}%</span>
-                </div>
-                <div className="mt-1.5"><ProgressBar value={pct(g.saved, g.target)} color="brand-green" /></div>
-                <p className="mt-1 text-[0.6rem] text-muted-foreground">
-                  {formatMoney(g.saved, g.currency)} sur {formatMoney(g.target, g.currency)} · {accName(g.accountId)}
-                </p>
-              </div>
-            ))}
+        <Coffre title="Objectifs Généraux" subtitle="Tous les comptes, toutes devises" icon={<Target className="h-4 w-4" />} badge={`${generalGoals.length}`}>
+          <div className="space-y-4">
+            {accounts.map((account) => {
+              const list = generalGoals.filter((g) => g.accountId === account.id);
+              return <div key={account.id}>
+                <h3 className="mb-2 text-xs font-semibold text-muted-foreground">{account.name}</h3>
+                {list.length ? <div className="space-y-2">{list.map((goal) => (
+                  <Button key={goal.id} variant="ghost" onClick={() => setGoalId(goal.id)} className="h-auto w-full flex-col items-stretch gap-1.5 whitespace-normal rounded-2xl bg-muted/40 px-3 py-2.5 text-left">
+                    <span className="flex items-center justify-between gap-2 text-xs"><span className="min-w-0 break-words font-semibold">{goal.name}</span><span className="shrink-0 font-bold text-brand-green">{pct(goal.saved, goal.target)}%</span></span>
+                    <ProgressBar value={pct(goal.saved, goal.target)} color={account.color} />
+                    <span className="text-[0.65rem] text-muted-foreground">{formatMoney(goal.saved, goal.currency)} / {formatMoney(goal.target, goal.currency)}</span>
+                  </Button>
+                ))}</div> : <p className="text-[0.65rem] text-muted-foreground">Aucun objectif sur ce compte pour l'instant.</p>}
+              </div>;
+            })}
+            {!accounts.length && <p className="text-xs text-muted-foreground">Aucun objectif sur ce compte pour l'instant.</p>}
           </div>
         </Coffre>
 
-        <Coffre title="Historique complet" subtitle="Tous les comptes, toutes devises" icon={<History className="h-4 w-4" />} badge={`${allTx.length}`}>
+        <Coffre title="Historique" subtitle="Tous les comptes, toutes devises" icon={<History className="h-4 w-4" />} badge={`${allTx.length}`}>
           <div className="space-y-2">
+            {dbTx.error && <div role="alert" className="text-xs text-brand-red"><p>Impossible de charger l’historique.</p><Button variant="ghost" onClick={() => void dbTx.refresh()}>Réessayer</Button></div>}
+            {live && !dbTx.transactions && !dbTx.error && <p className="text-xs text-muted-foreground">Chargement…</p>}
             {allTx.map((t) => (
               <div key={t.id} className="flex items-center justify-between rounded-2xl bg-muted/40 px-3 py-2.5">
                 <div className="min-w-0 leading-tight">
@@ -279,6 +267,12 @@ function AnalysePage() {
         </Coffre>
       </div>
 
+      <Modal open={!!selectedGoal} onOpenChange={(open) => { if (!open) setGoalId(null); }} title={selectedGoal?.name ?? "Objectif"} subtitle={selectedGoal ? accName(selectedGoal.accountId) : undefined}>
+        {selectedGoal && <div className="space-y-5">
+          <div><p className="text-2xl font-bold text-brand-green">{formatMoney(selectedGoal.saved, selectedGoal.currency)}</p><p className="mt-1 text-xs text-muted-foreground">{t("Objectif financier")} · {formatMoney(selectedGoal.target, selectedGoal.currency)}</p><div className="mt-3"><ProgressBar value={pct(selectedGoal.saved, selectedGoal.target)} /></div></div>
+          <GoalEvolution goal={selectedGoal} transactions={transactions} />
+        </div>}
+      </Modal>
       <BottomNav />
     </main>
   );
