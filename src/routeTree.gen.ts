@@ -15,8 +15,12 @@ import { Route as AnalyseRouteImport } from './routes/analyse'
 import { Route as GroupesRouteImport } from './routes/groupes'
 import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as ProfilRouteImport } from './routes/profil'
+import { Route as VerificationRouteImport } from './routes/verification'
 import { Route as AdminClientsRouteImport } from './routes/admin_.clients'
+import { Route as AdminComptesRouteImport } from './routes/admin_.comptes'
 import { Route as AdminGroupesRouteImport } from './routes/admin_.groupes'
+import { Route as AdminNotificationsRouteImport } from './routes/admin_.notifications'
+import { Route as GroupesIdRouteImport } from './routes/groupes_.$id'
 import { Route as UserUsernameRouteImport } from './routes/user.$username'
 
 const IndexRoute = IndexRouteImport.update({
@@ -49,14 +53,34 @@ const ProfilRoute = ProfilRouteImport.update({
   path: '/profil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerificationRoute = VerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminClientsRoute = AdminClientsRouteImport.update({
   id: '/admin_/clients',
   path: '/admin/clients',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminComptesRoute = AdminComptesRouteImport.update({
+  id: '/admin_/comptes',
+  path: '/admin/comptes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminGroupesRoute = AdminGroupesRouteImport.update({
   id: '/admin_/groupes',
   path: '/admin/groupes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/admin_/notifications',
+  path: '/admin/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupesIdRoute = GroupesIdRouteImport.update({
+  id: '/groupes_/$id',
+  path: '/groupes/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UserUsernameRoute = UserUsernameRouteImport.update({
@@ -72,8 +96,12 @@ export interface FileRoutesByFullPath {
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
+  '/verification': typeof VerificationRoute
   '/admin/clients': typeof AdminClientsRoute
+  '/admin/comptes': typeof AdminComptesRoute
   '/admin/groupes': typeof AdminGroupesRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
+  '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
 }
 export interface FileRoutesByTo {
@@ -83,8 +111,12 @@ export interface FileRoutesByTo {
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
+  '/verification': typeof VerificationRoute
   '/admin/clients': typeof AdminClientsRoute
+  '/admin/comptes': typeof AdminComptesRoute
   '/admin/groupes': typeof AdminGroupesRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
+  '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
 }
 export interface FileRoutesById {
@@ -95,8 +127,12 @@ export interface FileRoutesById {
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
+  '/verification': typeof VerificationRoute
   '/admin_/clients': typeof AdminClientsRoute
+  '/admin_/comptes': typeof AdminComptesRoute
   '/admin_/groupes': typeof AdminGroupesRoute
+  '/admin_/notifications': typeof AdminNotificationsRoute
+  '/groupes_/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
 }
 export interface FileRouteTypes {
@@ -108,8 +144,12 @@ export interface FileRouteTypes {
     | '/groupes'
     | '/inscription'
     | '/profil'
+    | '/verification'
     | '/admin/clients'
+    | '/admin/comptes'
     | '/admin/groupes'
+    | '/admin/notifications'
+    | '/groupes/$id'
     | '/user/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -119,8 +159,12 @@ export interface FileRouteTypes {
     | '/groupes'
     | '/inscription'
     | '/profil'
+    | '/verification'
     | '/admin/clients'
+    | '/admin/comptes'
     | '/admin/groupes'
+    | '/admin/notifications'
+    | '/groupes/$id'
     | '/user/$username'
   id:
     | '__root__'
@@ -130,8 +174,12 @@ export interface FileRouteTypes {
     | '/groupes'
     | '/inscription'
     | '/profil'
+    | '/verification'
     | '/admin_/clients'
+    | '/admin_/comptes'
     | '/admin_/groupes'
+    | '/admin_/notifications'
+    | '/groupes_/$id'
     | '/user/$username'
   fileRoutesById: FileRoutesById
 }
@@ -142,8 +190,12 @@ export interface RootRouteChildren {
   GroupesRoute: typeof GroupesRoute
   InscriptionRoute: typeof InscriptionRoute
   ProfilRoute: typeof ProfilRoute
+  VerificationRoute: typeof VerificationRoute
   AdminClientsRoute: typeof AdminClientsRoute
+  AdminComptesRoute: typeof AdminComptesRoute
   AdminGroupesRoute: typeof AdminGroupesRoute
+  AdminNotificationsRoute: typeof AdminNotificationsRoute
+  GroupesIdRoute: typeof GroupesIdRoute
   UserUsernameRoute: typeof UserUsernameRoute
 }
 
@@ -191,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verification': {
+      id: '/verification'
+      path: '/verification'
+      fullPath: '/verification'
+      preLoaderRoute: typeof VerificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/clients': {
       id: '/admin_/clients'
       path: '/admin/clients'
@@ -198,11 +257,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminClientsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/comptes': {
+      id: '/admin_/comptes'
+      path: '/admin/comptes'
+      fullPath: '/admin/comptes'
+      preLoaderRoute: typeof AdminComptesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin_/groupes': {
       id: '/admin_/groupes'
       path: '/admin/groupes'
       fullPath: '/admin/groupes'
       preLoaderRoute: typeof AdminGroupesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/notifications': {
+      id: '/admin_/notifications'
+      path: '/admin/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groupes_/$id': {
+      id: '/groupes_/$id'
+      path: '/groupes/$id'
+      fullPath: '/groupes/$id'
+      preLoaderRoute: typeof GroupesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/user/$username': {
@@ -222,8 +302,12 @@ const rootRouteChildren: RootRouteChildren = {
   GroupesRoute: GroupesRoute,
   InscriptionRoute: InscriptionRoute,
   ProfilRoute: ProfilRoute,
+  VerificationRoute: VerificationRoute,
   AdminClientsRoute: AdminClientsRoute,
+  AdminComptesRoute: AdminComptesRoute,
   AdminGroupesRoute: AdminGroupesRoute,
+  AdminNotificationsRoute: AdminNotificationsRoute,
+  GroupesIdRoute: GroupesIdRoute,
   UserUsernameRoute: UserUsernameRoute,
 }
 export const routeTree = rootRouteImport
