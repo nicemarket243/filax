@@ -138,6 +138,10 @@ function AdminPage() {
             <span className="flex items-center gap-2 text-[0.8rem] font-bold text-foreground"><Wallet className="h-4 w-4" /> Comptes FILAX</span>
             <span className="text-[0.7rem] text-muted-foreground">Activer, bloquer</span>
           </Link>
+          <Link to="/admin/operations" className="press flex items-center justify-between rounded-2xl bg-surface px-4 py-3 soft-shadow">
+            <span className="flex items-center gap-2 text-[0.8rem] font-bold text-foreground"><Banknote className="h-4 w-4" /> Opérations & audit</span>
+            <span className="text-[0.7rem] text-muted-foreground">Dépôts, litiges, incidents</span>
+          </Link>
           <Link to="/admin/notifications" className="press flex items-center justify-between rounded-2xl bg-surface px-4 py-3 soft-shadow">
             <span className="flex items-center gap-2 text-[0.8rem] font-bold text-foreground"><Bell className="h-4 w-4" /> Notifications</span>
             <span className="text-[0.7rem] text-muted-foreground">Envoyer, supprimer</span>

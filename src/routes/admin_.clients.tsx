@@ -122,7 +122,7 @@ function ClientsPage() {
                 <p className="text-[0.62rem] text-muted-foreground">Statut KYC</p>
                 <p className="text-[0.76rem] font-bold text-foreground">{KYC[sel.kyc_status] ?? sel.kyc_status}</p>
               </div>
-              <span className={`h-2.5 w-2.5 rounded-full ${sel.kyc_status === "verified" ? "bg-brand-green" : sel.kyc_status === "rejected" ? "bg-brand-red" : "bg-brand-gold"}`} />
+              <span className={`h-2.5 w-2.5 rounded-full ${sel.kyc_status === "verified" ? "bg-brand-green" : sel.kyc_status === "pending" ? "bg-brand-blue" : "bg-brand-red"}`} />
             </section>
             <section>
               <p className="mb-1.5 text-[0.7rem] font-bold text-muted-foreground">Comptes</p>

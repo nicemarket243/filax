@@ -71,6 +71,13 @@
       "when": 1791508425308,
       "tag": "0009_groups_visual_key",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791743906394,
+      "tag": "0010_finalisation_ledger_kyc_securite",
+      "breakpoints": true
     }
   ]
 }
