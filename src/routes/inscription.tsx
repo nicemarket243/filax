@@ -205,10 +205,7 @@ function InscriptionPage() {
       toast.error(upErr.message);
       return;
     }
-    await supabase
-      .from("profiles")
-      .update({ selfie_path: path, kyc_status: "pending" })
-      .eq("user_id", userId);
+    await supabase.rpc("submit_selfie", { _selfie_path: path });
     setLoading(false);
     toast.success("Vérification biométrique envoyée.");
     setStep("done");

@@ -215,7 +215,7 @@ export function DepositModal({
             }
             try { await onConfirm(accountId, value, method); } catch (e) { toast.error("Dépôt refusé", { description: (e as Error).message }); return; }
             onOpenChange(false);
-            toast.success("Dépôt effectué", { description: `${value} crédité sur votre compte.` });
+            toast.success("Dépôt en attente", { description: `${value} seront crédités dès confirmation du paiement.` });
           }}
         >
           Confirmer le dépôt
