@@ -20,6 +20,7 @@ import { Route as AdminClientsRouteImport } from './routes/admin_.clients'
 import { Route as AdminComptesRouteImport } from './routes/admin_.comptes'
 import { Route as AdminGroupesRouteImport } from './routes/admin_.groupes'
 import { Route as AdminNotificationsRouteImport } from './routes/admin_.notifications'
+import { Route as AdminOperationsRouteImport } from './routes/admin_.operations'
 import { Route as GroupesIdRouteImport } from './routes/groupes_.$id'
 import { Route as UserUsernameRouteImport } from './routes/user.$username'
 import { Route as ApiPublicFilaxSupportRouteImport } from './routes/api/public/filax-support'
@@ -79,6 +80,11 @@ const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
   path: '/admin/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminOperationsRoute = AdminOperationsRouteImport.update({
+  id: '/admin_/operations',
+  path: '/admin/operations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupesIdRoute = GroupesIdRouteImport.update({
   id: '/groupes_/$id',
   path: '/groupes/$id',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/admin/comptes': typeof AdminComptesRoute
   '/admin/groupes': typeof AdminGroupesRoute
   '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/operations': typeof AdminOperationsRoute
   '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
   '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/admin/comptes': typeof AdminComptesRoute
   '/admin/groupes': typeof AdminGroupesRoute
   '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/operations': typeof AdminOperationsRoute
   '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
   '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/admin_/comptes': typeof AdminComptesRoute
   '/admin_/groupes': typeof AdminGroupesRoute
   '/admin_/notifications': typeof AdminNotificationsRoute
+  '/admin_/operations': typeof AdminOperationsRoute
   '/groupes_/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
   '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/admin/comptes'
     | '/admin/groupes'
     | '/admin/notifications'
+    | '/admin/operations'
     | '/groupes/$id'
     | '/user/$username'
     | '/api/public/filax-support'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/admin/comptes'
     | '/admin/groupes'
     | '/admin/notifications'
+    | '/admin/operations'
     | '/groupes/$id'
     | '/user/$username'
     | '/api/public/filax-support'
@@ -190,6 +201,7 @@ export interface FileRouteTypes {
     | '/admin_/comptes'
     | '/admin_/groupes'
     | '/admin_/notifications'
+    | '/admin_/operations'
     | '/groupes_/$id'
     | '/user/$username'
     | '/api/public/filax-support'
@@ -207,6 +219,7 @@ export interface RootRouteChildren {
   AdminComptesRoute: typeof AdminComptesRoute
   AdminGroupesRoute: typeof AdminGroupesRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
+  AdminOperationsRoute: typeof AdminOperationsRoute
   GroupesIdRoute: typeof GroupesIdRoute
   UserUsernameRoute: typeof UserUsernameRoute
   ApiPublicFilaxSupportRoute: typeof ApiPublicFilaxSupportRoute
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/operations': {
+      id: '/admin_/operations'
+      path: '/admin/operations'
+      fullPath: '/admin/operations'
+      preLoaderRoute: typeof AdminOperationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/groupes_/$id': {
       id: '/groupes_/$id'
       path: '/groupes/$id'
@@ -327,6 +347,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminComptesRoute: AdminComptesRoute,
   AdminGroupesRoute: AdminGroupesRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
+  AdminOperationsRoute: AdminOperationsRoute,
   GroupesIdRoute: GroupesIdRoute,
   UserUsernameRoute: UserUsernameRoute,
   ApiPublicFilaxSupportRoute: ApiPublicFilaxSupportRoute,

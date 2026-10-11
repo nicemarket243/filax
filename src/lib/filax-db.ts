@@ -330,7 +330,7 @@ export function useDbTransactions(userId: string | null, accounts: Account[] | n
         amount: Number(t.amount),
         currency: (accounts?.find((a) => a.id === t.account_id)?.currency ?? "USD") as Currency,
         method: (KNOWN_METHODS.includes(t.method ?? "") ? t.method : t.method === "groupe" ? "filax" : "banque") as import("./filax-store").TxMethod,
-        label: t.label ?? "",
+        label: (t.label ?? "") + (t.status === "pending" ? " · En attente" : t.status === "failed" ? " · Échouée" : t.status === "refunded" ? " · Remboursée" : ""),
         at: new Date(t.created_at).getTime(),
         reference: t.id.slice(0, 8).toUpperCase(),
         origin: t.counterparty ?? undefined,
