@@ -289,7 +289,7 @@ export function WithdrawModal({
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
-        {tooMuch && <p className="text-[0.7rem] font-semibold text-brand-red">Solde insuffisant.</p>}
+        {tooMuch && <p role="alert" className="rounded-xl border border-brand-red/40 bg-brand-red/10 px-3 py-2 text-[0.72rem] font-bold text-brand-red">Votre montant de retrait est supérieur au solde disponible sur ce compte.</p>}
         <PrimaryButton
           color="brand-red"
           disabled={!accountPinReady || value <= 0 || tooMuch || !accountId || (byCard && !cardOk)}
@@ -553,6 +553,11 @@ export function TransferModal({
 
 /* ---------------- Créer un compte ---------------- */
 
+const LOCK_OPTIONS: [number, string][] = [
+  [0, "Épargne libre (sans blocage)"], [7, "7 jours"], [30, "1 mois"], [90, "3 mois"], [180, "6 mois"],
+  [365, "1 an"], [730, "2 ans"], [1095, "3 ans"], [1825, "5 ans"],
+];
+
 export function NewAccountModal({ open, onOpenChange, onConfirm, accounts, defaultParentId }: {
   open: boolean; onOpenChange: (o: boolean) => void; accounts: Account[]; defaultParentId?: string;
   onConfirm: (a: SubaccountInput) => void | Promise<void>;
@@ -564,11 +569,38 @@ export function NewAccountModal({ open, onOpenChange, onConfirm, accounts, defau
   const [pin, setPin] = useState("");
   const [visualKey, setVisualKey] = useState("bank-modern");
   const [color, setColor] = useState<AccentKey>("brand-blue");
-  const [lockDate, setLockDate] = useState("");
+  const [lockDays, setLockDays] = useState(0);
+  const [step, setStep] = useState<0 | 1 | 2>(0);
   const [busy, setBusy] = useState(false);
-  useEffect(() => { if (open) { setParentId(principals.find((a) => a.id === defaultParentId)?.id ?? principals[0]?.id ?? ""); setName(""); setTarget(""); setPin(""); setLockDate(""); } }, [open, defaultParentId]);
+  useEffect(() => { if (open) { setParentId(principals.find((a) => a.id === defaultParentId)?.id ?? principals[0]?.id ?? ""); setName(""); setTarget(""); setPin(""); setLockDays(0); setStep(0); } }, [open, defaultParentId]);
   const parent = principals.find((a) => a.id === parentId);
-  const valid = !!parent && name.trim().length >= 2 && name.trim().length <= 80 && Number(target) > 0 && Number(target) <= 1000000000000 && /^\d{4}$/.test(pin) && (!lockDate || new Date(lockDate).getTime() > Date.now());
+  const subCount = accounts.filter((a) => a.kind && a.kind !== "main").length;
+  const lockEnd = lockDays ? Date.now() + lockDays * 86_400_000 : null;
+  const valid = !!parent && subCount < 10 && name.trim().length >= 2 && name.trim().length <= 80 && Number(target) > 0 && Number(target) <= 1000000000000 && /^\d{4}$/.test(pin);
+  const create = async () => {
+    if (!parent || busy) return;
+    setBusy(true);
+    try { const input = subaccountSchema.parse({ name, parentAccountId: parent.id, currency: parent.currency, target: Number(target), pin, visualKey, icon: "wallet", color, lockedUntil: lockEnd }); await onConfirm(input); setPin(""); onOpenChange(false); toast.success(lockEnd ? "Sous-compte créé et verrouillé" : "Sous-compte créé"); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Création impossible"); setStep(0); }
+    finally { setBusy(false); }
+  };
+  if (step > 0) {
+    return <Modal open={open} onOpenChange={onOpenChange} title={step === 1 ? "Confirmer le blocage" : "Engagement définitif"}>
+      <div className="space-y-4">
+        {step === 1 ? (
+          <p className="text-sm text-foreground">Voulez-vous confirmer le blocage de ces fonds pour la durée sélectionnée ?<br /><span className="text-muted-foreground">Jusqu'au {new Date(lockEnd!).toLocaleDateString("fr-FR")}.</span></p>
+        ) : (
+          <p role="alert" className="rounded-xl border border-brand-red/40 bg-brand-red/10 p-3 text-sm font-semibold text-brand-red">Attention : En confirmant ce verrouillage, aucun retour en arrière n'est possible. Vos fonds seront strictement inaccessibles jusqu'à la date d'échéance.</p>
+        )}
+        <div className="flex gap-2">
+          <button type="button" className="press flex-1 rounded-xl border border-border py-3 text-sm font-bold text-muted-foreground" onClick={() => setStep(0)}>Annuler</button>
+          <div className="flex-1">{step === 1
+            ? <PrimaryButton onClick={() => setStep(2)}>Confirmer</PrimaryButton>
+            : <PrimaryButton color="brand-red" disabled={busy} onClick={create}>{busy ? "Verrouillage…" : "J'accepte définitivement"}</PrimaryButton>}</div>
+        </div>
+      </div>
+    </Modal>;
+  }
   return <Modal open={open} onOpenChange={onOpenChange} title="Créer un sous-compte">
     <div className="space-y-4">
       <Field label="Compte Principal de rattachement"><select value={parentId} onChange={(e) => setParentId(e.target.value)} className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground">{principals.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></Field>
@@ -578,14 +610,12 @@ export function NewAccountModal({ open, onOpenChange, onConfirm, accounts, defau
       <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" autoComplete="new-password" maxLength={4} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} /></Field>
       <Field label="Visuel"><VisualPicker value={visualKey} onChange={setVisualKey} /></Field>
       <Field label="Couleur"><div className="flex gap-2">{ACCENTS.map((c) => <button key={c} type="button" aria-label={c} onClick={() => setColor(c)} className={`press h-8 w-8 rounded-full ${color === c ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""}`} style={{ backgroundColor: accentVar(c) }} />)}</div></Field>
-      <Field label="Bloquer jusqu'au (optionnel)"><TextInput type="date" value={lockDate} onChange={(e) => setLockDate(e.target.value)} /></Field>
-      <PrimaryButton disabled={!valid || busy} onClick={async () => {
-        if (!parent || busy) return;
-        setBusy(true);
-        try { const input = subaccountSchema.parse({ name, parentAccountId: parent.id, currency: parent.currency, target: Number(target), pin, visualKey, icon: "wallet", color, lockedUntil: lockDate ? new Date(lockDate).getTime() : null }); await onConfirm(input); setPin(""); onOpenChange(false); toast.success("Sous-compte créé"); }
-        catch (e) { toast.error(e instanceof Error ? e.message : "Création impossible"); }
-        finally { setBusy(false); }
-      }}>{busy ? "Création en cours…" : "Créer le sous-compte"}</PrimaryButton>
+      <Field label="Durée de blocage"><select value={lockDays} onChange={(e) => setLockDays(Number(e.target.value))} className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground">
+        {LOCK_OPTIONS.map(([d, l]) => <option key={d} value={d}>{l}</option>)}
+      </select></Field>
+      {lockEnd && <p className="text-[0.72rem] text-muted-foreground">Échéance : {new Date(lockEnd).toLocaleDateString("fr-FR")} — aucun déblocage anticipé possible.</p>}
+      {subCount >= 10 && <p className="text-sm text-destructive">Limite atteinte : 10 sous-comptes maximum</p>}
+      <PrimaryButton disabled={!valid || busy} onClick={() => (lockEnd ? setStep(1) : void create())}>{busy ? "Création en cours…" : "Créer / Confirmer le compte"}</PrimaryButton>
     </div>
   </Modal>;
 }
