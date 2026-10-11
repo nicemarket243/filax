@@ -38,6 +38,7 @@ export interface Transaction {
   /** Type brut et frais pour les graphiques issus de l'historique réel. */
   sourceType?: string;
   fee?: number;
+  status?: "created" | "pending" | "confirmed" | "failed" | "refunded";
 }
 
 export interface Goal {

@@ -361,10 +361,19 @@ export function moneyError(message: string) {
   if (/solde insuffisant|supérieur au solde/i.test(message)) return "Votre montant de retrait est supérieur au solde disponible sur ce compte.";
   return message;
 }
-const newKey = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+// Même demande répétée en moins de 10 s (double clic) = même clé : le serveur ne l'exécute qu'une fois.
+const recentKeys = new Map<string, { key: string; at: number }>();
+function keyFor(args: unknown) {
+  const sig = JSON.stringify(args);
+  const hit = recentKeys.get(sig);
+  if (hit && Date.now() - hit.at < 10_000) return hit.key;
+  const key = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+  recentKeys.set(sig, { key, at: Date.now() });
+  return key;
+}
 type Outflow = { _operation: string; _account: string; _amount: number; _destination?: string; _pin?: string; _global_pin?: string; _related?: string };
 async function outflow(args: Outflow) {
-  const { data, error } = await supabase.rpc("account_outflow", { ...args, _idempotency_key: newKey() });
+  const { data, error } = await supabase.rpc("account_outflow", { ...args, _idempotency_key: keyFor(args) });
   if (error) throw new Error(moneyError(error.message));
   const r = data as { ok?: boolean; error?: string } | null;
   if (r && r.ok === false) throw new Error(r.error ?? "Opération refusée");
@@ -372,7 +381,7 @@ async function outflow(args: Outflow) {
 
 /** Dépôt : crée une demande en attente, créditée seulement après confirmation du paiement. */
 export async function depositDb(accountId: string, amount: number, method: string) {
-  const { error } = await supabase.rpc("request_deposit", { _account: accountId, _amount: amount, _method: method, _idempotency_key: newKey() });
+  const { error } = await supabase.rpc("request_deposit", { _account: accountId, _amount: amount, _method: method, _idempotency_key: keyFor({ d: accountId, amount, method }) });
   if (error) throw new Error(moneyError(error.message));
 }
 export async function withdrawDb(accountId: string, amount: number, method: string, pin = "") {
