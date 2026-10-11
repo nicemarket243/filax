@@ -93,6 +93,74 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor: string | null
+          created_at: string
+          details: Json
+          id: string
+          target: string | null
+        }
+        Insert: {
+          action: string
+          actor?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          target?: string | null
+        }
+        Update: {
+          action?: string
+          actor?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          target?: string | null
+        }
+        Relationships: []
+      }
+      disputes: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          resolution: string | null
+          resolved_at: string | null
+          status: string
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           account_id: string
@@ -291,6 +359,39 @@ export type Database = {
         }
         Relationships: []
       }
+      incidents: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          details: string | null
+          id: string
+          resolved_at: string | null
+          severity: string
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          details?: string | null
+          id?: string
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          details?: string | null
+          id?: string
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -314,6 +415,24 @@ export type Database = {
           id?: string
           read?: boolean
           title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pin_attempts: {
+        Row: {
+          failures: number
+          locked_until: string | null
+          user_id: string
+        }
+        Insert: {
+          failures?: number
+          locked_until?: string | null
+          user_id: string
+        }
+        Update: {
+          failures?: number
+          locked_until?: string | null
           user_id?: string
         }
         Relationships: []
@@ -362,9 +481,11 @@ export type Database = {
           id: string
           id_document_path: string | null
           id_document_type: string | null
+          is_demo: boolean
           kyc_status: string
           kyc_validated_at: string | null
           last_name: string | null
+          middle_name: string | null
           partner_bank: string | null
           partner_subaccount: string | null
           phone: string | null
@@ -385,9 +506,11 @@ export type Database = {
           id?: string
           id_document_path?: string | null
           id_document_type?: string | null
+          is_demo?: boolean
           kyc_status?: string
           kyc_validated_at?: string | null
           last_name?: string | null
+          middle_name?: string | null
           partner_bank?: string | null
           partner_subaccount?: string | null
           phone?: string | null
@@ -408,9 +531,11 @@ export type Database = {
           id?: string
           id_document_path?: string | null
           id_document_type?: string | null
+          is_demo?: boolean
           kyc_status?: string
           kyc_validated_at?: string | null
           last_name?: string | null
+          middle_name?: string | null
           partner_bank?: string | null
           partner_subaccount?: string | null
           phone?: string | null
@@ -426,36 +551,48 @@ export type Database = {
         Row: {
           account_id: string
           amount: number
+          confirmed_at: string | null
           counterparty: string | null
           created_at: string
+          failure_reason: string | null
           fee: number
           id: string
+          idempotency_key: string | null
           label: string | null
           method: string | null
+          status: string
           type: string
           user_id: string
         }
         Insert: {
           account_id: string
           amount: number
+          confirmed_at?: string | null
           counterparty?: string | null
           created_at?: string
+          failure_reason?: string | null
           fee?: number
           id?: string
+          idempotency_key?: string | null
           label?: string | null
           method?: string | null
+          status?: string
           type: string
           user_id: string
         }
         Update: {
           account_id?: string
           amount?: number
+          confirmed_at?: string | null
           counterparty?: string | null
           created_at?: string
+          failure_reason?: string | null
           fee?: number
           id?: string
+          idempotency_key?: string | null
           label?: string | null
           method?: string | null
+          status?: string
           type?: string
           user_id?: string
         }
@@ -516,6 +653,7 @@ export type Database = {
           _amount: number
           _destination?: string
           _global_pin?: string
+          _idempotency_key?: string
           _operation: string
           _pin?: string
           _related?: string
@@ -523,6 +661,7 @@ export type Database = {
         Returns: Json
       }
       admin_client_detail: { Args: { _user: string }; Returns: Json }
+      admin_confirm_deposit: { Args: { _tx: string }; Returns: undefined }
       admin_create_group: {
         Args: {
           _category: string
@@ -532,6 +671,10 @@ export type Database = {
           _owner: string
           _target: number
         }
+        Returns: string
+      }
+      admin_create_incident: {
+        Args: { _details: string; _severity: string; _title: string }
         Returns: string
       }
       admin_decide_kyc: {
@@ -544,6 +687,10 @@ export type Database = {
       }
       admin_delete_group: { Args: { _id: string }; Returns: undefined }
       admin_delete_notification: { Args: { _id: string }; Returns: undefined }
+      admin_fail_transaction: {
+        Args: { _reason: string; _tx: string }
+        Returns: undefined
+      }
       admin_list_accounts: {
         Args: never
         Returns: {
@@ -574,6 +721,21 @@ export type Database = {
           phone: string
           tx_count: number
           user_id: string
+        }[]
+      }
+      admin_list_disputes: {
+        Args: never
+        Returns: {
+          created_at: string
+          filax_id: string
+          id: string
+          owner: string
+          reason: string
+          resolution: string
+          status: string
+          transaction_id: string
+          tx_amount: number
+          tx_label: string
         }[]
       }
       admin_list_groups: {
@@ -621,6 +783,25 @@ export type Database = {
           title: string
         }[]
       }
+      admin_list_transactions: {
+        Args: { _status?: string }
+        Returns: {
+          account: string
+          amount: number
+          created_at: string
+          currency: string
+          failure_reason: string
+          fee: number
+          filax_id: string
+          id: string
+          label: string
+          method: string
+          owner: string
+          status: string
+          type: string
+          user_id: string
+        }[]
+      }
       admin_list_withdrawals: {
         Args: never
         Returns: {
@@ -635,6 +816,27 @@ export type Database = {
           status: string
         }[]
       }
+      admin_reconciliation: {
+        Args: never
+        Returns: {
+          currency: string
+          fees: number
+          gap: number
+          ledger_net: number
+          pending_amount: number
+          pending_count: number
+          total_balance: number
+        }[]
+      }
+      admin_refund_transaction: {
+        Args: { _reason: string; _tx: string }
+        Returns: undefined
+      }
+      admin_resolve_dispute: {
+        Args: { _accepted: boolean; _id: string; _resolution: string }
+        Returns: undefined
+      }
+      admin_resolve_incident: { Args: { _id: string }; Returns: undefined }
       admin_send_notification: {
         Args: { _body: string; _title: string; _user: string }
         Returns: number
@@ -704,11 +906,13 @@ export type Database = {
         Args: { _group: string; _user: string }
         Returns: boolean
       }
+      kyc_ok: { Args: { _user: string }; Returns: boolean }
       leave_group: { Args: { _group: string }; Returns: undefined }
       owner_update_group: {
         Args: { _deadline: string; _id: string; _name: string; _target: number }
         Returns: undefined
       }
+      pin_failure: { Args: never; Returns: undefined }
       public_profile: {
         Args: { _username: string }
         Returns: {
@@ -716,6 +920,15 @@ export type Database = {
           first_name: string
           last_name: string
         }[]
+      }
+      request_deposit: {
+        Args: {
+          _account: string
+          _amount: number
+          _idempotency_key?: string
+          _method: string
+        }
+        Returns: string
       }
       request_group_withdrawal: {
         Args: {
@@ -726,6 +939,7 @@ export type Database = {
         }
         Returns: string
       }
+      require_kyc: { Args: never; Returns: undefined }
       set_account_visual: {
         Args: { _account: string; _visual: string }
         Returns: undefined
@@ -735,6 +949,7 @@ export type Database = {
         Args: { _doc_path: string; _doc_type: string; _selfie_path: string }
         Returns: undefined
       }
+      submit_selfie: { Args: { _selfie_path: string }; Returns: undefined }
       transfer: {
         Args: {
           _amount: number
@@ -756,6 +971,10 @@ export type Database = {
       withdraw: {
         Args: { _account: string; _amount: number; _method: string }
         Returns: string
+      }
+      write_audit: {
+        Args: { _action: string; _details: Json; _target: string }
+        Returns: undefined
       }
     }
     Enums: {
