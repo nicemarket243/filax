@@ -13,6 +13,8 @@ export interface DbProfile extends Profile {
   partnerSubaccount: string | null;
   kycStatus: "not_started" | "pending" | "verified" | "rejected";
   birthCity: string | null;
+  middleName: string;
+  isDemo: boolean;
 }
 
 /** Utilisateur connecté (ou null). */
@@ -85,7 +87,9 @@ export function useDbProfile(userId: string | null) {
       birthDate: data.birth_date ?? "",
       birthCity: data.birth_city,
       twoFactor: data.two_factor,
-      kycStatus: (data.kyc_status as DbProfile["kycStatus"]) ?? "not_started",
+      kycStatus: data.is_demo ? "verified" : ((data.kyc_status as DbProfile["kycStatus"]) ?? "not_started"),
+      middleName: data.middle_name ?? "",
+      isDemo: data.is_demo,
     });
   }, [userId]);
 
@@ -279,8 +283,7 @@ export async function createDbGroup(input: { name: string; category: GroupCatego
 
 /** Cotisation réelle : débit du compte, frais 0,5 %, notification des membres. */
 export async function contributeDb(groupId: string, accountId: string, amount: number, pin = "") {
-  const { error } = await supabase.rpc("account_outflow", { _operation: "contribute", _related: groupId, _account: accountId, _amount: amount, _pin: pin });
-  if (error) throw new Error(error.message);
+  await outflow({ _operation: "contribute", _related: groupId, _account: accountId, _amount: amount, _pin: pin });
 }
 
 /** Invitation par username ou FILAX-ID. */
@@ -297,6 +300,7 @@ const TX_TYPE: Record<string, import("./filax-store").TxType> = {
   contribution: "cotisation",
   goal_fund: "envoi",
   group_withdraw: "reception",
+  refund: "reception",
 };
 const KNOWN_METHODS = ["orange", "airtel", "mpesa", "banque", "carte", "filax"];
 
@@ -332,6 +336,7 @@ export function useDbTransactions(userId: string | null, accounts: Account[] | n
         origin: t.counterparty ?? undefined,
         sourceType: t.type,
         fee: Number(t.fee),
+        status: t.status as "created" | "pending" | "confirmed" | "failed" | "refunded",
       })),
     );
   }, [userId, accounts]);
@@ -351,21 +356,33 @@ export function useDbTransactions(userId: string | null, accounts: Account[] | n
   return { transactions: txs, refresh, error };
 }
 
+/** Traduit les erreurs du moteur financier en message clair. */
+export function moneyError(message: string) {
+  if (/solde insuffisant|supérieur au solde/i.test(message)) return "Votre montant de retrait est supérieur au solde disponible sur ce compte.";
+  return message;
+}
+const newKey = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+type Outflow = { _operation: string; _account: string; _amount: number; _destination?: string; _pin?: string; _global_pin?: string; _related?: string };
+async function outflow(args: Outflow) {
+  const { data, error } = await supabase.rpc("account_outflow", { ...args, _idempotency_key: newKey() });
+  if (error) throw new Error(moneyError(error.message));
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (r && r.ok === false) throw new Error(r.error ?? "Opération refusée");
+}
+
+/** Dépôt : crée une demande en attente, créditée seulement après confirmation du paiement. */
 export async function depositDb(accountId: string, amount: number, method: string) {
-  const { error } = await supabase.rpc("deposit", { _account: accountId, _amount: amount, _method: method });
-  if (error) throw new Error(error.message);
+  const { error } = await supabase.rpc("request_deposit", { _account: accountId, _amount: amount, _method: method, _idempotency_key: newKey() });
+  if (error) throw new Error(moneyError(error.message));
 }
 export async function withdrawDb(accountId: string, amount: number, method: string, pin = "") {
-  const { error } = await supabase.rpc("account_outflow", { _operation: "withdraw", _account: accountId, _amount: amount, _destination: method, _pin: pin });
-  if (error) throw new Error(error.message);
+  await outflow({ _operation: "withdraw", _account: accountId, _amount: amount, _destination: method, _pin: pin });
 }
 export async function transferDb(accountId: string, amount: number, filaxId: string, pin: string, accountPin = "") {
-  const { error } = await supabase.rpc("account_outflow", { _operation: "transfer", _account: accountId, _destination: filaxId, _amount: amount, _global_pin: pin, _pin: accountPin });
-  if (error) throw new Error(error.message);
+  await outflow({ _operation: "transfer", _account: accountId, _destination: filaxId, _amount: amount, _global_pin: pin, _pin: accountPin });
 }
 export async function transferExternalDb(accountId: string, amount: number, label: string, pin: string, accountPin = "") {
-  const { error } = await supabase.rpc("account_outflow", { _operation: "external", _account: accountId, _amount: amount, _destination: label, _global_pin: pin, _pin: accountPin });
-  if (error) throw new Error(error.message);
+  await outflow({ _operation: "external", _account: accountId, _amount: amount, _destination: label, _global_pin: pin, _pin: accountPin });
 }
 
 /** Objectifs d'épargne réels, mis à jour en direct. */
@@ -420,8 +437,7 @@ export async function createGoalDb(userId: string, g: { accountId: string; name:
 }
 
 export async function fundGoalDb(goalId: string, amount: number, accountId: string, pin = "") {
-  const { error } = await supabase.rpc("account_outflow", { _operation: "goal", _related: goalId, _account: accountId, _amount: amount, _pin: pin });
-  if (error) throw new Error(error.message);
+  await outflow({ _operation: "goal", _related: goalId, _account: accountId, _amount: amount, _pin: pin });
 }
 
 /** Enregistre la banque partenaire choisie par l'utilisateur. */
