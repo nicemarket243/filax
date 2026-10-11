@@ -51,3 +51,6 @@
 - [x] Groupes : badge jours restants retiré, photos membres, historique des contributions, visuel identique aux cartes
 - [x] Profil : menu de partage, copie d'ID, tiroir unique « Paramètres du compte »
 - [ ] Groupes affichés comme cartes sur l'accueil (max 10) — à faire au prochain tour
+- [x] Finalisation : KYC 3 états, dépôts en attente, anti-doublon, sous-comptes bloqués (7 j–5 ans, max 10), comptes principaux permanents, limite d'essais du code, back-office Opérations & audit
+- [ ] Texte officiel de la banque IBA (attente utilisateur)
+- [ ] Formulaire client pour ouvrir un litige (prochaine étape)
