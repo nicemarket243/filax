@@ -68,8 +68,8 @@ function AdminAccounts() {
                     <p className="truncate text-[0.8rem] font-bold text-foreground">{r.name}</p>
                     <p className="truncate text-[0.62rem] text-muted-foreground">{r.owner ?? "—"} · {r.filax_id} · {formatMoney(Number(r.balance), r.currency as Currency)}</p>
                   </div>
-                  {mine ? (
-                    <span className="text-[0.62rem] font-bold text-muted-foreground">Protégé</span>
+                  {mine || r.kind === "main" ? (
+                    <span className="text-[0.62rem] font-bold text-muted-foreground">{r.kind === "main" ? "Permanent" : "Protégé"}</span>
                   ) : (
                     <button type="button" onClick={() => void toggle(r)} className={`press rounded-xl px-3 py-1.5 text-[0.68rem] font-bold ${r.status === "active" ? "border border-border text-brand-red" : "bg-brand-green text-white"}`}>
                       {r.status === "active" ? "Bloquer" : "Activer"}
