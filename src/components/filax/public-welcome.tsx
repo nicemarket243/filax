@@ -23,6 +23,8 @@ export function PublicWelcome({ onAuthenticated }: { onAuthenticated: () => void
   const [mode, setMode] = useState<Mode>("signup");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -81,6 +83,10 @@ export function PublicWelcome({ onAuthenticated }: { onAuthenticated: () => void
       toast.error("Indiquez votre nom complet");
       return;
     }
+    if (mode === "signup" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+      toast.error("Entrez une adresse e-mail valide");
+      return;
+    }
     if (phone.replace(/\D/g, "").length < 9) {
       toast.error("Entrez un numéro de téléphone valide");
       return;
@@ -91,7 +97,7 @@ export function PublicWelcome({ onAuthenticated }: { onAuthenticated: () => void
       phone: normalizePhone(phone),
       options: {
         shouldCreateUser: mode === "signup",
-        data: mode === "signup" ? { first_name: firstName, last_name: lastName.join(" "), phone: normalizePhone(phone) } : undefined,
+        data: mode === "signup" ? { first_name: firstName, last_name: lastName.join(" "), middle_name: middleName.trim().slice(0, 80), contact_email: email.trim().slice(0, 255), phone: normalizePhone(phone) } : undefined,
       },
     });
     setBusy(false);
@@ -185,10 +191,14 @@ export function PublicWelcome({ onAuthenticated }: { onAuthenticated: () => void
                 id="filax-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Jean Dupont"
+                placeholder="Jean Kabasele"
                 autoComplete="name"
                 className={FIELD}
               />
+              <label htmlFor="filax-middle" className="ml-1 block pt-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Post-nom</label>
+              <input id="filax-middle" value={middleName} onChange={(e) => setMiddleName(e.target.value)} placeholder="Mukendi" maxLength={80} className={FIELD} />
+              <label htmlFor="filax-email" className="ml-1 block pt-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Adresse e-mail</label>
+              <input id="filax-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.com" autoComplete="email" maxLength={255} className={FIELD} />
             </div>
           )}
 

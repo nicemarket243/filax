@@ -69,6 +69,13 @@ const PARTNER_BANKS = [
     title: "Partenariat Officiel - TMB",
     security: "En choisissant la TMB, vous confiez la garde de vos liquidités à un réseau bancaire d'envergure nationale reconnu pour sa fiabilité et sa proximité. Vos sous-comptes bénéficient des protocoles de sécurité renforcés de la TMB contre tout risque systémique. La sélection de cette banque est définitive et sécurise l'ensemble de vos opérations sur l'application.",
   },
+  {
+    id: "iba",
+    name: "IBA",
+    desc: "International Bank for Africa",
+    title: "Banque partenaire - IBA",
+    security: "Les conditions officielles de partenariat avec IBA seront publiées ici dès leur validation. Ce choix de banque partenaire est irréversible et définitif.",
+  },
 ] as const;
 
 export const Route = createFileRoute("/profil")({
@@ -195,12 +202,12 @@ function ProfilPage() {
             to="/verification"
             className="press mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.58rem] font-bold"
             style={{
-              backgroundColor: `color-mix(in oklab, ${accentVar(verified || kycStatus === "verified" ? "brand-green" : "brand-blue")} 14%, transparent)`,
-              color: accentVar(verified || kycStatus === "verified" ? "brand-green" : "brand-blue"),
+              backgroundColor: `color-mix(in oklab, ${accentVar(verified || kycStatus === "verified" ? "brand-green" : kycStatus === "pending" ? "brand-blue" : "brand-red")} 14%, transparent)`,
+              color: accentVar(verified || kycStatus === "verified" ? "brand-green" : kycStatus === "pending" ? "brand-blue" : "brand-red"),
             }}
           >
             {verified || kycStatus === "verified" ? <ShieldCheck className="h-3 w-3" /> : <ShieldAlert className="h-3 w-3" />}
-            {verified || kycStatus === "verified" ? "Identité vérifiée" : kycStatus === "pending" ? "Vérification en cours" : "Vérifier mon identité"}
+            {verified || kycStatus === "verified" ? "Identifiant vérifié" : kycStatus === "pending" ? "En cours de vérification" : kycStatus === "rejected" ? "Refusé — recommencer" : "Non vérifié"}
           </Link>
         </div>
         <div className="flex flex-col gap-1.5">
