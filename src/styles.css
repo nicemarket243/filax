@@ -242,9 +242,9 @@
 }
 .group-slide { opacity: 0; pointer-events: none; }
 .group-slide[data-active="true"] { opacity: 1; z-index: 1; }
-.group-slide[data-active="true"][data-effect="drop"] { animation: group-drop 850ms ease-out both; }
-.group-slide[data-active="true"][data-effect="fade"] { animation: group-fade 850ms ease-out both; }
-.group-slide[data-active="true"][data-effect="blur"] { animation: group-blur 850ms ease-out both; }
+.group-slide[data-active="true"][data-effect="drop"] { animation: group-drop 2500ms ease-in-out both; }
+.group-slide[data-active="true"][data-effect="fade"] { animation: group-fade 2500ms ease-in-out both; }
+.group-slide[data-active="true"][data-effect="blur"] { animation: group-blur 2500ms ease-in-out both; }
 @keyframes group-drop { from { opacity: 0; transform: translateY(-12%); } to { opacity: 1; transform: translateY(0); } }
 @keyframes group-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes group-blur { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
