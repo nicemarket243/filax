@@ -80,8 +80,8 @@
 - [ ] Étapes 2-5 cahier maître (pays, PIN au dépôt, échéance comptes bloqués)
 
 ## Étape 1 — Compléments demandés
-- [ ] Ajuster le diaporama : réussite financière inclusive, animations photographiques, rectangle sans cadre/compteur et messages sur 15 visuels
-- [ ] Privilégier des scènes naturelles et un rendu photographique réaliste, sans esthétique trop IA
+- [x] Ajuster le diaporama : réussite financière inclusive, trois animations photographiques, rectangle sans cadre/compteur et messages sur 15 visuels ; vérifié sur téléphone et grand écran
+- [x] Privilégier des scènes naturelles et un rendu photographique réaliste ; images générées, pas des photographies documentaires
 - [x] Simulateurs frontend Push STK et SMS à six chiffres, explicitement sans paiement ni message réel
 - [x] Remplacer le diaporama par 30 photos de cotisation, banque et conseil financier
 - [x] Vérifier les simulations et le diaporama sans modifier le compte vitrine ni la session : STK accepté/refusé/expiré, OTP incorrect/valide/expiré/renvoyé/bloqué, aucun appel financier, accueil inchangé
