@@ -424,6 +424,20 @@ export function TransferModal({
       : [];
 
   const bankReady = beneficiary.trim().length > 2 && bankName.trim().length > 1 && cardOk;
+  const [pinOpen, setPinOpen] = useState(false);
+  const sendWith = async (pin: string) => {
+    const label = mode === "filax" ? recipient?.name ?? "" : `${beneficiary} · ${bankName} (${destination.label})`;
+    try {
+      await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient?.id, pin, accountPin } : { external: true, pin, accountPin });
+    } catch (e) {
+      toast.error("Transfert échoué", { description: (e as Error).message });
+      setPinOpen(false);
+      return;
+    }
+    setPinOpen(false);
+    onOpenChange(false);
+    toast.success("Transfert réussi", { description: `Votre transfert vers ${label} a réussi avec succès.` });
+  };
   const ready = accountPinReady && value > 0 && (mode === "filax" ? !!recipient : bankReady) && (!requirePin || /^\d{4}$/.test(pin));
   const typedId = requirePin && !recipient && /^FLX-[A-Z0-9-]{4,}$/i.test(query.trim()) ? query.trim().toUpperCase() : null;
 
@@ -550,30 +564,18 @@ export function TransferModal({
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
 
-        {requirePin && (
-          <Field label="Code secret (4 chiffres)">
-            <TextInput inputMode="numeric" type="password" maxLength={4} placeholder="••••" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} />
-          </Field>
-        )}
-
         <PrimaryButton
           disabled={!ready}
-          onClick={async () => {
+          onClick={() => {
             if (mode === "filax" && !recipient) return;
-            const label = mode === "filax" ? recipient?.name ?? "" : `${beneficiary} · ${bankName} (${destination.label})`;
-            try {
-              await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient?.id, pin, accountPin } : { external: true, pin, accountPin });
-            } catch (e) {
-              toast.error("Transfert refusé", { description: (e as Error).message });
-              return;
-            }
-            onOpenChange(false);
-            toast.success("Transfert envoyé", { description: `${value} envoyés à ${label}.` });
+            if (requirePin) setPinOpen(true);
+            else void sendWith("");
           }}
         >
           Envoyer maintenant
         </PrimaryButton>
       </div>
+      <PinConfirmModal open={pinOpen} onOpenChange={setPinOpen} onSubmit={sendWith} />
 
       <QrScanModal
         open={scan}
