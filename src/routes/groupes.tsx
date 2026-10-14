@@ -66,7 +66,7 @@ function GroupHeroSlideshow() {
 
   useEffect(() => {
     if (paused || !count) return;
-    const interval = window.setInterval(() => setSlide((current) => (current + 1) % count), 5000);
+    const interval = window.setInterval(() => setSlide((current) => (current + 1) % count), 10000);
     return () => window.clearInterval(interval);
   }, [paused, count]);
 
@@ -77,6 +77,18 @@ function GroupHeroSlideshow() {
     <section className="mt-4" aria-label={t("Solidarité et épargne collective")} aria-roledescription="diaporama">
       <div className="relative isolate h-[130px] w-full overflow-hidden rounded-[1.6rem]">
         <div key={image.key} data-active="true" data-effect={["drop", "fade", "blur"][slide % 3]} className="group-slide absolute inset-0">
+        {/* Arrière-plan flouté : comble le cadre sans jamais rogner la photo nette. */}
+        <img
+          src={image.src}
+          alt=""
+          aria-hidden="true"
+          width={630}
+          height={234}
+          loading="eager"
+          style={{ objectPosition: image.position }}
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+        />
+        {/* Photo nette en zoom arrière : scène entière visible, aucun rognage. */}
         <img
           src={image.src}
           alt={t(image.alt)}
@@ -84,7 +96,7 @@ function GroupHeroSlideshow() {
           height={234}
           loading="eager"
           style={{ objectPosition: image.position }}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
         />
         {image.message && <div className="group-photo-message pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-center px-3 pb-2 pt-4">
           <p className="group-photo-caption max-w-full rounded-sm px-2 py-1 text-[0.6875rem] font-semibold leading-snug">{t(image.message)}</p>

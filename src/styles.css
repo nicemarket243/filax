@@ -58,7 +58,7 @@
 :root {
   --photo-foreground: oklch(1 0 0);
   --photo-shade: oklch(0.12 0.005 260);
-  --photo-scrim: linear-gradient(to top, color-mix(in oklab, var(--photo-shade) 90%, transparent), color-mix(in oklab, var(--photo-shade) 35%, transparent) 65%, transparent);
+  --photo-scrim: linear-gradient(to top, color-mix(in oklab, var(--photo-shade) 25%, transparent), color-mix(in oklab, var(--photo-shade) 12%, transparent) 65%, transparent);
   --radius: 1.25rem;
 
   --background: oklch(0.985 0.002 250);
@@ -234,17 +234,17 @@
   mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, black 55%, transparent 100%);
 }
 
-.group-photo-message { background: var(--photo-scrim); text-align: center; }
+.group-photo-message { background: var(--photo-scrim); backdrop-filter: blur(6px); text-align: center; }
 .group-photo-caption {
-  background: color-mix(in oklab, var(--photo-shade) 76%, transparent);
+  background: color-mix(in oklab, var(--photo-shade) 28%, transparent);
   color: var(--photo-foreground);
   text-shadow: 0 1px 2px var(--photo-shade);
 }
 .group-slide { opacity: 0; pointer-events: none; }
 .group-slide[data-active="true"] { opacity: 1; z-index: 1; }
-.group-slide[data-active="true"][data-effect="drop"] { animation: group-drop 850ms ease-out both; }
-.group-slide[data-active="true"][data-effect="fade"] { animation: group-fade 850ms ease-out both; }
-.group-slide[data-active="true"][data-effect="blur"] { animation: group-blur 850ms ease-out both; }
+.group-slide[data-active="true"][data-effect="drop"] { animation: group-drop 2500ms ease-in-out both; }
+.group-slide[data-active="true"][data-effect="fade"] { animation: group-fade 2500ms ease-in-out both; }
+.group-slide[data-active="true"][data-effect="blur"] { animation: group-blur 2500ms ease-in-out both; }
 @keyframes group-drop { from { opacity: 0; transform: translateY(-12%); } to { opacity: 1; transform: translateY(0); } }
 @keyframes group-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes group-blur { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
