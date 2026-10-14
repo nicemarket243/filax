@@ -23,7 +23,7 @@ import { Field, Modal, PrimaryButton, TextInput, accentVar } from "@/components/
 import { VisualPicker } from "./visual-picker";
 import { subaccountSchema, type SubaccountInput } from "@/lib/filax-db";
 import { PinConfirmModal } from "./pin-confirm";
-import { PaymentSimulationLauncher } from "./payment-simulators";
+import { TransactionDemoLauncher } from "./payment-simulators";
 import { QrScanModal, ReceiveQrModal } from "@/components/filax/qr-scanner";
 
 
@@ -202,7 +202,7 @@ export function DepositModal({
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Déposer de l'argent" subtitle="Mobile Money, banque, carte Visa/Mastercard ou QR code">
       <div className="space-y-4">
-        <PaymentSimulationLauncher mode="stk" />
+        <TransactionDemoLauncher kind="deposit" />
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} />
         <MethodPicker value={method} onChange={setMethod} />
         {byCard && <CardFields card={card} setCard={setCard} />}
@@ -305,6 +305,7 @@ export function WithdrawModal({
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Retirer de l'argent" subtitle="Mobile Money, banque partenaire, carte ou QR code">
       <div className="space-y-4">
+        <TransactionDemoLauncher kind="withdraw" />
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
         {needsAccountPin && <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" maxLength={4} autoComplete="off" value={accountPin} onChange={(e) => setAccountPin(e.target.value.replace(/\D/g, ""))} /></Field>}
         <MethodPicker value={method} onChange={setMethod} />
@@ -444,7 +445,6 @@ export function TransferModal({
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Envoyer de l'argent" subtitle="Vers un membre FILAX, une autre banque ou une carte">
       <div className="space-y-4">
-        <PaymentSimulationLauncher mode="sms" />
         <div className="grid grid-cols-2 gap-2 rounded-xl bg-muted p-1">
           {([
             ["filax", "Membre FILAX"],
