@@ -51,7 +51,7 @@ export const Route = createFileRoute("/groupes")({
 });
 
 function GroupHeroSlideshow() {
-  const [slide, setSlide] = useState(0);
+  const [slides, setSlides] = useState({ active: 0, previous: 0 });
   const [paused, setPaused] = useState(false);
   const { t } = useI18n();
   const count = GROUP_FINANCE_PHOTOS.length;
@@ -66,17 +66,33 @@ function GroupHeroSlideshow() {
 
   useEffect(() => {
     if (paused || !count) return;
-    const interval = window.setInterval(() => setSlide((current) => (current + 1) % count), 10000);
-    return () => window.clearInterval(interval);
-  }, [paused, count]);
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const advance = async () => {
+      const next = (slides.active + 1) % count;
+      const nextPhoto = GROUP_FINANCE_PHOTOS[next];
+      if (!nextPhoto) return;
+      const preload = new Image();
+      preload.src = nextPhoto.src;
+      try {
+        await preload.decode();
+        if (!cancelled) setSlides({ active: next, previous: slides.active });
+      } catch {
+        // Keep the current photo visible if the next asset is unavailable.
+        if (!cancelled) timer = setTimeout(advance, 2000);
+      }
+    };
+    timer = setTimeout(advance, 2000);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [paused, count, slides.active]);
 
-  const image = GROUP_FINANCE_PHOTOS[slide];
-  const previous = GROUP_FINANCE_PHOTOS[(slide - 1 + count) % count];
+  const image = GROUP_FINANCE_PHOTOS[slides.active];
+  const previous = GROUP_FINANCE_PHOTOS[slides.previous];
   if (!image) return null;
 
   return (
     <section className="mt-4" aria-label={t("Solidarité et épargne collective")} aria-roledescription="diaporama">
-      <div className="relative isolate h-[130px] w-full overflow-hidden rounded-[1.6rem]">
+      <div className="group-banner relative isolate w-full overflow-hidden rounded-[1.6rem]">
         {/* Photo précédente gardée dessous pour un vrai fondu enchaîné. */}
         {previous && previous.key !== image.key && (
           <img src={previous.src} alt="" aria-hidden="true" style={{ objectPosition: previous.position }} className="absolute inset-0 h-full w-full object-cover" />
