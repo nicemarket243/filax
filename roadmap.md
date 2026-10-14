@@ -52,5 +52,13 @@
 - [x] Profil : menu de partage, copie d'ID, tiroir unique « Paramètres du compte »
 - [ ] Groupes affichés comme cartes sur l'accueil (max 10) — à faire au prochain tour
 - [x] Finalisation : KYC 3 états, dépôts en attente, anti-doublon, sous-comptes bloqués (7 j–5 ans, max 10), comptes principaux permanents, limite d'essais du code, back-office Opérations & audit
-- [ ] Texte officiel de la banque IBA (attente utilisateur)
-- [ ] Formulaire client pour ouvrir un litige (prochaine étape)
+- [x] IBA retirée de la liste des banques (texte officiel jamais fourni)
+- [x] Formulaire client « Signaler » dans Historique → arrive dans Litiges du back-office
+- [x] « Enregistrer vos informations » après connexion, effacé automatiquement après 1 mois
+- [x] Compte test FLX-12756340 créé sans SMS, parcours complet vérifié (KYC vert, dépôt)
+
+## 14 oct. — Mis de côté par l'utilisateur, à faire plus tard
+- [ ] Invitation admin : attend l'adresse e-mail du titulaire, qui choisira lui-même son mot de passe
+- [ ] Vérification d'identité automatique : attend le choix et la clé du prestataire (saisie dans une fenêtre sécurisée)
+- [ ] Paiements réels Mobile Money / banque : attend le choix et la clé du prestataire (saisie dans une fenêtre sécurisée)
+- [ ] Groupes affichés comme cartes sur l'accueil (max 10)
