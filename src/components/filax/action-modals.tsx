@@ -438,7 +438,7 @@ export function TransferModal({
     onOpenChange(false);
     toast.success("Transfert réussi", { description: `Votre transfert vers ${label} a réussi avec succès.` });
   };
-  const ready = accountPinReady && value > 0 && (mode === "filax" ? !!recipient : bankReady) && (!requirePin || /^\d{4}$/.test(pin));
+  const ready = accountPinReady && value > 0 && (mode === "filax" ? !!recipient : bankReady);
   const typedId = requirePin && !recipient && /^FLX-[A-Z0-9-]{4,}$/i.test(query.trim()) ? query.trim().toUpperCase() : null;
 
   return (
