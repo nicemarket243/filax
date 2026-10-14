@@ -394,9 +394,26 @@ export function TransferModal({
     }
   }, [defaultAccountId, open]);
 
-  const results = query
-    ? DIRECTORY.filter((d) => [d.name, d.id, d.phone].some((f) => f.toLowerCase().includes(query.toLowerCase())))
-    : [];
+  // Mode réel : recherche d'un vrai membre par ID FILAX, téléphone ou e-mail.
+  const [found, setFound] = useState<(typeof DIRECTORY)[number] | null>(null);
+  useEffect(() => {
+    setFound(null);
+    const q = query.trim();
+    if (!requirePin || q.length < 5) return;
+    let alive = true;
+    const t = setTimeout(async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase.rpc("find_recipient", { _identifier: q });
+      const r = (data as { name: string; filax_id: string }[] | null)?.[0];
+      if (alive && r) setFound({ name: r.name || r.filax_id, id: r.filax_id, phone: "Membre FILAX vérifié" });
+    }, 350);
+    return () => { alive = false; clearTimeout(t); };
+  }, [query, requirePin]);
+  const results = requirePin
+    ? (found ? [found] : [])
+    : query
+      ? DIRECTORY.filter((d) => [d.name, d.id, d.phone].some((f) => f.toLowerCase().includes(query.toLowerCase())))
+      : [];
 
   const bankReady = beneficiary.trim().length > 2 && bankName.trim().length > 1 && cardOk;
   const ready = accountPinReady && value > 0 && (mode === "filax" ? !!recipient : bankReady) && (!requirePin || /^\d{4}$/.test(pin));
