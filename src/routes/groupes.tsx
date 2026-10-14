@@ -54,13 +54,12 @@ export const Route = createFileRoute("/groupes")({
 function GroupHeroSlideshow() {
   const [slide, setSlide] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
   const { t } = useI18n();
   const count = GROUP_FINANCE_PHOTOS.length;
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => { setReducedMotion(media.matches); if (media.matches) setPaused(true); };
+    const sync = () => { if (media.matches) setPaused(true); };
     sync();
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
