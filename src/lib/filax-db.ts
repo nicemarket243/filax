@@ -115,14 +115,21 @@ export async function saveDbProfile(
 }
 
 /** KYC réel : envoi des documents dans le coffre sécurisé puis soumission. */
-export async function submitDbKyc(userId: string, docType: string, doc: File, selfie: File) {
+/** Chemin de la preuve manuscrite, dérivé du chemin du selfie. */
+export const proofPathFor = (selfiePath: string) => selfiePath.replace(/\.jpg$/, "-preuve.jpg");
+
+export async function submitDbKyc(userId: string, docType: string, doc: File, selfie: File, proof?: File) {
   const ext = (f: File) => f.name.split(".").pop() ?? "jpg";
   const docPath = `${userId}/piece-${Date.now()}.${ext(doc)}`;
-  const selfiePath = `${userId}/selfie-${Date.now()}.${ext(selfie)}`;
+  const selfiePath = `${userId}/selfie-${Date.now()}.jpg`;
   const up1 = await supabase.storage.from("kyc-documents").upload(docPath, doc, { upsert: true });
   if (up1.error) throw new Error(up1.error.message);
   const up2 = await supabase.storage.from("kyc-documents").upload(selfiePath, selfie, { upsert: true });
   if (up2.error) throw new Error(up2.error.message);
+  if (proof) {
+    const up3 = await supabase.storage.from("kyc-documents").upload(proofPathFor(selfiePath), proof, { upsert: true });
+    if (up3.error) throw new Error(up3.error.message);
+  }
   const { error } = await supabase.rpc("submit_kyc", { _doc_type: docType, _doc_path: docPath, _selfie_path: selfiePath });
   if (error) throw new Error(error.message);
 }

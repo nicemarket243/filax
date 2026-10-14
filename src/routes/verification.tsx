@@ -6,6 +6,7 @@ import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { BackButton } from "@/components/back-button";
 import { Field, PageTitle, PrimaryButton, accentVar } from "@/components/filax/ui-kit";
 import { submitDbKyc, useDbProfile, useDbUser } from "@/lib/filax-db";
+import { LiveCapture } from "@/components/filax/live-capture";
 
 export const Route = createFileRoute("/verification")({
   head: () => ({
@@ -37,15 +38,16 @@ function VerificationPage() {
   const [docType, setDocType] = useState("cni");
   const [doc, setDoc] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
+  const [proof, setProof] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
     if (!userId) return;
-    if (!doc || !selfie) return toast.error("Ajoutez la photo de la pièce et le selfie.");
-    if (doc.size > 8e6 || selfie.size > 8e6) return toast.error("Chaque photo doit faire moins de 8 Mo.");
+    if (!doc || !selfie || !proof) return toast.error("Ajoutez la pièce, le selfie et la preuve manuscrite.");
+    if (doc.size > 8e6) return toast.error("La photo de la pièce doit faire moins de 8 Mo.");
     setBusy(true);
     try {
-      await submitDbKyc(userId, docType, doc, selfie);
+      await submitDbKyc(userId, docType, doc, selfie, proof);
       toast.success("Documents envoyés", { description: "Vous serez notifié dès la validation." });
       await refresh();
     } catch (e) {
@@ -114,9 +116,8 @@ function VerificationPage() {
           <Field label="Photo de la pièce">
             <input type="file" accept="image/*" onChange={(e) => setDoc(e.target.files?.[0] ?? null)} className={fileCls} />
           </Field>
-          <Field label="Selfie de contrôle">
-            <input type="file" accept="image/*" capture="user" onChange={(e) => setSelfie(e.target.files?.[0] ?? null)} className={fileCls} />
-          </Field>
+          <LiveCapture label="Capture 1 : selfie de face" hint="Visage de face, bien éclairé, sur un fond uni, sans personne derrière vous." onChange={setSelfie} />
+          <LiveCapture label="Capture 2 : preuve manuscrite" hint={`Tenez un papier écrit à la main : « FILAX RDC » et la date du jour (${new Date().toLocaleDateString("fr-FR")}).`} onChange={setProof} />
           <PrimaryButton color="brand-green" onClick={submit} disabled={busy}>
             {busy ? "Envoi en cours…" : "Envoyer mes documents"}
           </PrimaryButton>
