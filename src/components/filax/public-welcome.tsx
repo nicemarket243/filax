@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Globe2, Loader2, ShieldCheck, Users } from "lucide-react";
 import { toast } from "sonner";
 import { FilaxLogo } from "@/components/filax-logo";
@@ -19,7 +19,11 @@ function normalizePhone(value: string) {
 const FIELD =
   "w-full rounded-xl border border-border/70 bg-transparent px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-colors focus:border-brand-blue/60";
 
-export function PublicWelcome({ onAuthenticated }: { onAuthenticated: () => void }) {
+const REMEMBER_KEY = "filax-remembered-login";
+const REMEMBER_MS = 30 * 86_400_000;
+type Remembered = { method: Method; phone?: string; filaxId?: string; expires: number };
+
+export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () => void }) {
   const [mode, setMode] = useState<Mode>("signup");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -32,6 +36,34 @@ export function PublicWelcome({ onAuthenticated }: { onAuthenticated: () => void
   const [filaxId, setFilaxId] = useState("");
   const sendId = useServerFn(sendFilaxIdCode);
   const verifyId = useServerFn(verifyFilaxIdCode);
+
+  // Identifiants mémorisés (jamais de code ni de mot de passe), effacés automatiquement après 1 mois.
+  useEffect(() => {
+    try {
+      const r = JSON.parse(localStorage.getItem(REMEMBER_KEY) ?? "null") as Remembered | null;
+      if (!r) return;
+      if (r.expires < Date.now()) return void localStorage.removeItem(REMEMBER_KEY);
+      setMode("login");
+      setMethod(r.method);
+      if (r.phone) setPhone(r.phone);
+      if (r.filaxId) setFilaxId(r.filaxId);
+    } catch {
+      localStorage.removeItem(REMEMBER_KEY);
+    }
+  }, []);
+
+  const onAuthenticated = () => {
+    const entry: Remembered = { method, phone: method === "phone" ? phone : undefined, filaxId: method === "id" ? filaxId.trim() : undefined, expires: Date.now() + REMEMBER_MS };
+    const existing = localStorage.getItem(REMEMBER_KEY);
+    if (!existing) {
+      toast("Enregistrer vos informations de connexion ?", {
+        description: "Vous n'aurez plus à les retaper pendant 1 mois.",
+        duration: 15000,
+        action: { label: "Enregistrer", onClick: () => localStorage.setItem(REMEMBER_KEY, JSON.stringify(entry)) },
+      });
+    }
+    done();
+  };
 
   const google = async () => {
     setBusy(true);
