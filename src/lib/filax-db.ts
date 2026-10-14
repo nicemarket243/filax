@@ -381,9 +381,21 @@ function keyFor(args: unknown) {
 type Outflow = { _operation: string; _account: string; _amount: number; _destination?: string; _pin?: string; _global_pin?: string; _related?: string };
 async function outflow(args: Outflow) {
   const { data, error } = await supabase.rpc("account_outflow", { ...args, _idempotency_key: keyFor(args) });
-  if (error) throw new Error(moneyError(error.message));
   const r = data as { ok?: boolean; error?: string } | null;
-  if (r && r.ok === false) throw new Error(r.error ?? "Opération refusée");
+  const reason = error ? moneyError(error.message) : r && r.ok === false ? (r.error ?? "Opération refusée") : null;
+  if (reason) {
+    // Échec : notification + ligne « Échouée » dans l'historique avec le motif exact.
+    if (["withdraw", "transfer", "external"].includes(args._operation)) {
+      await supabase.rpc("record_outflow_failure", { _account: args._account, _operation: args._operation, _amount: args._amount, _reason: reason, _destination: args._destination ?? "" });
+    }
+    throw new Error(reason);
+  }
+}
+
+/** Indique si l'utilisateur a déjà créé son code PIN personnel. */
+export async function hasDbPin() {
+  const { data } = await supabase.rpc("has_pin");
+  return !!data;
 }
 
 /** Dépôt : crée une demande en attente, créditée seulement après confirmation du paiement. */
@@ -391,8 +403,8 @@ export async function depositDb(accountId: string, amount: number, method: strin
   const { error } = await supabase.rpc("request_deposit", { _account: accountId, _amount: amount, _method: method, _idempotency_key: keyFor({ d: accountId, amount, method }) });
   if (error) throw new Error(moneyError(error.message));
 }
-export async function withdrawDb(accountId: string, amount: number, method: string, pin = "") {
-  await outflow({ _operation: "withdraw", _account: accountId, _amount: amount, _destination: method, _pin: pin });
+export async function withdrawDb(accountId: string, amount: number, method: string, pin = "", globalPin = "") {
+  await outflow({ _operation: "withdraw", _account: accountId, _amount: amount, _destination: method, _pin: pin, _global_pin: globalPin });
 }
 export async function transferDb(accountId: string, amount: number, filaxId: string, pin: string, accountPin = "") {
   await outflow({ _operation: "transfer", _account: accountId, _destination: filaxId, _amount: amount, _global_pin: pin, _pin: accountPin });
