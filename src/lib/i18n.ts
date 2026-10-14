@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { FILAX_INFORMATION_EN } from "@/lib/filax-information-translations";
 import { SIMULATION_EN } from "@/lib/simulation-translations";
+import { GROUP_MESSAGE_EN } from "@/components/filax/group-finance-photos";
 
 export type Lang = "fr" | "en";
 const LANG_KEY = "filax-lang";
@@ -9,6 +10,7 @@ const LANG_KEY = "filax-lang";
 const EN: Record<string, string> = {
   ...FILAX_INFORMATION_EN,
   ...SIMULATION_EN,
+  ...GROUP_MESSAGE_EN,
   "Objectifs Généraux": "Overall goals",
   "Évolution de l’objectif": "Goal evolution",
   "Aucun mouvement enregistré pour cet objectif.": "No recorded movements for this goal.",
