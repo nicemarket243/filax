@@ -202,7 +202,6 @@ export function DepositModal({
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Déposer de l'argent" subtitle="Mobile Money, banque, carte Visa/Mastercard ou QR code">
       <div className="space-y-4">
-        <TransactionDemoLauncher kind="deposit" />
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} />
         <MethodPicker value={method} onChange={setMethod} />
         {byCard && <CardFields card={card} setCard={setCard} />}
@@ -240,6 +239,7 @@ export function DepositModal({
         >
           Confirmer le dépôt
         </PrimaryButton>
+        <TransactionDemoLauncher kind="deposit" />
       </div>
       <QrScanModal
         open={scan}
@@ -305,7 +305,6 @@ export function WithdrawModal({
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Retirer de l'argent" subtitle="Mobile Money, banque partenaire, carte ou QR code">
       <div className="space-y-4">
-        <TransactionDemoLauncher kind="withdraw" />
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
         {needsAccountPin && <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" maxLength={4} autoComplete="off" value={accountPin} onChange={(e) => setAccountPin(e.target.value.replace(/\D/g, ""))} /></Field>}
         <MethodPicker value={method} onChange={setMethod} />
@@ -331,6 +330,7 @@ export function WithdrawModal({
         >
           Confirmer le retrait
         </PrimaryButton>
+        <TransactionDemoLauncher kind="withdraw" />
       </div>
       <PinConfirmModal open={pinOpen} onOpenChange={setPinOpen} onSubmit={run} />
       <ReceiveQrModal
