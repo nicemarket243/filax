@@ -101,8 +101,8 @@ function GroupHeroSlideshow() {
           <img
             src={image.src}
             alt={t(image.alt)}
-            width={630}
-            height={234}
+            width={1200}
+            height={400}
             loading="eager"
             style={{ objectPosition: image.position }}
             className="absolute inset-0 h-full w-full object-cover"

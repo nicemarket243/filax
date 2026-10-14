@@ -234,7 +234,7 @@
   mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, black 55%, transparent 100%);
 }
 
-.group-banner { height: 130px; }
+.group-banner { aspect-ratio: 3 / 1; }
 .group-photo-caption { color: var(--photo-foreground); text-shadow: var(--photo-text-shadow); }
 .group-slide { animation: group-fade 800ms ease-in-out both; }
 @keyframes group-fade { from { opacity: 0; } to { opacity: 1; } }
