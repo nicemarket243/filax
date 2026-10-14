@@ -99,6 +99,13 @@
       "when": 1791987386381,
       "tag": "0013_pin_withdraw_and_outflow_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791988642538,
+      "tag": "0014_kyc_requires_pin",
+      "breakpoints": true
     }
   ]
 }
