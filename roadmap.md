@@ -80,6 +80,7 @@
 - [ ] Étapes 2-5 cahier maître (pays, PIN au dépôt, échéance comptes bloqués)
 
 ## Étape 1 — Compléments demandés
+- [x] Bannière Groupes 130 px, coins de carte FILAX, cadrages individuels, aucune commande ni image arrière-plan ; vérifiée sur téléphone et grand écran sans modifier comptes ni session
 - [x] Synchroniser chaque slogan avec sa scène ; sous-titres centrés en bas, rotation 5 s, transitions descente/fondu/flou ; testé sur téléphone et grand écran
 - [x] Remplacer les visuels générés par 30 photographies Pexels authentiques, sources conservées ; garanties absolues et chiffres non vérifiés reformulés
 - [x] Ajuster le diaporama : réussite financière inclusive, trois animations photographiques, rectangle sans cadre/compteur et messages sur 15 visuels ; vérifié sur téléphone et grand écran

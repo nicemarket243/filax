@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { Plus, UserPlus, Users, Banknote, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { Plus, UserPlus, Users, Banknote } from "lucide-react";
 import { toast } from "sonner";
 import { GROUP_FINANCE_PHOTOS } from "@/components/filax/group-finance-photos";
-import { Button } from "@/components/ui/button";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
@@ -59,7 +58,7 @@ function GroupHeroSlideshow() {
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => { if (media.matches) setPaused(true); };
+    const sync = () => setPaused(media.matches);
     sync();
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
@@ -71,30 +70,26 @@ function GroupHeroSlideshow() {
     return () => window.clearInterval(interval);
   }, [paused, count]);
 
+  const image = GROUP_FINANCE_PHOTOS[slide];
+  if (!image) return null;
+
   return (
-    <section className="mt-4" aria-label="Solidarité et épargne collective" aria-roledescription="diaporama">
-      <div className="relative aspect-[4/3] overflow-hidden">
-      {GROUP_FINANCE_PHOTOS.map((image, index) => (
-        <div key={image.key} data-active={index === slide} data-effect={["drop", "fade", "blur"][index % 3]} aria-hidden={index !== slide} className="group-slide absolute inset-0">
+    <section className="mt-4" aria-label={t("Solidarité et épargne collective")} aria-roledescription="diaporama">
+      <div className="relative isolate h-[130px] w-full overflow-hidden rounded-[1.6rem]">
+        <div key={image.key} data-active="true" data-effect={["drop", "fade", "blur"][slide % 3]} className="group-slide absolute inset-0">
         <img
           src={image.src}
           alt={t(image.alt)}
-          aria-hidden={index !== slide}
           width={630}
-          height={630}
-          loading={Math.abs(index - slide) <= 1 ? "eager" : "lazy"}
+          height={234}
+          loading="eager"
+          style={{ objectPosition: image.position }}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        {image.message && <div className="group-photo-message pointer-events-none absolute inset-x-0 bottom-0 flex min-h-[35%] items-end justify-center px-4 pb-4 pt-10">
-          <p className="group-photo-caption max-w-full rounded-sm px-2.5 py-1.5 text-sm font-semibold leading-snug">{t(image.message)}</p>
+        {image.message && <div className="group-photo-message pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-center px-3 pb-2 pt-4">
+          <p className="group-photo-caption max-w-full rounded-sm px-2 py-1 text-[0.6875rem] font-semibold leading-snug">{t(image.message)}</p>
         </div>}
         </div>
-      ))}
-      </div>
-      <div className="mt-1 flex items-center justify-center gap-3">
-        <Button variant="ghost" size="icon-sm" aria-label={t("Photo précédente")} onClick={() => setSlide(i => (i - 1 + count) % count)}><ChevronLeft /></Button>
-        <Button variant="ghost" size="icon-sm" aria-label={t(paused ? "Reprendre le diaporama" : "Mettre le diaporama en pause")} onClick={() => setPaused(p => !p)}>{paused ? <Play /> : <Pause />}</Button>
-        <Button variant="ghost" size="icon-sm" aria-label={t("Photo suivante")} onClick={() => setSlide(i => (i + 1) % count)}><ChevronRight /></Button>
       </div>
     </section>
   );
