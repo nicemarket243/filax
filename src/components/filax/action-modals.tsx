@@ -22,6 +22,7 @@ import {
 import { Field, Modal, PrimaryButton, TextInput, accentVar } from "@/components/filax/ui-kit";
 import { VisualPicker } from "./visual-picker";
 import { subaccountSchema, type SubaccountInput } from "@/lib/filax-db";
+import { PinConfirmModal } from "./pin-confirm";
 import { QrScanModal, ReceiveQrModal } from "@/components/filax/qr-scanner";
 
 
@@ -259,18 +260,28 @@ export function WithdrawModal({
   accounts,
   defaultAccountId,
   onConfirm,
+  requirePin,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   accounts: Account[];
   defaultAccountId: string;
-  onConfirm: (accountId: string, amount: number, method: TxMethod, accountPin?: string) => void | Promise<void>;
+  onConfirm: (accountId: string, amount: number, method: TxMethod, accountPin?: string, globalPin?: string) => void | Promise<void>;
+  requirePin?: boolean;
 }) {
   const { data } = useFilax();
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(defaultAccountId);
   const [accountPin, setAccountPin] = useState("");
+  const [pinOpen, setPinOpen] = useState(false);
   useEffect(() => setAccountPin(""), [open, accountId]);
+  const run = async (globalPin: string) => {
+    try { await onConfirm(accountId, value, method, accountPin, globalPin); }
+    catch (e) { toast.error("Retrait échoué", { description: (e as Error).message }); setPinOpen(false); return; }
+    setPinOpen(false);
+    onOpenChange(false);
+    toast.success("Retrait réussi", { description: `Vous avez retiré ${value} sur votre ${accounts.find((a) => a.id === accountId)?.name ?? "compte"}.` });
+  };
   const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
   const accountPinReady = !needsAccountPin || /^\d{4}$/.test(accountPin);
   const [method, setMethod] = useState<TxMethod>("orange");
@@ -313,15 +324,12 @@ export function WithdrawModal({
         <PrimaryButton
           color="brand-red"
           disabled={!accountPinReady || value <= 0 || tooMuch || belowMin || !accountId || (byCard && !cardOk)}
-          onClick={async () => {
-            try { await onConfirm(accountId, value, method, accountPin); } catch (e) { toast.error("Retrait refusé", { description: (e as Error).message }); return; }
-            onOpenChange(false);
-            toast.success("Retrait envoyé", { description: `Destination : ${METHOD_LABEL[method]}.` });
-          }}
+          onClick={() => (requirePin ? setPinOpen(true) : void run(""))}
         >
           Confirmer le retrait
         </PrimaryButton>
       </div>
+      <PinConfirmModal open={pinOpen} onOpenChange={setPinOpen} onSubmit={run} />
       <ReceiveQrModal
         open={receive}
         onOpenChange={setReceive}
@@ -374,7 +382,6 @@ export function TransferModal({
   const [recipient, setRecipient] = useState<(typeof DIRECTORY)[number] | null>(null);
   const [scan, setScan] = useState(false);
   const [amount, setAmount, value] = useAmount(open);
-  const [pin, setPin] = useState("");
 
   // Transfert vers une autre banque / carte
   const [destination, setDestination] = useState(DESTINATIONS[1]!);
@@ -390,7 +397,6 @@ export function TransferModal({
       setMode("filax");
       setBeneficiary("");
       setBankName("");
-      setPin("");
     }
   }, [defaultAccountId, open]);
 
@@ -416,7 +422,21 @@ export function TransferModal({
       : [];
 
   const bankReady = beneficiary.trim().length > 2 && bankName.trim().length > 1 && cardOk;
-  const ready = accountPinReady && value > 0 && (mode === "filax" ? !!recipient : bankReady) && (!requirePin || /^\d{4}$/.test(pin));
+  const [pinOpen, setPinOpen] = useState(false);
+  const sendWith = async (pin: string) => {
+    const label = mode === "filax" ? recipient?.name ?? "" : `${beneficiary} · ${bankName} (${destination.label})`;
+    try {
+      await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient?.id, pin, accountPin } : { external: true, pin, accountPin });
+    } catch (e) {
+      toast.error("Transfert échoué", { description: (e as Error).message });
+      setPinOpen(false);
+      return;
+    }
+    setPinOpen(false);
+    onOpenChange(false);
+    toast.success("Transfert réussi", { description: `Votre transfert vers ${label} a réussi avec succès.` });
+  };
+  const ready = accountPinReady && value > 0 && (mode === "filax" ? !!recipient : bankReady);
   const typedId = requirePin && !recipient && /^FLX-[A-Z0-9-]{4,}$/i.test(query.trim()) ? query.trim().toUpperCase() : null;
 
   return (
@@ -542,30 +562,18 @@ export function TransferModal({
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </Field>
 
-        {requirePin && (
-          <Field label="Code secret (4 chiffres)">
-            <TextInput inputMode="numeric" type="password" maxLength={4} placeholder="••••" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} />
-          </Field>
-        )}
-
         <PrimaryButton
           disabled={!ready}
-          onClick={async () => {
+          onClick={() => {
             if (mode === "filax" && !recipient) return;
-            const label = mode === "filax" ? recipient?.name ?? "" : `${beneficiary} · ${bankName} (${destination.label})`;
-            try {
-              await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient?.id, pin, accountPin } : { external: true, pin, accountPin });
-            } catch (e) {
-              toast.error("Transfert refusé", { description: (e as Error).message });
-              return;
-            }
-            onOpenChange(false);
-            toast.success("Transfert envoyé", { description: `${value} envoyés à ${label}.` });
+            if (requirePin) setPinOpen(true);
+            else void sendWith("");
           }}
         >
           Envoyer maintenant
         </PrimaryButton>
       </div>
+      <PinConfirmModal open={pinOpen} onOpenChange={setPinOpen} onSubmit={sendWith} />
 
       <QrScanModal
         open={scan}

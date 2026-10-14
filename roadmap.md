@@ -72,4 +72,7 @@
 
 ## 14 oct. — Mission « Finalisation intégrale »
 - [x] KYC : deux captures par caméra en direct uniquement (selfie de face + preuve manuscrite « FILAX RDC » et date), visibles dans le back-office
-- [ ] Signature « Alvine l'Entrepreneur » dans le mémorandum PDF : à régénérer
+- [x] Signature « Alvine l'Entrepreneur » dans le mémorandum PDF
+- [x] Code PIN 4 chiffres obligatoire pour retraits et transferts (fenêtre sécurisée, création si absent)
+- [x] Notifications de réussite / échec avec motif, et ligne « Échouée » dans l'historique
+- [ ] E-mail explicatif d'échec : attend la configuration d'un domaine d'envoi d'e-mails
