@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { FILAX_INFORMATION_EN } from "@/lib/filax-information-translations";
+import { SIMULATION_EN } from "@/lib/simulation-translations";
 
 export type Lang = "fr" | "en";
 const LANG_KEY = "filax-lang";
@@ -7,6 +8,7 @@ const LANG_KEY = "filax-lang";
 /** Dictionnaire FR → EN. La clé est le texte français affiché. */
 const EN: Record<string, string> = {
   ...FILAX_INFORMATION_EN,
+  ...SIMULATION_EN,
   "Objectifs Généraux": "Overall goals",
   "Évolution de l’objectif": "Goal evolution",
   "Aucun mouvement enregistré pour cet objectif.": "No recorded movements for this goal.",

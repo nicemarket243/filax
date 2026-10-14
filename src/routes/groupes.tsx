@@ -1,13 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/lib/i18n";
-import { Plus, UserPlus, Users, Banknote } from "lucide-react";
+import { Plus, UserPlus, Users, Banknote, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { toast } from "sonner";
-import groupSlideOne from "@/assets/groups-solidarity-1.jpg";
-import groupSlideTwo from "@/assets/groups-solidarity-2.jpg";
-import groupSlideThree from "@/assets/groups-solidarity-3.jpg";
-
-const THEME_SLIDES = Object.values(import.meta.glob("@/assets/account-themes/*.jpg", { eager: true, import: "default" })) as string[];
+import { GROUP_FINANCE_PHOTOS } from "@/components/filax/group-finance-photos";
+import { Button } from "@/components/ui/button";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
@@ -54,41 +51,39 @@ export const Route = createFileRoute("/groupes")({
   component: GroupesPage,
 });
 
-const GROUP_SLIDES = [groupSlideOne, groupSlideTwo, groupSlideThree, ...THEME_SLIDES].slice(0, 30);
-
 function GroupHeroSlideshow() {
   const [slide, setSlide] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const { t } = useI18n();
+  const count = GROUP_FINANCE_PHOTOS.length;
 
   useEffect(() => {
-    const interval = window.setInterval(() => setSlide((current) => (current + 1) % GROUP_SLIDES.length), 10000);
+    if (paused || !count) return;
+    const interval = window.setInterval(() => setSlide((current) => (current + 1) % count), 10000);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [paused, count]);
 
   return (
-    <section className="relative mt-4 aspect-[16/8.5] overflow-hidden rounded-3xl fade-edges" aria-label="Solidarité et épargne collective">
-      {GROUP_SLIDES.map((image, index) => (
+    <section className="mt-4" aria-label="Solidarité et épargne collective" aria-roledescription="diaporama">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-3xl fade-edges">
+      {GROUP_FINANCE_PHOTOS.map((image, index) => (
         <img
-          key={image}
-          src={image}
-          alt="Amis réunis autour d'une épargne commune"
-          width={1536}
-          height={864}
+          key={image.key}
+          src={image.src}
+          alt={t(image.alt)}
+          aria-hidden={index !== slide}
+          width={630}
+          height={630}
           loading={Math.abs(index - slide) <= 1 ? "eager" : "lazy"}
           className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[1500ms] ease-out ${index === slide ? "scale-100" : "scale-105"} motion-reduce:transition-none ${index === slide ? "opacity-100" : "opacity-0"}`}
         />
       ))}
-      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/60 to-transparent" />
-      <div className="absolute bottom-4 left-1/2 flex max-w-[80%] -translate-x-1/2 flex-wrap justify-center gap-1">
-        {GROUP_SLIDES.map((_, index) => (
-          <button
-            key={index}
-            type="button"
-            aria-label={`Afficher l'image ${index + 1}`}
-            aria-current={index === slide}
-            onClick={() => setSlide(index)}
-            className={`magnetide-tap h-1 rounded-full bg-foreground transition-all ${index === slide ? "w-4 opacity-90" : "w-1 opacity-40"}`}
-          />
-        ))}
+      </div>
+      <div className="-mt-1 flex items-center justify-center gap-3">
+        <Button variant="ghost" size="icon-sm" aria-label={t("Photo précédente")} onClick={() => setSlide(i => (i - 1 + count) % count)}><ChevronLeft /></Button>
+        <span className="min-w-12 text-center text-xs tabular-nums text-muted-foreground" aria-live={paused ? "polite" : "off"}>{slide + 1} / {count}</span>
+        <Button variant="ghost" size="icon-sm" aria-label={t(paused ? "Reprendre le diaporama" : "Mettre le diaporama en pause")} onClick={() => setPaused(p => !p)}>{paused ? <Play /> : <Pause />}</Button>
+        <Button variant="ghost" size="icon-sm" aria-label={t("Photo suivante")} onClick={() => setSlide(i => (i + 1) % count)}><ChevronRight /></Button>
       </div>
     </section>
   );
