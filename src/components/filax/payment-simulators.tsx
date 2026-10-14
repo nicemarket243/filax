@@ -15,6 +15,8 @@ const DEMO_OPERATORS: Record<string, { label: string; ops: string[] }> = {
   SN: { label: "Sénégal", ops: ["Orange Money", "Wave", "Free Money"] },
   CM: { label: "Cameroun", ops: ["MTN MoMo", "Orange Money"] },
   KE: { label: "Kenya", ops: ["M-Pesa", "Airtel Money"] },
+  GA: { label: "Gabon", ops: [] },
+  CG: { label: "République du Congo", ops: [] },
 };
 const DEMO_PIN = "1234";
 
@@ -65,9 +67,11 @@ function DemoContent({ initialKind }: { initialKind: Kind }) {
           {Object.entries(DEMO_OPERATORS).map(([c, v]) => <option key={c} value={c}>{t(v.label)}</option>)}
         </select>
       </Field>
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("Opérateur fictif")}>
-        {ops.map(o => <Button key={o} size="sm" role="radio" aria-checked={operator === o} variant={operator === o ? "secondary" : "outline"} onClick={() => setOperator(o)}>{o}</Button>)}
-      </div>
+      {ops.length === 0
+        ? <p role="alert" className="rounded-lg border border-border p-3 text-center text-xs font-semibold text-muted-foreground">{t("Aucun opérateur de démonstration disponible pour ce pays.")}</p>
+        : <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("Opérateur fictif")}>
+          {ops.map(o => <Button key={o} size="sm" role="radio" aria-checked={operator === o} variant={operator === o ? "secondary" : "outline"} onClick={() => setOperator(o)}>{o}</Button>)}
+        </div>}
       <Field label={t("Numéro fictif")}>
         <div className="space-y-2">
           {numbers.map(n => <div key={n} className="flex items-center gap-2">
