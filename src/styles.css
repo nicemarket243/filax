@@ -58,7 +58,7 @@
 :root {
   --photo-foreground: oklch(1 0 0);
   --photo-shade: oklch(0.12 0.005 260);
-  --photo-scrim: linear-gradient(to top, color-mix(in oklab, var(--photo-shade) 25%, transparent), color-mix(in oklab, var(--photo-shade) 12%, transparent) 65%, transparent);
+  --photo-text-shadow: 0 2px 4px color-mix(in oklab, var(--photo-shade) 95%, transparent), 0 0 2px var(--photo-shade);
   --radius: 1.25rem;
 
   --background: oklch(0.985 0.002 250);
@@ -234,10 +234,8 @@
   mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, black 55%, transparent 100%);
 }
 
-.group-photo-message { background: var(--photo-scrim); backdrop-filter: blur(6px); text-align: center; }
-.group-photo-caption { color: var(--photo-foreground); text-shadow: 0 2px 4px rgb(0 0 0 / 0.95), 0 0 2px rgb(0 0 0 / 0.9); }
-.group-slide { animation: group-fade 1500ms ease-in-out both; }
-@keyframes group-drop { from { opacity: 0; transform: translateY(-12%); } to { opacity: 1; transform: translateY(0); } }
+.group-banner { aspect-ratio: 3 / 1; }
+.group-photo-caption { color: var(--photo-foreground); text-shadow: var(--photo-text-shadow); }
+.group-slide { animation: group-fade 800ms ease-in-out both; }
 @keyframes group-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes group-blur { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
 @media (prefers-reduced-motion: reduce) { .group-slide { animation: none; } }
