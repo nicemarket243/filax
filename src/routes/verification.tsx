@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Camera, CheckCircle2, Clock, FileText, ShieldCheck, XCircle } from "lucide-react";
+import { Camera, CheckCircle2, Clock, FileText, Lock, ShieldCheck, XCircle } from "lucide-react";
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { BackButton } from "@/components/back-button";
-import { Field, PageTitle, PrimaryButton, accentVar } from "@/components/filax/ui-kit";
-import { submitDbKyc, useDbProfile, useDbUser } from "@/lib/filax-db";
+import { Field, PageTitle, PrimaryButton, TextInput, accentVar } from "@/components/filax/ui-kit";
+import { hasDbPin, setDbPin, submitDbKyc, useDbProfile, useDbUser } from "@/lib/filax-db";
 import { LiveCapture } from "@/components/filax/live-capture";
 
 export const Route = createFileRoute("/verification")({
@@ -40,13 +40,23 @@ function VerificationPage() {
   const [selfie, setSelfie] = useState<File | null>(null);
   const [proof, setProof] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pin, setPin] = useState("");
+  const [pin2, setPin2] = useState("");
+  const [pinExists, setPinExists] = useState(false);
+  useEffect(() => { if (userId) void hasDbPin().then(setPinExists); }, [userId]);
+  const d4 = (v: string) => v.replace(/\D/g, "").slice(0, 4);
 
   const submit = async () => {
     if (!userId) return;
     if (!doc || !selfie || !proof) return toast.error("Ajoutez la pièce, le selfie et la preuve manuscrite.");
     if (doc.size > 8e6) return toast.error("La photo de la pièce doit faire moins de 8 Mo.");
+    if (!pinExists) {
+      if (pin.length !== 4) return toast.error("Créez votre code PIN à 4 chiffres.");
+      if (pin !== pin2) return toast.error("Les deux codes PIN ne correspondent pas.");
+    }
     setBusy(true);
     try {
+      if (!pinExists) { await setDbPin(pin); setPinExists(true); setPin(""); setPin2(""); }
       await submitDbKyc(userId, docType, doc, selfie, proof);
       toast.success("Documents envoyés", { description: "Vous serez notifié dès la validation." });
       await refresh();
@@ -118,7 +128,17 @@ function VerificationPage() {
           </Field>
           <LiveCapture label="Capture 1 : selfie de face" hint="Visage de face, bien éclairé, sur un fond uni, sans personne derrière vous." onChange={setSelfie} />
           <LiveCapture label="Capture 2 : preuve manuscrite" hint={`Tenez un papier écrit à la main : « FILAX RDC » et la date du jour (${new Date().toLocaleDateString("fr-FR")}).`} onChange={setProof} />
-          <PrimaryButton color="brand-green" onClick={submit} disabled={busy}>
+          {pinExists ? (
+            <p className="flex items-center gap-2 rounded-2xl border border-border px-3.5 py-2.5 text-[0.7rem] font-semibold text-foreground"><Lock className="h-4 w-4 text-brand-green" /> Code PIN à 4 chiffres déjà configuré</p>
+          ) : (
+            <div className="space-y-3 rounded-2xl border border-border p-3.5">
+              <Field label="Créez votre code PIN à 4 chiffres"><TextInput type="password" inputMode="numeric" autoComplete="new-password" maxLength={4} placeholder="••••" value={pin} onChange={(e) => setPin(d4(e.target.value))} className="text-center tracking-[0.5em]" /></Field>
+              <Field label="Répétez votre code PIN à 4 chiffres"><TextInput type="password" inputMode="numeric" autoComplete="new-password" maxLength={4} placeholder="••••" value={pin2} onChange={(e) => setPin2(d4(e.target.value))} className="text-center tracking-[0.5em]" /></Field>
+              {pin2.length === 4 && pin !== pin2 && <p className="text-[0.66rem] font-semibold text-brand-red">Les deux codes ne correspondent pas.</p>}
+              <p className="text-[0.66rem] leading-snug text-muted-foreground">🔒 « Gardez ce code secret. Ne le partagez avec personne : c'est votre PIN secret personnel qui vous permettra de valider tous vos retraits et transferts. »</p>
+            </div>
+          )}
+          <PrimaryButton color="brand-green" onClick={submit} disabled={busy || (!pinExists && (pin.length !== 4 || pin !== pin2))}>
             {busy ? "Envoi en cours…" : "Envoyer mes documents"}
           </PrimaryButton>
           <p className="text-center text-[0.6rem] text-muted-foreground">Vos documents sont chiffrés et visibles uniquement par l'équipe de vérification.</p>
