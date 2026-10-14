@@ -382,7 +382,6 @@ export function TransferModal({
   const [recipient, setRecipient] = useState<(typeof DIRECTORY)[number] | null>(null);
   const [scan, setScan] = useState(false);
   const [amount, setAmount, value] = useAmount(open);
-  const [pin, setPin] = useState("");
 
   // Transfert vers une autre banque / carte
   const [destination, setDestination] = useState(DESTINATIONS[1]!);
@@ -398,7 +397,6 @@ export function TransferModal({
       setMode("filax");
       setBeneficiary("");
       setBankName("");
-      setPin("");
     }
   }, [defaultAccountId, open]);
 

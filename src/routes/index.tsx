@@ -295,7 +295,8 @@ function HomePage() {
         onOpenChange={(o) => !o && setModal(null)}
         accounts={accounts}
         defaultAccountId={active.id}
-        onConfirm={live ? async (id, amt, m, pin) => { await withdrawDb(id, amt, m, pin); await reload(); } : filax.withdraw}
+        requirePin={live}
+        onConfirm={live ? async (id, amt, m, pin, gpin) => { await withdrawDb(id, amt, m, pin, gpin); await reload(); } : filax.withdraw}
       />
       <TransferModal
         open={modal === "transfer"}
