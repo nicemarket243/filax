@@ -54,13 +54,12 @@ export const Route = createFileRoute("/groupes")({
 function GroupHeroSlideshow() {
   const [slide, setSlide] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
   const { t } = useI18n();
   const count = GROUP_FINANCE_PHOTOS.length;
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => { setReducedMotion(media.matches); if (media.matches) setPaused(true); };
+    const sync = () => { if (media.matches) setPaused(true); };
     sync();
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
@@ -68,7 +67,7 @@ function GroupHeroSlideshow() {
 
   useEffect(() => {
     if (paused || !count) return;
-    const interval = window.setInterval(() => setSlide((current) => (current + 1) % count), 10000);
+    const interval = window.setInterval(() => setSlide((current) => (current + 1) % count), 5000);
     return () => window.clearInterval(interval);
   }, [paused, count]);
 
@@ -76,20 +75,19 @@ function GroupHeroSlideshow() {
     <section className="mt-4" aria-label="Solidarité et épargne collective" aria-roledescription="diaporama">
       <div className="relative aspect-[4/3] overflow-hidden">
       {GROUP_FINANCE_PHOTOS.map((image, index) => (
+        <div key={image.key} data-active={index === slide} data-effect={["drop", "fade", "blur"][index % 3]} aria-hidden={index !== slide} className="group-slide absolute inset-0">
         <img
-          key={image.key}
-          src={index === slide && !paused && !reducedMotion && image.motion ? image.motion : image.src}
+          src={image.src}
           alt={t(image.alt)}
           aria-hidden={index !== slide}
           width={630}
           height={630}
           loading={Math.abs(index - slide) <= 1 ? "eager" : "lazy"}
-          className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[1500ms] ease-out ${index === slide ? "scale-100" : "scale-105"} motion-reduce:transition-none ${index === slide ? "opacity-100" : "opacity-0"}`}
+          className="absolute inset-0 h-full w-full object-cover"
         />
-      ))}
-      {GROUP_FINANCE_PHOTOS.map((image, index) => image.message && (
-        <div key={`message-${image.key}`} aria-hidden={index !== slide} className={`group-photo-message pointer-events-none absolute inset-x-0 bottom-0 flex min-h-[45%] items-end px-5 pb-5 pt-12 transition-opacity duration-[1500ms] motion-reduce:transition-none ${index === slide ? "opacity-100" : "opacity-0"}`}>
-          <p className="max-w-[30ch] text-base font-semibold leading-snug text-photo-foreground">{t(image.message)}</p>
+        {image.message && <div className="group-photo-message pointer-events-none absolute inset-x-0 bottom-0 flex min-h-[35%] items-end justify-center px-4 pb-4 pt-10">
+          <p className="group-photo-caption max-w-full rounded-sm px-2.5 py-1.5 text-sm font-semibold leading-snug">{t(image.message)}</p>
+        </div>}
         </div>
       ))}
       </div>
