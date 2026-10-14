@@ -235,17 +235,9 @@
 }
 
 .group-photo-message { background: var(--photo-scrim); backdrop-filter: blur(6px); text-align: center; }
-.group-photo-caption {
-  background: color-mix(in oklab, var(--photo-shade) 28%, transparent);
-  color: var(--photo-foreground);
-  text-shadow: 0 1px 2px var(--photo-shade);
-}
-.group-slide { opacity: 0; pointer-events: none; }
-.group-slide[data-active="true"] { opacity: 1; z-index: 1; }
-.group-slide[data-active="true"][data-effect="drop"] { animation: group-drop 2500ms ease-in-out both; }
-.group-slide[data-active="true"][data-effect="fade"] { animation: group-fade 2500ms ease-in-out both; }
-.group-slide[data-active="true"][data-effect="blur"] { animation: group-blur 2500ms ease-in-out both; }
+.group-photo-caption { color: var(--photo-foreground); text-shadow: 0 2px 4px rgb(0 0 0 / 0.95), 0 0 2px rgb(0 0 0 / 0.9); }
+.group-slide { animation: group-fade 1500ms ease-in-out both; }
 @keyframes group-drop { from { opacity: 0; transform: translateY(-12%); } to { opacity: 1; transform: translateY(0); } }
 @keyframes group-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes group-blur { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
-@media (prefers-reduced-motion: reduce) { .group-slide[data-active="true"] { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .group-slide { animation: none; } }
