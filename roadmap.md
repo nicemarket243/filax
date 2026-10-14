@@ -61,3 +61,11 @@
 - [ ] Vérification d'identité automatique : attend le choix et la clé du prestataire (saisie dans une fenêtre sécurisée)
 - [ ] Paiements réels Mobile Money / banque : attend le choix et la clé du prestataire (saisie dans une fenêtre sécurisée)
 - [ ] Groupes affichés comme cartes sur l'accueil (max 10)
+
+## 14 oct. — Mission finalisée (logique métier)
+- [x] Centre de notifications style iOS (cartes translucides, badge, heure relative)
+- [x] Seuils minima dépôts/retraits carte et Mobile Money (écran + base)
+- [x] Transfert vers un vrai membre par ID FILAX, téléphone ou e-mail
+- [x] KYC bleu : délai 24 h à 48 h affiché
+- [ ] Code OTP 6 chiffres par SMS/e-mail pour les transferts + blocage 48 h : attend un prestataire SMS/e-mail
+- [ ] Dépôts par carte réels : attend le prestataire de paiement (aucune donnée de carte stockée)

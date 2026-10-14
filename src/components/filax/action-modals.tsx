@@ -84,6 +84,20 @@ function useAmount(open: boolean) {
   return [amount, setAmount, Number(amount) || 0] as const;
 }
 
+/** Seuils minima (aussi vérifiés côté base). */
+function minimumFor(kind: "deposit" | "withdraw", method: TxMethod, currency: Currency | undefined): number | null {
+  if (method === "carte") return currency === "CDF" ? null : kind === "deposit" ? 2 : 10;
+  if (method === "orange" || method === "airtel" || method === "mpesa") {
+    if (currency === "CDF") return kind === "deposit" ? 2500 : 3500;
+    return kind === "deposit" ? 1 : 2;
+  }
+  return null;
+}
+function MinError({ min, currency, value }: { min: number | null; currency?: Currency; value: number }) {
+  if (min === null || value <= 0 || value >= min || !currency) return null;
+  return <p role="alert" className="mt-1.5 text-[0.68rem] font-semibold text-brand-red">Montant minimum : {formatMoney(min, currency)}</p>;
+}
+
 /* ---------------- Carte bancaire (Visa / Mastercard) ---------------- */
 
 export interface CardDetails {
@@ -179,7 +193,9 @@ export function DepositModal({
   }, [defaultAccountId, open]);
 
   const byCard = method === "carte";
-  const ready = value > 0 && (!byCard || cardOk);
+  const depCur = accounts.find((a) => a.id === accountId)?.currency;
+  const depMin = minimumFor("deposit", method, depCur);
+  const ready = value > 0 && (depMin === null || value >= depMin) && (!byCard || cardOk);
 
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Déposer de l'argent" subtitle="Mobile Money, banque, carte Visa/Mastercard ou QR code">
@@ -203,6 +219,7 @@ export function DepositModal({
 
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <MinError min={depMin} currency={depCur} value={value} />
         </Field>
         <PrimaryButton
           color="brand-green"
@@ -269,6 +286,8 @@ export function WithdrawModal({
   const account = accounts.find((a) => a.id === accountId);
   const tooMuch = !!account && value > account.balance;
   const byCard = method === "carte";
+  const wMin = minimumFor("withdraw", method, account?.currency);
+  const belowMin = wMin !== null && value > 0 && value < wMin;
 
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Retirer de l'argent" subtitle="Mobile Money, banque partenaire, carte ou QR code">
@@ -288,11 +307,12 @@ export function WithdrawModal({
 
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <MinError min={wMin} currency={account?.currency} value={value} />
         </Field>
         {tooMuch && <p role="alert" className="rounded-xl border border-brand-red/40 bg-brand-red/10 px-3 py-2 text-[0.72rem] font-bold text-brand-red">Votre montant de retrait est supérieur au solde disponible sur ce compte.</p>}
         <PrimaryButton
           color="brand-red"
-          disabled={!accountPinReady || value <= 0 || tooMuch || !accountId || (byCard && !cardOk)}
+          disabled={!accountPinReady || value <= 0 || tooMuch || belowMin || !accountId || (byCard && !cardOk)}
           onClick={async () => {
             try { await onConfirm(accountId, value, method, accountPin); } catch (e) { toast.error("Retrait refusé", { description: (e as Error).message }); return; }
             onOpenChange(false);
@@ -374,9 +394,26 @@ export function TransferModal({
     }
   }, [defaultAccountId, open]);
 
-  const results = query
-    ? DIRECTORY.filter((d) => [d.name, d.id, d.phone].some((f) => f.toLowerCase().includes(query.toLowerCase())))
-    : [];
+  // Mode réel : recherche d'un vrai membre par ID FILAX, téléphone ou e-mail.
+  const [found, setFound] = useState<(typeof DIRECTORY)[number] | null>(null);
+  useEffect(() => {
+    setFound(null);
+    const q = query.trim();
+    if (!requirePin || q.length < 5) return;
+    let alive = true;
+    const t = setTimeout(async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase.rpc("find_recipient", { _identifier: q });
+      const r = (data as { name: string; filax_id: string }[] | null)?.[0];
+      if (alive && r) setFound({ name: r.name || r.filax_id, id: r.filax_id, phone: "Membre FILAX vérifié" });
+    }, 350);
+    return () => { alive = false; clearTimeout(t); };
+  }, [query, requirePin]);
+  const results = requirePin
+    ? (found ? [found] : [])
+    : query
+      ? DIRECTORY.filter((d) => [d.name, d.id, d.phone].some((f) => f.toLowerCase().includes(query.toLowerCase())))
+      : [];
 
   const bankReady = beneficiary.trim().length > 2 && bankName.trim().length > 1 && cardOk;
   const ready = accountPinReady && value > 0 && (mode === "filax" ? !!recipient : bankReady) && (!requirePin || /^\d{4}$/.test(pin));

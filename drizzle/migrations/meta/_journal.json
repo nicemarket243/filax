@@ -78,6 +78,20 @@
       "when": 1791743906394,
       "tag": "0010_finalisation_ledger_kyc_securite",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791985057383,
+      "tag": "0011_minimums_and_recipient_lookup",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791985070516,
+      "tag": "0012_find_recipient_phone_guard",
+      "breakpoints": true
     }
   ]
 }

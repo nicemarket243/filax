@@ -200,7 +200,7 @@ function ProfilPage() {
             }}
           >
             {verified || kycStatus === "verified" ? <ShieldCheck className="h-3 w-3" /> : <ShieldAlert className="h-3 w-3" />}
-            {verified || kycStatus === "verified" ? "Identifiant vérifié" : kycStatus === "pending" ? "En cours de vérification" : kycStatus === "rejected" ? "Refusé — recommencer" : "Non vérifié"}
+            {verified || kycStatus === "verified" ? "Identifiant vérifié" : kycStatus === "pending" ? "En cours de vérification (24 h à 48 h)" : kycStatus === "rejected" ? "Refusé — recommencer" : "Non vérifié"}
           </Link>
         </div>
         <div className="flex flex-col gap-1.5">
