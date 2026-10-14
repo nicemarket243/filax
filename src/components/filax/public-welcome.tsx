@@ -53,7 +53,7 @@ export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () =
   }, []);
 
   const onAuthenticated = () => {
-    const entry: Remembered = { method, phone: method === "phone" ? phone : undefined, filaxId: method === "id" ? filaxId.trim() : undefined, expires: Date.now() + REMEMBER_MS };
+    const entry: Remembered = { method, phone: method === "phone" ? phone : undefined, filaxId: method === "filax" ? filaxId.trim() : undefined, expires: Date.now() + REMEMBER_MS };
     const existing = localStorage.getItem(REMEMBER_KEY);
     if (!existing) {
       toast("Enregistrer vos informations de connexion ?", {
