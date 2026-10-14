@@ -69,3 +69,7 @@
 - [x] KYC bleu : délai 24 h à 48 h affiché
 - [ ] Code OTP 6 chiffres par SMS/e-mail pour les transferts + blocage 48 h : attend un prestataire SMS/e-mail
 - [ ] Dépôts par carte réels : attend le prestataire de paiement (aucune donnée de carte stockée)
+
+## 14 oct. — Mission « Finalisation intégrale »
+- [x] KYC : deux captures par caméra en direct uniquement (selfie de face + preuve manuscrite « FILAX RDC » et date), visibles dans le back-office
+- [ ] Signature « Alvine l'Entrepreneur » dans le mémorandum PDF : à régénérer
