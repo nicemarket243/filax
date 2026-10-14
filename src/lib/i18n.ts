@@ -16,7 +16,6 @@ const EN: Record<string, string> = {
   "Afrique": "Africa",
   "Amérique": "Americas",
   "Asie": "Asia",
-  "Numéro de téléphone": "Phone number",
   "Objectifs Généraux": "Overall goals",
   "Évolution de l’objectif": "Goal evolution",
   "Aucun mouvement enregistré pour cet objectif.": "No recorded movements for this goal.",
