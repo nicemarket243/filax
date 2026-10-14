@@ -80,6 +80,8 @@
 - [ ] Étapes 2-5 cahier maître (pays, PIN au dépôt, échéance comptes bloqués)
 
 ## Étape 1 — Compléments demandés
+- [ ] Synchroniser chaque slogan avec sa scène ; sous-titres centrés en bas, rotation 5 s, transitions descente/fondu/flou
+- [ ] Remplacer les visuels générés par des photographies authentiques et vérifier leurs sources
 - [x] Ajuster le diaporama : réussite financière inclusive, trois animations photographiques, rectangle sans cadre/compteur et messages sur 15 visuels ; vérifié sur téléphone et grand écran
 - [x] Privilégier des scènes naturelles et un rendu photographique réaliste ; images générées, pas des photographies documentaires
 - [x] Simulateurs frontend Push STK et SMS à six chiffres, explicitement sans paiement ni message réel
