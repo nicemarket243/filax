@@ -84,6 +84,20 @@ function useAmount(open: boolean) {
   return [amount, setAmount, Number(amount) || 0] as const;
 }
 
+/** Seuils minima (aussi vérifiés côté base). */
+function minimumFor(kind: "deposit" | "withdraw", method: TxMethod, currency: Currency | undefined): number | null {
+  if (method === "carte") return currency === "CDF" ? null : kind === "deposit" ? 2 : 10;
+  if (method === "orange" || method === "airtel" || method === "mpesa") {
+    if (currency === "CDF") return kind === "deposit" ? 2500 : 3500;
+    return kind === "deposit" ? 1 : 2;
+  }
+  return null;
+}
+function MinError({ min, currency, value }: { min: number | null; currency?: Currency; value: number }) {
+  if (min === null || value <= 0 || value >= min || !currency) return null;
+  return <p role="alert" className="mt-1.5 text-[0.68rem] font-semibold text-brand-red">Montant minimum : {formatMoney(min, currency)}</p>;
+}
+
 /* ---------------- Carte bancaire (Visa / Mastercard) ---------------- */
 
 export interface CardDetails {
