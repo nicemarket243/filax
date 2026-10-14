@@ -1,5 +1,11 @@
 # FILAX roadmap
 
+## 14 oct. — Analyse, pays et cadrage Groupes
+- [ ] Unifier le dégradé premium Accueil/Analyse et la courbe bleue au repos, rouge/verte au toucher
+- [ ] Ajouter le choix de 70 pays par région, RDC en vedette et détection automatique non bloquante
+- [ ] Agrandir la bannière de 0,5 cm et contrôler/remplacer les visuels mal cadrés
+- [ ] Vérifier les écrans et interactions sans changer les données ni déconnecter le compte vitrine
+
 ## 9 oct. — Fenêtre FILAX et support
 - [x] Remplacer la fenêtre du logo par cinq tiroirs détaillés avec guide visuel et liens de support
 - [x] Ajouter un assistant IA flottant, conversation unique sans conservation, 1 100 formulations de questions-réponses couvrant 50 sujets
