@@ -54,8 +54,17 @@ export const Route = createFileRoute("/groupes")({
 function GroupHeroSlideshow() {
   const [slide, setSlide] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const { t } = useI18n();
   const count = GROUP_FINANCE_PHOTOS.length;
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => { setReducedMotion(media.matches); if (media.matches) setPaused(true); };
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     if (paused || !count) return;
@@ -65,11 +74,11 @@ function GroupHeroSlideshow() {
 
   return (
     <section className="mt-4" aria-label="Solidarité et épargne collective" aria-roledescription="diaporama">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-3xl fade-edges">
+      <div className="relative aspect-[4/3] overflow-hidden">
       {GROUP_FINANCE_PHOTOS.map((image, index) => (
         <img
           key={image.key}
-          src={image.src}
+          src={index === slide && !paused && !reducedMotion && image.motion ? image.motion : image.src}
           alt={t(image.alt)}
           aria-hidden={index !== slide}
           width={630}
@@ -78,10 +87,14 @@ function GroupHeroSlideshow() {
           className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[1500ms] ease-out ${index === slide ? "scale-100" : "scale-105"} motion-reduce:transition-none ${index === slide ? "opacity-100" : "opacity-0"}`}
         />
       ))}
+      {GROUP_FINANCE_PHOTOS.map((image, index) => image.message && (
+        <div key={`message-${image.key}`} aria-hidden={index !== slide} className={`group-photo-message pointer-events-none absolute inset-x-0 bottom-0 flex min-h-[45%] items-end px-5 pb-5 pt-12 transition-opacity duration-[1500ms] motion-reduce:transition-none ${index === slide ? "opacity-100" : "opacity-0"}`}>
+          <p className="max-w-[30ch] text-base font-semibold leading-snug text-photo-foreground">{t(image.message)}</p>
+        </div>
+      ))}
       </div>
-      <div className="-mt-1 flex items-center justify-center gap-3">
+      <div className="mt-1 flex items-center justify-center gap-3">
         <Button variant="ghost" size="icon-sm" aria-label={t("Photo précédente")} onClick={() => setSlide(i => (i - 1 + count) % count)}><ChevronLeft /></Button>
-        <span className="min-w-12 text-center text-xs tabular-nums text-muted-foreground" aria-live={paused ? "polite" : "off"}>{slide + 1} / {count}</span>
         <Button variant="ghost" size="icon-sm" aria-label={t(paused ? "Reprendre le diaporama" : "Mettre le diaporama en pause")} onClick={() => setPaused(p => !p)}>{paused ? <Play /> : <Pause />}</Button>
         <Button variant="ghost" size="icon-sm" aria-label={t("Photo suivante")} onClick={() => setSlide(i => (i + 1) % count)}><ChevronRight /></Button>
       </div>

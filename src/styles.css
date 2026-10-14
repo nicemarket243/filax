@@ -45,6 +45,7 @@
   --color-brand-violet: var(--brand-violet);
   --color-brand-teal: var(--brand-teal);
   --color-surface: var(--surface);
+  --color-photo-foreground: var(--photo-foreground);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -55,6 +56,9 @@
 
 /* ===== FILAX — Light first (blanc dominant, bleu moderne) ===== */
 :root {
+  --photo-foreground: oklch(1 0 0);
+  --photo-shade: oklch(0.12 0.005 260);
+  --photo-scrim: linear-gradient(to top, color-mix(in oklab, var(--photo-shade) 90%, transparent), color-mix(in oklab, var(--photo-shade) 35%, transparent) 65%, transparent);
   --radius: 1.25rem;
 
   --background: oklch(0.985 0.002 250);
@@ -229,3 +233,5 @@
 @utility fade-edges {
   mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, black 55%, transparent 100%);
 }
+
+.group-photo-message { background: var(--photo-scrim); }
