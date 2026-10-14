@@ -53,12 +53,13 @@ function DecisionButtons({ onDecide }: { onDecide: (ok: boolean) => void }) {
 }
 
 function KycRow({ k, onDone }: { k: Kyc; onDone: () => void }) {
-  const [urls, setUrls] = useState<{ doc: string | null; selfie: string | null }>({ doc: null, selfie: null });
+  const [urls, setUrls] = useState<{ doc: string | null; selfie: string | null; proof: string | null }>({ doc: null, selfie: null, proof: null });
   const [filesReady, setFilesReady] = useState(false);
   useEffect(() => {
     setFilesReady(false);
-    void Promise.all([kycFileUrl(k.id_document_path), kycFileUrl(k.selfie_path)]).then(([doc, selfie]) => {
-      setUrls({ doc, selfie });
+    const proofPath = k.selfie_path?.endsWith(".jpg") ? k.selfie_path.replace(/\.jpg$/, "-preuve.jpg") : null;
+    void Promise.all([kycFileUrl(k.id_document_path), kycFileUrl(k.selfie_path), kycFileUrl(proofPath).catch(() => null)]).then(([doc, selfie, proof]) => {
+      setUrls({ doc, selfie, proof });
       setFilesReady(true);
     }).catch(() => setFilesReady(true));
   }, [k.id_document_path, k.selfie_path]);
@@ -71,8 +72,8 @@ function KycRow({ k, onDone }: { k: Kyc; onDone: () => void }) {
         </div>
         <span className="text-[0.65rem] font-bold text-muted-foreground">{STATUS[k.kyc_status] ?? k.kyc_status}</span>
       </div>
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        {[["Pièce d'identité", urls.doc], ["Selfie", urls.selfie]].map(([label, url]) => (
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        {[["Pièce d'identité", urls.doc], ["Selfie", urls.selfie], ["Preuve manuscrite", urls.proof]].map(([label, url]) => (
           <a key={label} href={url ?? undefined} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl bg-muted">
             {url ? <img src={url} alt={label ?? ""} className="h-24 w-full object-cover" /> : <div className="flex h-24 items-center justify-center px-2 text-center text-[0.62rem] text-muted-foreground">{filesReady ? "Fichier absent ou inaccessible" : "Chargement du fichier…"}</div>}
             <p className="px-2 py-1 text-[0.6rem] text-muted-foreground">{label}</p>
