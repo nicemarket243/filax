@@ -1,6 +1,9 @@
 export const SIMULATION_EN: Record<string, string> = {
   "Pays (démo)": "Country (demo)",
   "Opérateur fictif": "Fictional operator",
+  "Aucun opérateur de démonstration disponible pour ce pays.": "No demo operator available for this country.",
+  "Gabon": "Gabon",
+  "République du Congo": "Republic of the Congo",
   "Numéro fictif": "Fictional number",
   "Nouveau numéro fictif": "New fictional number",
   "Ajouter le numéro": "Add number",
