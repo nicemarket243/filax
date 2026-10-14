@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { CountryPhoneInput, usePhoneCountry } from "@/components/filax/country-phone-input";
+import { internationalPhone } from "@/lib/countries";
 import {
   InputOTP,
   InputOTPGroup,
@@ -74,6 +76,8 @@ function InscriptionPage() {
   const [birthCity, setBirthCity] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const { country, chooseCountry } = usePhoneCountry();
 
   // Verification code
   const [code, setCode] = useState("");
@@ -103,7 +107,8 @@ function InscriptionPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName || !lastName || !birthDate || !birthCity || !email || password.length < 6) {
+    const normalized = internationalPhone(phone, country);
+    if (!firstName || !lastName || !birthDate || !birthCity || !email || password.length < 6 || !normalized) {
       toast.error("Veuillez remplir tous les champs (mot de passe : 6 caractères min).");
       return;
     }
@@ -118,6 +123,7 @@ function InscriptionPage() {
           last_name: lastName,
           birth_date: birthDate,
           birth_city: birthCity,
+          phone: normalized,
         },
       },
     });
@@ -261,6 +267,9 @@ function InscriptionPage() {
             </Field>
             <Field label="Adresse e-mail">
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.com" />
+            </Field>
+            <Field label="Téléphone">
+              <CountryPhoneInput country={country} onCountryChange={chooseCountry} phone={phone} onPhoneChange={setPhone} disabled={loading} />
             </Field>
             <Field label="Mot de passe">
               <Input

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { setLang, useI18n } from "@/lib/i18n";
+import { CountryPhoneInput, usePhoneCountry } from "@/components/filax/country-phone-input";
+import { internationalPhone } from "@/lib/countries";
 
 const DONE_KEY = "filax-onboarded";
 
@@ -13,7 +15,7 @@ export function FirstVisitOnboarding() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [country, setCountry] = useState("RD Congo");
+  const { country, chooseCountry } = usePhoneCountry();
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
@@ -32,15 +34,17 @@ export function FirstVisitOnboarding() {
   if (!open) return null;
 
   const finish = () => {
+    const normalized = internationalPhone(phone, country);
+    if (!normalized) return;
     const [firstName, ...rest] = name.trim().split(/\s+/);
     try {
       const raw = localStorage.getItem("filax-v4");
       const data = raw ? JSON.parse(raw) : null;
       if (data?.profile) {
-        data.profile = { ...data.profile, firstName, lastName: rest.join(" "), phone: `+243 ${phone}`, country };
+        data.profile = { ...data.profile, firstName, lastName: rest.join(" "), phone: normalized, country };
         localStorage.setItem("filax-v4", JSON.stringify(data));
       } else {
-        localStorage.setItem("filax-new-profile", JSON.stringify({ firstName, lastName: rest.join(" "), phone: `+243 ${phone}`, country }));
+        localStorage.setItem("filax-new-profile", JSON.stringify({ firstName, lastName: rest.join(" "), phone: normalized, country }));
       }
     } catch {
       /* ignore */
@@ -63,15 +67,7 @@ export function FirstVisitOnboarding() {
         <p className="mt-1 text-center text-[0.72rem] text-muted-foreground">{t("Quelques secondes suffisent pour commencer.")}</p>
         <div className="mt-5 space-y-3">
           <input className={input} placeholder={t("Votre nom complet")} value={name} onChange={(e) => setName(e.target.value)} />
-          <div className="flex gap-2">
-            <span className="flex items-center rounded-xl border border-border bg-background px-3 text-sm text-muted-foreground">+243</span>
-            <input className={input} inputMode="tel" placeholder={t("Numéro de téléphone")} value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d ]/g, ""))} />
-          </div>
-          <select className={input} value={country} onChange={(e) => setCountry(e.target.value)}>
-            {["RD Congo", "Congo-Brazzaville", "Angola", "Rwanda", "Burundi", "Ouganda", "France", "Belgique"].map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
+          <CountryPhoneInput country={country} onCountryChange={chooseCountry} phone={phone} onPhoneChange={setPhone} />
           <p className="pt-1 text-[0.7rem] font-semibold text-muted-foreground">{t("Choisir la langue")}</p>
           <div className="flex gap-2">
             <button type="button" className={pill(lang === "fr")} onClick={() => setLang("fr")}>Français</button>
@@ -84,7 +80,7 @@ export function FirstVisitOnboarding() {
           </div>
           <button
             type="button"
-            disabled={name.trim().length < 2 || phone.replace(/\D/g, "").length < 9}
+            disabled={name.trim().length < 2 || !internationalPhone(phone, country)}
             onClick={finish}
             className="press mt-2 w-full rounded-xl bg-brand-blue px-4 py-3 text-sm font-bold text-white disabled:opacity-40"
           >

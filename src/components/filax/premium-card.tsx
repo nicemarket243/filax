@@ -62,7 +62,7 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
         }}
         className="press card-sheen relative flex w-full select-none flex-col justify-between overflow-hidden rounded-[1.6rem] p-5 text-white"
         style={{
-          background: `linear-gradient(140deg, color-mix(in oklab, ${accent} 62%, #05070f) 0%, color-mix(in oklab, ${accent} 48%, #05070f) 42%, color-mix(in oklab, ${accent} 26%, #04060d) 78%, #05070f 100%)`,
+          background: `linear-gradient(140deg, color-mix(in oklab, ${accent} 62%, var(--premium-base)) 0%, color-mix(in oklab, ${accent} 48%, var(--premium-base)) 42%, color-mix(in oklab, ${accent} 26%, var(--premium-deep)) 78%, var(--premium-base) 100%)`,
           boxShadow: `0 26px 60px -28px color-mix(in oklab, ${accent} 60%, #000), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.4)`,
           aspectRatio: "1.6 / 1",
         }}

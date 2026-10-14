@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { line as d3Line, curveMonotoneX } from "d3-shape";
 import { ArrowDownLeft, ArrowUpRight, History, Target, TrendingUp } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
@@ -84,7 +85,7 @@ function AnalysePage() {
 
   const stats = useMemo(() => {
     const since = period.ms ? Date.now() - period.ms : 0;
-    const list = transactions.filter((t) => t.at >= since).sort((a, b) => a.at - b.at);
+    const list = transactions.filter((t) => t.at >= since && (!t.status || t.status === "confirmed")).sort((a, b) => a.at - b.at);
     let inflow = 0;
     let outflow = 0;
     const byMethod = new Map<Transaction["method"], number>();
@@ -102,14 +103,14 @@ function AnalysePage() {
     const deltas = stats.list.map((t) => (isIn(t) ? 1 : -1) * toUsd(t.amount, t.currency));
     let start = totalUsd;
     for (const d of deltas) start -= d;
-    const pts = [{ at: stats.list[0]?.at ?? Date.now(), value: start, tx: null as Transaction | null }];
+    const pts = [{ at: period.ms ? Date.now() - period.ms : (stats.list[0]?.at ?? Date.now()) - 1, value: start, tx: null as Transaction | null }];
     let running = start;
     stats.list.forEach((t, i) => {
       running += deltas[i] ?? 0;
       pts.push({ at: t.at, value: running, tx: t });
     });
-    return pts.length > 1 ? pts : [...pts, { at: Date.now(), value: totalUsd, tx: null }];
-  }, [stats.list, totalUsd]);
+    return pts;
+  }, [stats.list, totalUsd, period.ms]);
 
   const w = 300;
   const h = 120;
@@ -118,10 +119,11 @@ function AnalysePage() {
   const max = Math.max(...values);
   const span = max - min || 1;
   const step = series.length > 1 ? w / (series.length - 1) : w;
-  const coords = series.map((p, i) => [i * step, h - ((p.value - min) / span) * (h - 20) - 10] as const);
-  const line = coords.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const coords = series.map((p, i) => [series.length === 1 ? w / 2 : i * step, h - ((p.value - min) / span) * (h - 20) - 10] as const);
+  const line = d3Line<readonly [number, number]>().x((p) => p[0]).y((p) => p[1]).curve(curveMonotoneX)(coords) ?? "";
   const area = `${line} L${w},${h} L0,${h} Z`;
   const selected = point != null ? series[point] : null;
+  const selectedColor = selected?.tx ? (isIn(selected.tx) ? "var(--brand-green)" : "var(--brand-red)") : "var(--brand-blue)";
   const scrub = (e: React.PointerEvent<SVGSVGElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width) * w;
@@ -142,17 +144,18 @@ function AnalysePage() {
 
       <PageTitle title="Analyse" subtitle="Vision globale de tout votre portefeuille." />
 
-      <div className="mt-5 rounded-3xl p-5 text-primary-foreground soft-shadow" style={{ background: "var(--gradient-magnetide, var(--gradient-blue))" }}>
-        <p className="text-[0.7rem] text-white/80">{t("Portefeuille total")} · {accounts.length} {t("comptes")}</p>
+      <div data-testid="portfolio-card" className="premium-blue-surface mt-5 rounded-3xl p-5 text-photo-foreground soft-shadow">
+        <p className="text-[0.7rem] text-photo-foreground/80">{t("Portefeuille total")} · {accounts.length} {t("comptes")}</p>
         <p className="mt-1 text-[1.9rem] font-extrabold leading-none tracking-tight">{formatMoney(totalUsd, "USD")}</p>
-        <p className="mt-2 text-[0.65rem] text-white/80">
+        <p className="mt-2 text-[0.65rem] text-photo-foreground/80">
           {t("Converti en USD")} (1 $ = {CDF_PER_USD.toLocaleString("fr-FR")} FC) · {stats.list.length} {t("opération(s)")}
         </p>
       </div>
 
       <div className="mt-4 flex gap-1.5 rounded-full bg-muted p-1">
         {PERIODS.map((p) => (
-          <button
+          <Button
+            variant="ghost"
             key={p.key}
             type="button"
             onClick={() => {
@@ -164,7 +167,7 @@ function AnalysePage() {
             }`}
           >
             {p.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -179,7 +182,10 @@ function AnalysePage() {
           role="img"
           aria-label="Évolution globale"
           onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); scrub(e); }}
-          onPointerMove={(e) => { if (e.buttons || e.pointerType !== "mouse") scrub(e); }}
+          onPointerMove={(e) => { if (e.currentTarget.hasPointerCapture(e.pointerId)) scrub(e); }}
+          onPointerUp={(e) => { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); setPoint(null); }}
+          onPointerCancel={() => setPoint(null)}
+          onLostPointerCapture={() => setPoint(null)}
         >
           <defs>
             <linearGradient id="analyse-grad" x1="0" y1="0" x2="0" y2="1">
@@ -189,42 +195,25 @@ function AnalysePage() {
             <filter id="analyse-glow"><feGaussianBlur stdDeviation="3" /></filter>
           </defs>
           <path d={area} fill="url(#analyse-grad)" />
-          {coords.slice(1).map(([x, y], i) => {
-            const [px, py] = coords[i] ?? [x, y];
-            const tx = series[i + 1]?.tx;
-            const color = tx && !isIn(tx) ? "var(--brand-red)" : tx ? "var(--brand-green)" : "var(--brand-blue)";
-            return (
-              <g key={i} className="transition-opacity duration-300" opacity={point == null || point === i + 1 ? 1 : 0.45}>
-                <path d={`M${px},${h} L${px},${py} L${x},${y} L${x},${h} Z`} fill={color} opacity={0.12} />
-                <line x1={px} y1={py} x2={x} y2={y} stroke={color} strokeWidth={6} opacity={0.35} filter="url(#analyse-glow)" />
-                <line x1={px} y1={py} x2={x} y2={y} stroke={color} strokeWidth={2.5} strokeLinecap="round" />
-              </g>
-            );
-          })}
+          <path data-testid="resting-curve" d={line} fill="none" stroke="var(--brand-blue)" strokeWidth={2.5} strokeLinecap="round" />
+          {coords.length === 1 && <circle cx={coords[0]?.[0]} cy={coords[0]?.[1]} r={4} fill="var(--brand-blue)" />}
+          {point != null && point > 0 && coords[point] && coords[point - 1] && (
+            <path data-testid="active-segment" d={d3Line<readonly [number, number]>().x((p) => p[0]).y((p) => p[1]).curve(curveMonotoneX)(coords.slice(Math.max(0, point - 2), point + 1)) ?? ""} fill="none" stroke={selectedColor} strokeWidth={3.5} strokeLinecap="round" />
+          )}
           {selected && point != null && coords[point] && (
-            <g className="pointer-events-none">
+            <g data-testid="chart-crosshair" className="pointer-events-none">
               <line x1={coords[point][0]} y1={0} x2={coords[point][0]} y2={h} stroke="var(--foreground)" strokeOpacity={0.35} strokeDasharray="3 3" />
-              <circle cx={coords[point][0]} cy={coords[point][1]} r={9} fill={selected.tx && !isIn(selected.tx) ? "var(--brand-red)" : "var(--brand-green)"} opacity={0.25} />
-              <circle cx={coords[point][0]} cy={coords[point][1]} r={4.5} fill="var(--surface)" stroke={selected.tx && !isIn(selected.tx) ? "var(--brand-red)" : "var(--brand-green)"} strokeWidth={2.5} />
+              <circle cx={coords[point][0]} cy={coords[point][1]} r={9} fill={selectedColor} opacity={0.25} />
+              <circle cx={coords[point][0]} cy={coords[point][1]} r={4.5} fill="var(--surface)" stroke={selectedColor} strokeWidth={2.5} />
             </g>
           )}
         </svg>
-        {selected && (
-          <p className="mt-1 text-center text-[0.62rem] font-semibold text-muted-foreground">
-            {formatDate(selected.at)} · {period.label} · <span className="text-foreground">{formatMoney(selected.value, "USD")}</span>
-          </p>
-        )}
-        <div className="mt-2 min-h-[2.2rem] rounded-2xl bg-muted/50 px-3 py-2 text-[0.66rem] leading-tight">
-          {selected?.tx ? (
-            <>
-              <span className="font-semibold text-foreground">{selected.tx.label}</span>
-              <span className="text-muted-foreground">
-                {" "}· {accName(selected.tx.accountId)} · {formatDate(selected.tx.at)} · {formatMoney(selected.tx.amount, selected.tx.currency)}
-              </span>
-            </>
-          ) : (
-            <span className="text-muted-foreground">Touchez ou glissez sur la courbe : rouge = sorties, vert = entrées.</span>
-          )}
+        <div className="mt-2 min-h-16" aria-live="polite">
+          {selected && <div data-testid="chart-tooltip" className="rounded-xl bg-muted/50 px-3 py-2 text-center text-[0.66rem] leading-relaxed">
+            <p className="font-semibold text-foreground">{new Date(selected.at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "medium" })} · {t(period.label ?? "Tout")}</p>
+            <p className="font-bold" style={{ color: selectedColor }}>{formatMoney(selected.value, "USD")}</p>
+            {selected.tx && <p className="text-muted-foreground">{selected.tx.label} · {accName(selected.tx.accountId)} · {formatMoney(selected.tx.amount, selected.tx.currency)}</p>}
+          </div>}
         </div>
       </div>
 

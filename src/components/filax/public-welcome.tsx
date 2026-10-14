@@ -6,27 +6,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useServerFn } from "@tanstack/react-start";
 import { sendFilaxIdCode, verifyFilaxIdCode } from "@/lib/filax-auth.functions";
+import { CountryPhoneInput, usePhoneCountry } from "@/components/filax/country-phone-input";
+import { internationalPhone, type CountryCode } from "@/lib/countries";
 
 type Mode = "signup" | "login";
 export const AUTH_INTENT_KEY = "filax-auth-intent";
 type Method = "phone" | "filax";
-
-function normalizePhone(value: string) {
-  const digits = value.replace(/\D/g, "");
-  return digits.startsWith("243") ? `+${digits}` : `+243${digits.replace(/^0/, "")}`;
-}
 
 const FIELD =
   "w-full rounded-xl border border-border/70 bg-transparent px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-colors focus:border-brand-blue/60";
 
 const REMEMBER_KEY = "filax-remembered-login";
 const REMEMBER_MS = 30 * 86_400_000;
-type Remembered = { method: Method; phone?: string; filaxId?: string; expires: number };
+type Remembered = { method: Method; phone?: string; country?: CountryCode; filaxId?: string; expires: number };
 
 export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () => void }) {
   const [mode, setMode] = useState<Mode>("signup");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const { country, chooseCountry } = usePhoneCountry();
   const [middleName, setMiddleName] = useState("");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -46,6 +44,7 @@ export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () =
       setMode("login");
       setMethod(r.method);
       if (r.phone) setPhone(r.phone);
+      if (r.country || r.phone) chooseCountry(r.country ?? "CD");
       if (r.filaxId) setFilaxId(r.filaxId);
     } catch {
       localStorage.removeItem(REMEMBER_KEY);
@@ -53,7 +52,7 @@ export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () =
   }, []);
 
   const onAuthenticated = () => {
-    const entry: Remembered = { method, phone: method === "phone" ? phone : undefined, filaxId: method === "filax" ? filaxId.trim() : undefined, expires: Date.now() + REMEMBER_MS };
+    const entry: Remembered = { method, country, phone: method === "phone" ? phone : undefined, filaxId: method === "filax" ? filaxId.trim() : undefined, expires: Date.now() + REMEMBER_MS };
     const existing = localStorage.getItem(REMEMBER_KEY);
     if (!existing) {
       toast("Enregistrer vos informations de connexion ?", {
@@ -119,17 +118,18 @@ export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () =
       toast.error("Entrez une adresse e-mail valide");
       return;
     }
-    if (phone.replace(/\D/g, "").length < 9) {
+    const normalized = internationalPhone(phone, country);
+    if (!normalized) {
       toast.error("Entrez un numéro de téléphone valide");
       return;
     }
     setBusy(true);
     const [firstName, ...lastName] = name.trim().split(/\s+/);
     const { error } = await supabase.auth.signInWithOtp({
-      phone: normalizePhone(phone),
+      phone: normalized,
       options: {
         shouldCreateUser: mode === "signup",
-        data: mode === "signup" ? { first_name: firstName, last_name: lastName.join(" "), middle_name: middleName.trim().slice(0, 80), contact_email: email.trim().slice(0, 255), phone: normalizePhone(phone) } : undefined,
+        data: mode === "signup" ? { first_name: firstName, last_name: lastName.join(" "), middle_name: middleName.trim().slice(0, 80), contact_email: email.trim().slice(0, 255), phone: normalized } : undefined,
       },
     });
     setBusy(false);
@@ -143,8 +143,10 @@ export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () =
 
   const verify = async () => {
     if (code.length !== 6) return;
+    const normalized = internationalPhone(phone, country);
+    if (!normalized) return void toast.error("Entrez un numéro de téléphone valide");
     setBusy(true);
-    const { error } = await supabase.auth.verifyOtp({ phone: normalizePhone(phone), token: code, type: "sms" });
+    const { error } = await supabase.auth.verifyOtp({ phone: normalized, token: code, type: "sms" });
     setBusy(false);
     if (error) {
       toast.error("Code invalide ou expiré");
@@ -256,19 +258,7 @@ export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () =
             <label htmlFor="filax-phone" className="ml-1 block text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               Téléphone
             </label>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">+243</span>
-              <input
-                id="filax-phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 12))}
-                placeholder="812 345 678"
-                inputMode="tel"
-                autoComplete="tel"
-                disabled={sent}
-                className={`${FIELD} pl-16`}
-              />
-            </div>
+            <CountryPhoneInput country={country} onCountryChange={chooseCountry} phone={phone} onPhoneChange={setPhone} disabled={sent || busy} />
           </div>
           )}
 
