@@ -22,6 +22,7 @@ import {
 import { Field, Modal, PrimaryButton, TextInput, accentVar } from "@/components/filax/ui-kit";
 import { VisualPicker } from "./visual-picker";
 import { subaccountSchema, type SubaccountInput } from "@/lib/filax-db";
+import { PinConfirmModal } from "./pin-confirm";
 import { QrScanModal, ReceiveQrModal } from "@/components/filax/qr-scanner";
 
 
@@ -259,18 +260,28 @@ export function WithdrawModal({
   accounts,
   defaultAccountId,
   onConfirm,
+  requirePin,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   accounts: Account[];
   defaultAccountId: string;
-  onConfirm: (accountId: string, amount: number, method: TxMethod, accountPin?: string) => void | Promise<void>;
+  onConfirm: (accountId: string, amount: number, method: TxMethod, accountPin?: string, globalPin?: string) => void | Promise<void>;
+  requirePin?: boolean;
 }) {
   const { data } = useFilax();
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(defaultAccountId);
   const [accountPin, setAccountPin] = useState("");
+  const [pinOpen, setPinOpen] = useState(false);
   useEffect(() => setAccountPin(""), [open, accountId]);
+  const run = async (globalPin: string) => {
+    try { await onConfirm(accountId, value, method, accountPin, globalPin); }
+    catch (e) { toast.error("Retrait échoué", { description: (e as Error).message }); setPinOpen(false); return; }
+    setPinOpen(false);
+    onOpenChange(false);
+    toast.success("Retrait réussi", { description: `Vous avez retiré ${value} sur votre ${accounts.find((a) => a.id === accountId)?.name ?? "compte"}.` });
+  };
   const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
   const accountPinReady = !needsAccountPin || /^\d{4}$/.test(accountPin);
   const [method, setMethod] = useState<TxMethod>("orange");
@@ -313,15 +324,12 @@ export function WithdrawModal({
         <PrimaryButton
           color="brand-red"
           disabled={!accountPinReady || value <= 0 || tooMuch || belowMin || !accountId || (byCard && !cardOk)}
-          onClick={async () => {
-            try { await onConfirm(accountId, value, method, accountPin); } catch (e) { toast.error("Retrait refusé", { description: (e as Error).message }); return; }
-            onOpenChange(false);
-            toast.success("Retrait envoyé", { description: `Destination : ${METHOD_LABEL[method]}.` });
-          }}
+          onClick={() => (requirePin ? setPinOpen(true) : void run(""))}
         >
           Confirmer le retrait
         </PrimaryButton>
       </div>
+      <PinConfirmModal open={pinOpen} onOpenChange={setPinOpen} onSubmit={run} />
       <ReceiveQrModal
         open={receive}
         onOpenChange={setReceive}
