@@ -876,6 +876,13 @@ export type Database = {
         Returns: string
       }
       filax_fee: { Args: { _amount: number }; Returns: number }
+      find_recipient: {
+        Args: { _identifier: string }
+        Returns: {
+          filax_id: string
+          name: string
+        }[]
+      }
       fund_goal: {
         Args: { _amount: number; _from: string; _goal: string }
         Returns: undefined
