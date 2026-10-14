@@ -77,4 +77,9 @@
 - [x] Notifications de réussite / échec avec motif, et ligne « Échouée » dans l'historique
 - [ ] E-mail explicatif d'échec : attend la configuration d'un domaine d'envoi d'e-mails
 - [x] Étape 1 cahier maître : fenêtres translucides, diaporama 30 photos 10 s, courbe Analyse tactile
-- [ ] Étapes 2-5 cahier maître (pays, PIN au dépôt, échéance comptes bloqués, simulateurs Push STK / OTP)
+- [ ] Étapes 2-5 cahier maître (pays, PIN au dépôt, échéance comptes bloqués)
+
+## Étape 1 — Compléments demandés
+- [ ] Simulateurs frontend Push STK et SMS à six chiffres, explicitement sans paiement ni message réel
+- [ ] Remplacer le diaporama par 30 photos de cotisation, banque et conseil financier
+- [ ] Vérifier les simulations et le diaporama sans modifier le compte vitrine ni la session
