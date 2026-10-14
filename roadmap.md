@@ -76,3 +76,5 @@
 - [x] Code PIN 4 chiffres obligatoire pour retraits et transferts (fenêtre sécurisée, création si absent)
 - [x] Notifications de réussite / échec avec motif, et ligne « Échouée » dans l'historique
 - [ ] E-mail explicatif d'échec : attend la configuration d'un domaine d'envoi d'e-mails
+- [x] Étape 1 cahier maître : fenêtres translucides, diaporama 30 photos 10 s, courbe Analyse tactile
+- [ ] Étapes 2-5 cahier maître (pays, PIN au dépôt, échéance comptes bloqués, simulateurs Push STK / OTP)

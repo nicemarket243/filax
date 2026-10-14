@@ -122,6 +122,11 @@ function AnalysePage() {
   const line = coords.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
   const area = `${line} L${w},${h} L0,${h} Z`;
   const selected = point != null ? series[point] : null;
+  const scrub = (e: React.PointerEvent<SVGSVGElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * w;
+    setPoint(Math.max(0, Math.min(series.length - 1, Math.round(x / step))));
+  };
 
   const totalFlow = stats.inflow + stats.outflow || 1;
   const methods = [...stats.byMethod.entries()].sort((a, b) => b[1] - a[1]);
@@ -168,29 +173,47 @@ function AnalysePage() {
           <p className="text-[0.7rem] font-semibold text-muted-foreground">Évolution de tous les comptes</p>
           <p className="text-[0.7rem] font-bold text-foreground">{formatMoney(selected ? selected.value : totalUsd, "USD")}</p>
         </div>
-        <svg viewBox={`0 0 ${w} ${h}`} className="mt-2 w-full overflow-visible" role="img" aria-label="Évolution globale">
+        <svg
+          viewBox={`0 0 ${w} ${h}`}
+          className="mt-2 w-full touch-none select-none overflow-visible"
+          role="img"
+          aria-label="Évolution globale"
+          onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); scrub(e); }}
+          onPointerMove={(e) => { if (e.buttons || e.pointerType !== "mouse") scrub(e); }}
+        >
           <defs>
             <linearGradient id="analyse-grad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--brand-blue)" stopOpacity="0.35" />
+              <stop offset="0%" stopColor="var(--brand-blue)" stopOpacity="0.25" />
               <stop offset="100%" stopColor="var(--brand-blue)" stopOpacity="0" />
             </linearGradient>
+            <filter id="analyse-glow"><feGaussianBlur stdDeviation="3" /></filter>
           </defs>
           <path d={area} fill="url(#analyse-grad)" />
-          <path d={line} fill="none" stroke="var(--brand-blue)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-          {coords.map(([x, y], i) => (
-            <circle
-              key={i}
-              cx={x}
-              cy={y}
-              r={point === i ? 5 : 3.5}
-              fill={point === i ? "var(--brand-green)" : "var(--surface)"}
-              stroke="var(--brand-blue)"
-              strokeWidth={2}
-              className="cursor-pointer"
-              onClick={() => setPoint(point === i ? null : i)}
-            />
-          ))}
+          {coords.slice(1).map(([x, y], i) => {
+            const [px, py] = coords[i] ?? [x, y];
+            const tx = series[i + 1]?.tx;
+            const color = tx && !isIn(tx) ? "var(--brand-red)" : tx ? "var(--brand-green)" : "var(--brand-blue)";
+            return (
+              <g key={i} className="transition-opacity duration-300" opacity={point == null || point === i + 1 ? 1 : 0.45}>
+                <path d={`M${px},${h} L${px},${py} L${x},${y} L${x},${h} Z`} fill={color} opacity={0.12} />
+                <line x1={px} y1={py} x2={x} y2={y} stroke={color} strokeWidth={6} opacity={0.35} filter="url(#analyse-glow)" />
+                <line x1={px} y1={py} x2={x} y2={y} stroke={color} strokeWidth={2.5} strokeLinecap="round" />
+              </g>
+            );
+          })}
+          {selected && point != null && coords[point] && (
+            <g className="pointer-events-none">
+              <line x1={coords[point][0]} y1={0} x2={coords[point][0]} y2={h} stroke="var(--foreground)" strokeOpacity={0.35} strokeDasharray="3 3" />
+              <circle cx={coords[point][0]} cy={coords[point][1]} r={9} fill={selected.tx && !isIn(selected.tx) ? "var(--brand-red)" : "var(--brand-green)"} opacity={0.25} />
+              <circle cx={coords[point][0]} cy={coords[point][1]} r={4.5} fill="var(--surface)" stroke={selected.tx && !isIn(selected.tx) ? "var(--brand-red)" : "var(--brand-green)"} strokeWidth={2.5} />
+            </g>
+          )}
         </svg>
+        {selected && (
+          <p className="mt-1 text-center text-[0.62rem] font-semibold text-muted-foreground">
+            {formatDate(selected.at)} · {period.label} · <span className="text-foreground">{formatMoney(selected.value, "USD")}</span>
+          </p>
+        )}
         <div className="mt-2 min-h-[2.2rem] rounded-2xl bg-muted/50 px-3 py-2 text-[0.66rem] leading-tight">
           {selected?.tx ? (
             <>
@@ -200,7 +223,7 @@ function AnalysePage() {
               </span>
             </>
           ) : (
-            <span className="text-muted-foreground">Touchez un point de la courbe pour voir l'opération.</span>
+            <span className="text-muted-foreground">Touchez ou glissez sur la courbe : rouge = sorties, vert = entrées.</span>
           )}
         </div>
       </div>
