@@ -1,5 +1,6 @@
-import { formatDate, type AppNotification } from "@/lib/filax-store";
+import { type AppNotification } from "@/lib/filax-store";
 import { Modal } from "@/components/filax/ui-kit";
+import { FilaxLogo } from "@/components/filax-logo";
 import { ArrowDownLeft, ArrowUpRight, Bell, PiggyBank, Send } from "lucide-react";
 
 const ICONS = {
@@ -20,6 +21,15 @@ const COLORS: Record<AppNotification["kind"], string> = {
   systeme: "var(--muted-foreground)",
 };
 
+function relative(at: number) {
+  const m = Math.max(0, Math.round((Date.now() - at) / 60000));
+  if (m < 1) return "maintenant";
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `il y a ${h} h`;
+  return `il y a ${Math.round(h / 24)} j`;
+}
+
 export function NotificationsModal({
   open,
   onOpenChange,
@@ -32,7 +42,7 @@ export function NotificationsModal({
   onClear: () => void;
 }) {
   return (
-    <Modal open={open} onOpenChange={onOpenChange} title="Notifications" subtitle="Vos mouvements et alertes FILAX">
+    <Modal open={open} onOpenChange={onOpenChange} title="Centre de notifications" subtitle="Vos mouvements et alertes FILAX">
       {notifications.length === 0 ? (
         <p className="py-8 text-center text-[0.75rem] text-muted-foreground">Aucune notification pour le moment.</p>
       ) : (
@@ -40,17 +50,25 @@ export function NotificationsModal({
           {notifications.slice(0, 40).map((n) => {
             const Icon = ICONS[n.kind];
             return (
-              <div key={n.id} className="flex items-start gap-3 rounded-2xl bg-muted/60 px-3 py-2.5">
-                <span
-                  className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
-                  style={{ backgroundColor: `color-mix(in oklab, ${COLORS[n.kind]} 14%, transparent)`, color: COLORS[n.kind] }}
-                >
-                  <Icon className="h-4 w-4" />
+              <div
+                key={n.id}
+                className="flex items-start gap-3 rounded-[1.4rem] border border-border/60 bg-muted/50 px-3 py-2.5 shadow-sm backdrop-blur-xl"
+              >
+                <span className="relative mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-surface soft-shadow">
+                  <FilaxLogo height={12} />
+                  <span
+                    className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-surface"
+                    style={{ backgroundColor: COLORS[n.kind] }}
+                  >
+                    <Icon className="h-2.5 w-2.5 text-background" />
+                  </span>
                 </span>
-                <div className="min-w-0 leading-tight">
-                  <p className="text-[0.78rem] font-bold text-foreground">{n.title}</p>
-                  <p className="text-[0.68rem] text-muted-foreground">{n.body}</p>
-                  <p className="mt-0.5 text-[0.6rem] text-muted-foreground/80">{formatDate(n.at)}</p>
+                <div className="min-w-0 flex-1 leading-tight">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="truncate text-[0.78rem] font-bold text-foreground">{n.title}</p>
+                    <span className="shrink-0 text-[0.6rem] text-muted-foreground">{relative(n.at)}</span>
+                  </div>
+                  <p className="mt-0.5 line-clamp-2 text-[0.7rem] text-muted-foreground">{n.body}</p>
                 </div>
               </div>
             );
@@ -58,7 +76,7 @@ export function NotificationsModal({
           <button
             type="button"
             onClick={onClear}
-            className="press mt-2 w-full rounded-xl border border-border py-2.5 text-[0.72rem] font-semibold text-muted-foreground"
+            className="press mt-2 w-full rounded-full border border-border py-2.5 text-[0.72rem] font-semibold text-muted-foreground"
           >
             Tout effacer
           </button>
