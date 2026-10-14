@@ -7,6 +7,8 @@ import groupSlideOne from "@/assets/groups-solidarity-1.jpg";
 import groupSlideTwo from "@/assets/groups-solidarity-2.jpg";
 import groupSlideThree from "@/assets/groups-solidarity-3.jpg";
 
+const THEME_SLIDES = Object.values(import.meta.glob("@/assets/account-themes/*.jpg", { eager: true, import: "default" })) as string[];
+
 import { AppHeader, BottomNav } from "@/components/filax/shell";
 import { Coffre } from "@/components/filax/coffre";
 import { themeImageFor } from "@/components/filax/account-theme";
@@ -52,18 +54,18 @@ export const Route = createFileRoute("/groupes")({
   component: GroupesPage,
 });
 
-const GROUP_SLIDES = [groupSlideOne, groupSlideTwo, groupSlideThree];
+const GROUP_SLIDES = [groupSlideOne, groupSlideTwo, groupSlideThree, ...THEME_SLIDES].slice(0, 30);
 
 function GroupHeroSlideshow() {
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
-    const interval = window.setInterval(() => setSlide((current) => (current + 1) % GROUP_SLIDES.length), 7000);
+    const interval = window.setInterval(() => setSlide((current) => (current + 1) % GROUP_SLIDES.length), 10000);
     return () => window.clearInterval(interval);
   }, []);
 
   return (
-    <section className="relative mt-4 aspect-[16/8.5] overflow-hidden rounded-3xl bg-muted soft-shadow" aria-label="Solidarité et épargne collective">
+    <section className="relative mt-4 aspect-[16/8.5] overflow-hidden rounded-3xl fade-edges" aria-label="Solidarité et épargne collective">
       {GROUP_SLIDES.map((image, index) => (
         <img
           key={image}
@@ -71,12 +73,12 @@ function GroupHeroSlideshow() {
           alt="Amis réunis autour d'une épargne commune"
           width={1536}
           height={864}
-          loading={index === 0 ? "eager" : "lazy"}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 motion-reduce:transition-none ${index === slide ? "opacity-100" : "opacity-0"}`}
+          loading={Math.abs(index - slide) <= 1 ? "eager" : "lazy"}
+          className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[1500ms] ease-out ${index === slide ? "scale-100" : "scale-105"} motion-reduce:transition-none ${index === slide ? "opacity-100" : "opacity-0"}`}
         />
       ))}
       <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/60 to-transparent" />
-      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+      <div className="absolute bottom-4 left-1/2 flex max-w-[80%] -translate-x-1/2 flex-wrap justify-center gap-1">
         {GROUP_SLIDES.map((_, index) => (
           <button
             key={index}
@@ -84,7 +86,7 @@ function GroupHeroSlideshow() {
             aria-label={`Afficher l'image ${index + 1}`}
             aria-current={index === slide}
             onClick={() => setSlide(index)}
-            className={`magnetide-tap h-1.5 rounded-full bg-foreground transition-all ${index === slide ? "w-5 opacity-90" : "w-1.5 opacity-45"}`}
+            className={`magnetide-tap h-1 rounded-full bg-foreground transition-all ${index === slide ? "w-4 opacity-90" : "w-1 opacity-40"}`}
           />
         ))}
       </div>
