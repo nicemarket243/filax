@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { GoalEvolution, type GeneralGoal } from "@/components/filax/goal-evolution";
 import { Modal, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { useI18n } from "@/lib/i18n";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useDbUser, useDbAccounts, useDbTransactions, useDbGoals } from "@/lib/filax-db";
 import {
   METHOD_LABEL,
@@ -58,6 +60,19 @@ function AnalysePage() {
   const dbGoals = useDbGoals(userId);
   const goals = live ? dbGoals.goals ?? [] : data.goals;
   const transactions = live ? dbTx.transactions ?? [] : data.transactions;
+  const [disputeTx, setDisputeTx] = useState<Transaction | null>(null);
+  const [reason, setReason] = useState("");
+  const [sending, setSending] = useState(false);
+  const sendDispute = async () => {
+    if (!disputeTx || !userId || reason.trim().length < 10 || sending) return;
+    setSending(true);
+    const uuid = /^[0-9a-f-]{36}$/i.test(disputeTx.id) ? disputeTx.id : null;
+    const { error } = await supabase.from("disputes").insert({ user_id: userId, transaction_id: uuid, reason: reason.trim().slice(0, 1000) });
+    setSending(false);
+    if (error) return void toast.error("Réclamation non envoyée", { description: error.message });
+    toast.success("Réclamation envoyée à l'équipe FILAX");
+    setDisputeTx(null); setReason("");
+  };
   const [periodKey, setPeriodKey] = useState("30j");
   const [point, setPoint] = useState<number | null>(null);
   const [goalId, setGoalId] = useState<string | null>(null);
@@ -258,6 +273,7 @@ function AnalysePage() {
                     {formatMoney(t.amount, t.currency)}
                   </span>
                   <span className="block text-[0.55rem] font-bold text-muted-foreground">{t.currency}</span>
+                  {live && <button type="button" onClick={() => setDisputeTx(t)} className="press mt-0.5 text-[0.55rem] font-bold text-brand-red underline">Signaler</button>}
                 </span>
               </div>
             ))}
@@ -267,6 +283,14 @@ function AnalysePage() {
           </div>
         </Coffre>
       </div>
+
+      <Modal open={!!disputeTx} onOpenChange={(o) => { if (!o) setDisputeTx(null); }} title="Signaler un problème" subtitle={disputeTx ? `${disputeTx.label} · ${formatMoney(disputeTx.amount, disputeTx.currency)}` : undefined}>
+        <div className="space-y-3">
+          <textarea value={reason} onChange={(e) => setReason(e.target.value)} maxLength={1000} rows={4} placeholder="Décrivez le problème (10 caractères minimum)" className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none" />
+          <Button className="w-full" disabled={sending || reason.trim().length < 10} onClick={() => void sendDispute()}>{sending ? "Envoi…" : "Envoyer la réclamation"}</Button>
+          <p className="text-[0.62rem] text-muted-foreground">Votre réclamation arrive dans le back-office FILAX. Vous serez notifié de la décision.</p>
+        </div>
+      </Modal>
 
       <Modal open={!!selectedGoal} onOpenChange={(open) => { if (!open) setGoalId(null); }} title={selectedGoal?.name ?? "Objectif"} subtitle={selectedGoal ? accName(selectedGoal.accountId) : undefined}>
         {selectedGoal && <div className="space-y-5">

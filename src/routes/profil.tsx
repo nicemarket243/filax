@@ -69,13 +69,6 @@ const PARTNER_BANKS = [
     title: "Partenariat Officiel - TMB",
     security: "En choisissant la TMB, vous confiez la garde de vos liquidités à un réseau bancaire d'envergure nationale reconnu pour sa fiabilité et sa proximité. Vos sous-comptes bénéficient des protocoles de sécurité renforcés de la TMB contre tout risque systémique. La sélection de cette banque est définitive et sécurise l'ensemble de vos opérations sur l'application.",
   },
-  {
-    id: "iba",
-    name: "IBA",
-    desc: "International Bank for Africa",
-    title: "Banque partenaire - IBA",
-    security: "Les conditions officielles de partenariat avec IBA seront publiées ici dès leur validation. Ce choix de banque partenaire est irréversible et définitif.",
-  },
 ] as const;
 
 export const Route = createFileRoute("/profil")({
