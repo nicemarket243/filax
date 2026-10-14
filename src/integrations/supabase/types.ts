@@ -898,6 +898,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      has_pin: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -927,6 +928,16 @@ export type Database = {
           first_name: string
           last_name: string
         }[]
+      }
+      record_outflow_failure: {
+        Args: {
+          _account: string
+          _amount: number
+          _destination?: string
+          _operation: string
+          _reason: string
+        }
+        Returns: undefined
       }
       request_deposit: {
         Args: {
