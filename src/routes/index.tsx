@@ -16,7 +16,7 @@ import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax
 import { VisualPicker } from "@/components/filax/visual-picker";
 import { Modal } from "@/components/filax/ui-kit";
 import { Glyph } from "@/components/filax/glyph";
-import { AUTH_INTENT_KEY, PublicWelcome } from "@/components/filax/public-welcome";
+import { AUTH_INTENT_KEY, DISCOVERY_KEY, PublicWelcome, type Discovery } from "@/components/filax/public-welcome";
 import {
   DepositModal,
   FundGoalModal,
@@ -78,6 +78,11 @@ function HomePage() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [checkingLogin, setCheckingLogin] = useState(false);
   const discardFresh = useServerFn(discardFreshGoogleAccount);
+  const [discovery, setDiscovery] = useState<Discovery | null | undefined>(undefined);
+  useEffect(() => {
+    try { setDiscovery(JSON.parse(localStorage.getItem(DISCOVERY_KEY) ?? "null")); } catch { setDiscovery(null); }
+  }, []);
+  const exitDiscovery = () => { localStorage.removeItem(DISCOVERY_KEY); setDiscovery(null); };
 
   // Connexion Google : un Gmail non lié à un compte FILAX ne doit jamais ouvrir un profil vide.
   useEffect(() => {
@@ -108,6 +113,15 @@ function HomePage() {
   const accountGoals = goals.filter((g) => g.accountId === active.id);
 
   const openAction = (key: string) => {
+    // Mode découverte : aucune session, donc aucune opération possible (le serveur refuse aussi sans compte vérifié).
+    if (!userId && ["deposit", "withdraw", "transfer"].includes(key)) {
+      toast.error("Opération indisponible en mode découverte", {
+        description: "Créez et vérifiez votre compte (numéro, e-mail, identité et code PIN) pour faire des dépôts, retraits ou transferts.",
+        duration: 8000,
+        action: { label: "Compléter mon profil", onClick: exitDiscovery },
+      });
+      return;
+    }
     if (key === "withdraw" && isLocked(active)) {
       lockedWithdrawToast();
       return;
@@ -115,11 +129,11 @@ function HomePage() {
     setModal(key);
   };
 
-  if (!ready || checkingLogin) {
+  if (!ready || checkingLogin || (!userId && discovery === undefined)) {
     return <main className="flex min-h-screen items-center justify-center bg-background"><span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-blue border-t-transparent" aria-label="Chargement" /></main>;
   }
 
-  if (!userId) return <PublicWelcome onAuthenticated={() => window.location.reload()} />;
+  if (!userId && !discovery) return <PublicWelcome onAuthenticated={() => window.location.reload()} onDiscover={(d) => { localStorage.setItem(DISCOVERY_KEY, JSON.stringify(d)); setDiscovery(d); }} />;
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">
@@ -130,6 +144,14 @@ function HomePage() {
           filax.markNotificationsRead();
         }}
       />
+      {!userId && discovery && (
+        <div role="status" className="mt-3 rounded-xl border border-brand-gold/40 bg-brand-gold/10 p-3 text-xs text-foreground">
+          <p className="font-semibold">Mode découverte — données fictives</p>
+          <p className="mt-1 text-muted-foreground">Bonjour {discovery.name}. Votre numéro n'est pas vérifié et aucun compte n'est créé. Les soldes affichés sont des exemples.</p>
+          <button type="button" onClick={exitDiscovery} className="mt-2 font-semibold text-brand-blue underline-offset-2 hover:underline">Créer mon vrai compte</button>
+        </div>
+      )}
+
 
       <PageTitle
         title="Prenez le contrôle de vos finances"
