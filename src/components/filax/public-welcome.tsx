@@ -20,7 +20,15 @@ const REMEMBER_KEY = "filax-remembered-login";
 const REMEMBER_MS = 30 * 86_400_000;
 type Remembered = { method: Method; phone?: string; country?: CountryCode; filaxId?: string; expires: number };
 
-export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () => void }) {
+export const DISCOVERY_KEY = "filax-discovery";
+export type Discovery = { name: string; phone: string };
+
+export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthenticated: () => void; onDiscover?: (d: Discovery) => void }) {
+  const discover = () => {
+    if (name.trim().length < 2) return void toast.error("Indiquez votre nom complet");
+    if (phone.replace(/\D/g, "").length < 6) return void toast.error("Entrez votre numéro de téléphone");
+    onDiscover?.({ name: name.trim().slice(0, 80), phone: phone.trim().slice(0, 20) });
+  };
   const [mode, setMode] = useState<Mode>("signup");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -303,6 +311,12 @@ export function PublicWelcome({ onAuthenticated: done }: { onAuthenticated: () =
               className="w-full text-center text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               {method === "filax" ? "Modifier l'ID FILAX" : "Modifier le numéro"}
+            </button>
+          )}
+
+          {mode === "signup" && method === "phone" && !sent && onDiscover && (
+            <button type="button" onClick={discover} disabled={busy} className="press w-full rounded-xl border border-border/70 py-3.5 text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-50">
+              Découvrir l'app sans code (nom et numéro)
             </button>
           )}
 
