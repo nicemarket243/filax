@@ -29,6 +29,26 @@ import panorama27 from "@/assets/group-panoramas/panorama-27.jpg";
 import panorama28 from "@/assets/group-panoramas/panorama-28.jpg";
 import panorama29 from "@/assets/group-panoramas/panorama-29.jpg";
 import panorama30 from "@/assets/group-panoramas/panorama-30.jpg";
+import panorama31 from "@/assets/group-panoramas/panorama-31.jpg";
+import panorama32 from "@/assets/group-panoramas/panorama-32.jpg";
+import panorama33 from "@/assets/group-panoramas/panorama-33.jpg";
+import panorama34 from "@/assets/group-panoramas/panorama-34.jpg";
+import panorama35 from "@/assets/group-panoramas/panorama-35.jpg";
+import panorama36 from "@/assets/group-panoramas/panorama-36.jpg";
+import panorama37 from "@/assets/group-panoramas/panorama-37.jpg";
+import panorama38 from "@/assets/group-panoramas/panorama-38.jpg";
+import panorama39 from "@/assets/group-panoramas/panorama-39.jpg";
+import panorama40 from "@/assets/group-panoramas/panorama-40.jpg";
+import panorama41 from "@/assets/group-panoramas/panorama-41.jpg";
+import panorama42 from "@/assets/group-panoramas/panorama-42.jpg";
+import panorama43 from "@/assets/group-panoramas/panorama-43.jpg";
+import panorama44 from "@/assets/group-panoramas/panorama-44.jpg";
+import panorama45 from "@/assets/group-panoramas/panorama-45.jpg";
+import panorama46 from "@/assets/group-panoramas/panorama-46.jpg";
+import panorama47 from "@/assets/group-panoramas/panorama-47.jpg";
+import panorama48 from "@/assets/group-panoramas/panorama-48.jpg";
+import panorama49 from "@/assets/group-panoramas/panorama-49.jpg";
+import panorama50 from "@/assets/group-panoramas/panorama-50.jpg";
 
 export const GROUP_MESSAGE_EN: Record<string, string> = {
   "FILAX — L'épargne intelligente pour concrétiser vos plus grands rêves.": "FILAX — Smart savings to make your biggest dreams happen.",
