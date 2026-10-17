@@ -102,11 +102,13 @@ function GroupHeroSlideshow() {
     // Chaque photo reste 5,5 secondes avant le fondu vers la suivante.
     timer = setTimeout(advance, 5500);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [paused, count, slides.active]);
+  }, [mounted, paused, count, slides.active]);
 
   const image = GROUP_FINANCE_PHOTOS[slides.active];
   const previous = GROUP_FINANCE_PHOTOS[slides.previous];
   if (!image) return null;
+  // Avant la lecture de la position enregistrée, on affiche le cadre vide pour éviter un saut visuel.
+  if (!mounted) return <section className="mt-4" aria-hidden="true"><div className="group-banner relative isolate w-full overflow-hidden rounded-[1.6rem]" /></section>;
 
   return (
     <section className="mt-4" aria-label={t("Solidarité et épargne collective")} aria-roledescription="diaporama">
