@@ -50,8 +50,22 @@ export const Route = createFileRoute("/groupes")({
   component: GroupesPage,
 });
 
+// Dernière photo affichée, conservée dans la session du navigateur :
+// le diaporama reprend là où il s'était arrêté au lieu de recommencer au début.
+const SLIDE_STORAGE_KEY = "filax-group-slide";
+
 function GroupHeroSlideshow() {
   const [slides, setSlides] = useState({ active: 0, previous: 0 });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const saved = Number(window.sessionStorage.getItem(SLIDE_STORAGE_KEY));
+    const start = Number.isInteger(saved) && saved >= 0 && saved < GROUP_FINANCE_PHOTOS.length
+      ? saved
+      : Math.floor(Math.random() * GROUP_FINANCE_PHOTOS.length);
+    setSlides({ active: start, previous: start });
+    setMounted(true);
+  }, []);
   const [paused, setPaused] = useState(false);
   const { t } = useI18n();
   const count = GROUP_FINANCE_PHOTOS.length;
@@ -65,7 +79,7 @@ function GroupHeroSlideshow() {
   }, []);
 
   useEffect(() => {
-    if (paused || !count) return;
+    if (!mounted || paused || !count) return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
     const advance = async () => {
@@ -76,19 +90,25 @@ function GroupHeroSlideshow() {
       preload.src = nextPhoto.src;
       try {
         await preload.decode();
-        if (!cancelled) setSlides({ active: next, previous: slides.active });
+        if (!cancelled) {
+          window.sessionStorage.setItem(SLIDE_STORAGE_KEY, String(next));
+          setSlides({ active: next, previous: slides.active });
+        }
       } catch {
         // Keep the current photo visible if the next asset is unavailable.
-        if (!cancelled) timer = setTimeout(advance, 2000);
+        if (!cancelled) timer = setTimeout(advance, 2500);
       }
     };
-    timer = setTimeout(advance, 2000);
+    // Chaque photo reste 5,5 secondes avant le fondu vers la suivante.
+    timer = setTimeout(advance, 5500);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [paused, count, slides.active]);
+  }, [mounted, paused, count, slides.active]);
 
   const image = GROUP_FINANCE_PHOTOS[slides.active];
   const previous = GROUP_FINANCE_PHOTOS[slides.previous];
   if (!image) return null;
+  // Avant la lecture de la position enregistrée, on affiche le cadre vide pour éviter un saut visuel.
+  if (!mounted) return <section className="mt-4" aria-hidden="true"><div className="group-banner relative isolate w-full overflow-hidden rounded-[1.6rem]" /></section>;
 
   return (
     <section className="mt-4" aria-label={t("Solidarité et épargne collective")} aria-roledescription="diaporama">

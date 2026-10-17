@@ -29,6 +29,26 @@ import panorama27 from "@/assets/group-panoramas/panorama-27.jpg";
 import panorama28 from "@/assets/group-panoramas/panorama-28.jpg";
 import panorama29 from "@/assets/group-panoramas/panorama-29.jpg";
 import panorama30 from "@/assets/group-panoramas/panorama-30.jpg";
+import panorama31 from "@/assets/group-panoramas/panorama-31.jpg";
+import panorama32 from "@/assets/group-panoramas/panorama-32.jpg";
+import panorama33 from "@/assets/group-panoramas/panorama-33.jpg";
+import panorama34 from "@/assets/group-panoramas/panorama-34.jpg";
+import panorama35 from "@/assets/group-panoramas/panorama-35.jpg";
+import panorama36 from "@/assets/group-panoramas/panorama-36.jpg";
+import panorama37 from "@/assets/group-panoramas/panorama-37.jpg";
+import panorama38 from "@/assets/group-panoramas/panorama-38.jpg";
+import panorama39 from "@/assets/group-panoramas/panorama-39.jpg";
+import panorama40 from "@/assets/group-panoramas/panorama-40.jpg";
+import panorama41 from "@/assets/group-panoramas/panorama-41.jpg";
+import panorama42 from "@/assets/group-panoramas/panorama-42.jpg";
+import panorama43 from "@/assets/group-panoramas/panorama-43.jpg";
+import panorama44 from "@/assets/group-panoramas/panorama-44.jpg";
+import panorama45 from "@/assets/group-panoramas/panorama-45.jpg";
+import panorama46 from "@/assets/group-panoramas/panorama-46.jpg";
+import panorama47 from "@/assets/group-panoramas/panorama-47.jpg";
+import panorama48 from "@/assets/group-panoramas/panorama-48.jpg";
+import panorama49 from "@/assets/group-panoramas/panorama-49.jpg";
+import panorama50 from "@/assets/group-panoramas/panorama-50.jpg";
 
 export const GROUP_MESSAGE_EN: Record<string, string> = {
   "FILAX — L'épargne intelligente pour concrétiser vos plus grands rêves.": "FILAX — Smart savings to make your biggest dreams happen.",
@@ -45,7 +65,17 @@ export const GROUP_MESSAGE_EN: Record<string, string> = {
   "L'application financière pensée pour l'Afrique et la diaspora.": "The financial app designed for Africa and its diaspora.",
   "Suivez vos transferts et gardez le contrôle à chaque étape.": "Track your transfers and stay in control at every step.",
   "Construisez votre patrimoine en toute sérénité grâce à FILAX.": "Build your assets with peace of mind through FILAX.",
-  "Rejoignez une communauté qui construit ses projets avec FILAX.": "Join a community building its plans with FILAX."
+  "Rejoignez une communauté qui construit ses projets avec FILAX.": "Join a community building its plans with FILAX.",
+  "Chaque pièce compte : épargnez en famille avec FILAX.": "Every coin counts: save as a family with FILAX.",
+  "Ensemble, vos projets deviennent réalité avec FILAX.": "Together, your plans become reality with FILAX.",
+  "Préparez l'avenir de vos enfants, une cotisation à la fois.": "Prepare your children's future, one contribution at a time.",
+  "Votre récolte commence par une épargne disciplinée.": "Your harvest starts with disciplined saving.",
+  "De la cotisation à la célébration : FILAX vous accompagne.": "From contribution to celebration: FILAX walks with you.",
+  "Investissez ensemble, grandissez ensemble avec FILAX.": "Invest together, grow together with FILAX.",
+  "Votre maison, votre fierté : bâtissez-la avec FILAX.": "Your home, your pride: build it with FILAX.",
+  "Le voyage de vos rêves commence par une épargne commune.": "Your dream trip starts with shared savings.",
+  "La discipline d'aujourd'hui, la liberté de demain.": "Today's discipline, tomorrow's freedom.",
+  "Votre commerce mérite un capital solide : cotisez avec FILAX.": "Your business deserves solid capital: contribute with FILAX."
 };
 
 export const GROUP_FINANCE_PHOTOS = [
@@ -79,4 +109,24 @@ export const GROUP_FINANCE_PHOTOS = [
   { key: "panorama-28", position: "50% 50%", src: panorama28, alt: "Une famille profite d’un voyage", message: undefined },
   { key: "panorama-29", position: "50% 50%", src: panorama29, alt: "Une équipe fête un projet réussi", message: "Faites confiance à FILAX pour suivre vos transactions en toute transparence." },
   { key: "panorama-30", position: "50% 50%", src: panorama30, alt: "Des amis planifient leurs projets communs", message: undefined },
+  { key: "panorama-31", position: "50% 50%", src: panorama31, alt: "Une famille compte ses économies dans un bocal", message: "Chaque pièce compte : épargnez en famille avec FILAX." },
+  { key: "panorama-32", position: "50% 50%", src: panorama32, alt: "Des partenaires signent un accord d’affaires", message: undefined },
+  { key: "panorama-33", position: "50% 50%", src: panorama33, alt: "Une famille plante un arbre sur sa parcelle", message: "Préparez l'avenir de vos enfants, une cotisation à la fois." },
+  { key: "panorama-34", position: "50% 50%", src: panorama34, alt: "Des commerçantes cotisent dans une caisse commune", message: undefined },
+  { key: "panorama-35", position: "50% 50%", src: panorama35, alt: "Une équipe célèbre la croissance de son investissement", message: "Investissez ensemble, grandissez ensemble avec FILAX." },
+  { key: "panorama-36", position: "50% 50%", src: panorama36, alt: "Un père apprend le budget à sa fille", message: undefined },
+  { key: "panorama-37", position: "50% 50%", src: panorama37, alt: "Une coopérative réceptionne son camion", message: "Ensemble, vos projets deviennent réalité avec FILAX." },
+  { key: "panorama-38", position: "50% 50%", src: panorama38, alt: "Des amis inaugurent leur restaurant commun", message: undefined },
+  { key: "panorama-39", position: "50% 50%", src: panorama39, alt: "Une grand-mère épargne avec ses petits-enfants", message: "La discipline d'aujourd'hui, la liberté de demain." },
+  { key: "panorama-40", position: "50% 50%", src: panorama40, alt: "Des diplômés célèbrent avec leurs familles", message: undefined },
+  { key: "panorama-41", position: "50% 50%", src: panorama41, alt: "Des cultivateurs fêtent leur récolte", message: "Votre récolte commence par une épargne disciplinée." },
+  { key: "panorama-42", position: "50% 50%", src: panorama42, alt: "Des amis emménagent dans leur appartement", message: undefined },
+  { key: "panorama-43", position: "50% 50%", src: panorama43, alt: "Une mère ouvre sa boutique de tissus", message: "Votre commerce mérite un capital solide : cotisez avec FILAX." },
+  { key: "panorama-44", position: "50% 50%", src: panorama44, alt: "Une communauté compte son fonds de construction", message: undefined },
+  { key: "panorama-45", position: "50% 50%", src: panorama45, alt: "Des amis partagent leurs cotisations sur téléphone", message: "De la cotisation à la célébration : FILAX vous accompagne." },
+  { key: "panorama-46", position: "50% 50%", src: panorama46, alt: "Un mariage financé par le cercle d’épargne familial", message: undefined },
+  { key: "panorama-47", position: "50% 50%", src: panorama47, alt: "Des motards reçoivent leurs motos de la coopérative", message: "Prenez le contrôle total de votre argent avec la discipline FILAX." },
+  { key: "panorama-48", position: "50% 50%", src: panorama48, alt: "Une famille devant sa maison nouvellement construite", message: undefined },
+  { key: "panorama-49", position: "50% 50%", src: panorama49, alt: "Des artisanes exposent leurs créations au marché", message: "Votre maison, votre fierté : bâtissez-la avec FILAX." },
+  { key: "panorama-50", position: "50% 50%", src: panorama50, alt: "Des amis partent en voyage grâce à leur épargne commune", message: undefined },
 ];
