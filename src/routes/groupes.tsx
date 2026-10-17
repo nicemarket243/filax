@@ -91,7 +91,7 @@ function GroupHeroSlideshow() {
       try {
         await preload.decode();
         if (!cancelled) {
-          lastSlideIndex = next;
+          window.sessionStorage.setItem(SLIDE_STORAGE_KEY, String(next));
           setSlides({ active: next, previous: slides.active });
         }
       } catch {
