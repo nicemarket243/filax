@@ -50,8 +50,15 @@ export const Route = createFileRoute("/groupes")({
   component: GroupesPage,
 });
 
+// Dernière photo affichée, conservée entre les visites de l'onglet :
+// le diaporama reprend là où il s'était arrêté au lieu de recommencer au début.
+let lastSlideIndex = -1;
+
 function GroupHeroSlideshow() {
-  const [slides, setSlides] = useState({ active: 0, previous: 0 });
+  const [slides, setSlides] = useState(() => {
+    const start = lastSlideIndex >= 0 ? lastSlideIndex : Math.floor(Math.random() * GROUP_FINANCE_PHOTOS.length);
+    return { active: start, previous: start };
+  });
   const [paused, setPaused] = useState(false);
   const { t } = useI18n();
   const count = GROUP_FINANCE_PHOTOS.length;
