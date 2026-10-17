@@ -65,7 +65,17 @@ export const GROUP_MESSAGE_EN: Record<string, string> = {
   "L'application financière pensée pour l'Afrique et la diaspora.": "The financial app designed for Africa and its diaspora.",
   "Suivez vos transferts et gardez le contrôle à chaque étape.": "Track your transfers and stay in control at every step.",
   "Construisez votre patrimoine en toute sérénité grâce à FILAX.": "Build your assets with peace of mind through FILAX.",
-  "Rejoignez une communauté qui construit ses projets avec FILAX.": "Join a community building its plans with FILAX."
+  "Rejoignez une communauté qui construit ses projets avec FILAX.": "Join a community building its plans with FILAX.",
+  "Chaque pièce compte : épargnez en famille avec FILAX.": "Every coin counts: save as a family with FILAX.",
+  "Ensemble, vos projets deviennent réalité avec FILAX.": "Together, your plans become reality with FILAX.",
+  "Préparez l'avenir de vos enfants, une cotisation à la fois.": "Prepare your children's future, one contribution at a time.",
+  "Votre récolte commence par une épargne disciplinée.": "Your harvest starts with disciplined saving.",
+  "De la cotisation à la célébration : FILAX vous accompagne.": "From contribution to celebration: FILAX walks with you.",
+  "Investissez ensemble, grandissez ensemble avec FILAX.": "Invest together, grow together with FILAX.",
+  "Votre maison, votre fierté : bâtissez-la avec FILAX.": "Your home, your pride: build it with FILAX.",
+  "Le voyage de vos rêves commence par une épargne commune.": "Your dream trip starts with shared savings.",
+  "La discipline d'aujourd'hui, la liberté de demain.": "Today's discipline, tomorrow's freedom.",
+  "Votre commerce mérite un capital solide : cotisez avec FILAX.": "Your business deserves solid capital: contribute with FILAX."
 };
 
 export const GROUP_FINANCE_PHOTOS = [
