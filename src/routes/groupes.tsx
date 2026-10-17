@@ -79,7 +79,7 @@ function GroupHeroSlideshow() {
   }, []);
 
   useEffect(() => {
-    if (paused || !count) return;
+    if (!mounted || paused || !count) return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
     const advance = async () => {
