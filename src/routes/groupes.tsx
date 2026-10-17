@@ -83,13 +83,17 @@ function GroupHeroSlideshow() {
       preload.src = nextPhoto.src;
       try {
         await preload.decode();
-        if (!cancelled) setSlides({ active: next, previous: slides.active });
+        if (!cancelled) {
+          lastSlideIndex = next;
+          setSlides({ active: next, previous: slides.active });
+        }
       } catch {
         // Keep the current photo visible if the next asset is unavailable.
-        if (!cancelled) timer = setTimeout(advance, 2000);
+        if (!cancelled) timer = setTimeout(advance, 2500);
       }
     };
-    timer = setTimeout(advance, 2000);
+    // Chaque photo reste 5,5 secondes avant le fondu vers la suivante.
+    timer = setTimeout(advance, 5500);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [paused, count, slides.active]);
 
