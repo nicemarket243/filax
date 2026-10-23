@@ -13,8 +13,8 @@ export const FILAX_INFORMATION_EN: Record<string, string> = {
   "FILAX a été créée le 20 décembre 2025 à Kinshasa. Son siège social se trouve en République démocratique du Congo. Son lancement officiel est prévu le 20 décembre 2026.":
     "FILAX was founded on 20 December 2025 in Kinshasa. Its headquarters are in the Democratic Republic of the Congo. Its official launch is planned for 20 December 2026.",
   "Les fondateurs": "The founders",
-  "FILAX est portée par Alvein l’entrepreneur, Exaucé Nzundu et Corneille Mabangu.":
-    "FILAX is led by Alvein l’entrepreneur, Exaucé Nzundu and Corneille Mabangu.",
+  "FILAX est portée par Alvine l’Entrepreneur, Exaucé Nzundu et Corneille Mabangu.":
+    "FILAX is led by Alvine l’Entrepreneur, Exaucé Nzundu and Corneille Mabangu.",
   "Une épargne plus sereine": "Save with greater peace of mind",
   "Notre mission est de lutter contre les risques des cotisations informelles : perte d’argent, vol et manque de suivi. FILAX encourage la discipline financière, la traçabilité des contributions et l’épargne pour des projets concrets.":
     "Our mission is to reduce the risks of informal contributions: lost money, theft and poor tracking. FILAX encourages financial discipline, traceable contributions and savings for tangible projects.",

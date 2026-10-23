@@ -10,7 +10,7 @@ export const FILAX_INFORMATION = [
       ],
       [
         "Les fondateurs",
-        "FILAX est portée par Alvein l’entrepreneur, Exaucé Nzundu et Corneille Mabangu.",
+        "FILAX est portée par Alvine l’Entrepreneur, Exaucé Nzundu et Corneille Mabangu.",
       ],
       [
         "Une épargne plus sereine",
