@@ -1,5 +1,12 @@
 # FILAX roadmap
 
+## 24 oct. — Tunnels d'inscription et de connexion
+- [x] Inscription directe : nom, post-nom, téléphone OU e-mail, sans ID ni code, ID FILAX généré automatiquement
+- [x] Connexion par téléphone, ID FILAX ou e-mail avec fenêtre de choix du canal et code à 6 chiffres
+- [x] Reconnaissance d'appareil : reprise du profil en un clic, mémorisation limitée à 1 mois, jamais de code
+- [x] Tester les deux parcours sur des comptes de test sans toucher au compte vitrine (entrée directe, ID généré, doublons refusés, choix du canal, reprise en un clic, session persistante ; 9 tests unitaires)
+
+
 ## 24 oct. — PDF dans FAQ / Documents
 - [x] Lister le mémorandum disponible avec consultation, téléchargement, copie et partage
 - [x] Vérifier le PDF téléchargé (15 pages), les liens WhatsApp/e-mail, la copie du lien et le passage du fichier au partage natif avec activation ; téléphone sans débordement, aucune écriture financière ni modification de session utilisateur
