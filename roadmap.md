@@ -1,10 +1,10 @@
 # FILAX roadmap
 
 ## 24 oct. — Parcours de transactions sécurisés
-- [ ] Dépôt : téléphone et montant, confirmation simulée sans PIN ni crédit
-- [ ] Retrait : destination, montant, PIN puis récapitulatif final sans envoi externe non configuré
-- [ ] Transfert interne : destinataire résolu, montant et confirmation finale, sans CVV
-- [ ] Tester les étapes sans mouvement financier ni changement de session
+- [x] Dépôt : téléphone et montant, confirmation simulée sans PIN ni crédit
+- [x] Retrait : destination, montant, PIN puis récapitulatif final sans envoi externe non configuré
+- [x] Transfert interne : destinataire résolu, montant et confirmation finale, sans CVV
+- [x] Tester les étapes sans mouvement financier ni changement de session (4 tests de règles et navigateur connecté, PIN/annuaire remplacés par réponses de test ; validation financière finale non exécutée)
 
 ## 14 oct. — Analyse, pays et cadrage Groupes
 - [x] Unifier le dégradé premium Accueil/Analyse et la courbe bleue au repos, rouge/verte au toucher (comparaison des dégradés et des deux couleurs vérifiée)
