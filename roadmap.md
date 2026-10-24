@@ -4,7 +4,12 @@
 - [x] Auditer le code et les règles financières hébergées en lecture seule (audit initial, non certification exhaustive)
 - [x] Corriger le test PDF non reconnu ; 10 tests passent
 - [x] Rédiger l'état vérifiable dans docs/finalization-audit-2026-10-24.md
-- [ ] Valider le plan priorisé avant les modifications structurelles — attend l'accord sur les lots et garde-fous
+- [x] Plan priorisé approuvé
+- [x] Fermer les fonctions SQL de sortie externe avant mutation, bloquer les remboursements internes non compensés et réduire les droits sensibles
+- [x] Arrêter la confirmation automatique de contacts sans preuve ; accès rapide désormais découverte, aucune suppression automatique Google
+- [x] Tests unitaires : 14 passent ; entrée découverte, blocage dépôt, absence de tokens et rechargement vérifiés au navigateur
+- [ ] Vérifier les protections SQL en session test — autorisation d'ouverture du compte FLX-6405AF9C refusée ; aucun remplacement par le compte vitrine
+- [ ] Lots ledger, parcours complets, connecteurs et qualification — suite des changements financiers en attente de vérification isolée du lot de sécurité
 - Les réalisations historiques ci-dessous ne constituent pas une certification de préparation à la production ; elles seront revalidées dans cette mission.
 
 ## 24 oct. — Tunnels d'inscription et de connexion

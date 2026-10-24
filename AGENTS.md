@@ -1,6 +1,7 @@
 # Project Architecture
 
 - Quick access with an unproven contact returns discovery data only, never auth tokens or confirmed contact flags; existing authenticated sessions remain unchanged.
+- Discovery examples come from an independent catalog; authenticated account loading never falls back to local showcase balances.
 - External withdrawal/transfer SQL functions fail closed before any mutation until documented providers and settlement are authorized; internal refunds require complete compensation before enabling.
 - Account preservation is unconditional in login compatibility endpoints; never automatically delete newly created Google or test accounts.
 
