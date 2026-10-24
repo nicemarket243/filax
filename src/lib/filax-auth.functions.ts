@@ -3,13 +3,21 @@ import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { detectIdentifier, normalizePhone } from "@/lib/identifier";
+import { discoveryRegistration, registrationInput } from "@/lib/access-policy";
 
 /** Domaine interne des comptes créés avec un numéro seul : jamais utilisé pour envoyer un e-mail. */
 const PHONE_ONLY_DOMAIN = "@filax-phone.local";
 
 function publicClient() {
-  return createClient(process.env["SUPABASE_URL"]!, process.env["SUPABASE_PUBLISHABLE_KEY"]!, {
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  return createClient(process.env["SUPABASE_URL"]!, key, {
     auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+    global: { fetch: (input, init) => {
+      const headers = new Headers(init?.headers);
+      if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) headers.delete("Authorization");
+      headers.set("apikey", key);
+      return fetch(input, { ...init, headers });
+    } },
   });
 }
 
@@ -18,7 +26,7 @@ function mask(c: { email?: string; phone?: string }) {
     const [u, d] = c.email.split("@");
     return `${u.slice(0, 2)}•••@${d}`;
   }
-  return `•••${c.phone!.slice(-3)}`;
+  return `•••${c.phone?.slice(-3) ?? ""}`;
 }
 
 type Contact = { email?: string; phone?: string };
@@ -50,73 +58,10 @@ async function resolveLoginContact(identifier: string): Promise<Contact | null> 
   return { email, phone };
 }
 
-/**
- * Inscription directe : nom, post-nom et téléphone OU e-mail. Aucun code à cette étape —
- * le compte est créé confirmé, l'ID FILAX et les comptes principaux sont générés par le
- * déclencheur handle_new_user, et la session est renvoyée pour une entrée immédiate.
- * La connexion ultérieure exige toujours le code à 6 chiffres : le compte reste protégé.
- */
+/** Quick access is discovery only until contact ownership is proven. */
 export const registerFilaxAccount = createServerFn({ method: "POST" })
-  .inputValidator((d) =>
-    z
-      .object({
-        firstName: z.string().trim().min(2).max(80),
-        postNom: z.string().trim().min(2).max(80),
-        channel: z.enum(["email", "phone"]),
-        email: z.string().trim().max(255).optional(),
-        phone: z.string().trim().max(24).optional(),
-      })
-      .parse(d),
-  )
-  .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const email = data.channel === "email" ? data.email?.trim().toLowerCase() : undefined;
-    const phone = data.channel === "phone" ? normalizePhone(data.phone ?? "") ?? undefined : undefined;
-    if (data.channel === "email" && !email) return { ok: false as const, error: "Entrez une adresse e-mail valide" };
-    if (data.channel === "phone" && !phone) return { ok: false as const, error: "Entrez un numéro de téléphone valide" };
-
-    if (email) {
-      const { data: existing } = await supabaseAdmin.from("profiles").select("user_id").ilike("email", email).maybeSingle();
-      if (existing) return { ok: false as const, error: "Un compte existe déjà avec cet e-mail. Connectez-vous." };
-    }
-    if (phone) {
-      const { data: existing } = await supabaseAdmin.from("profiles").select("user_id").in("phone", [phone, phone.slice(1)]).maybeSingle();
-      if (existing) return { ok: false as const, error: "Un compte existe déjà avec ce numéro. Connectez-vous." };
-    }
-
-    const authEmail = email ?? `p${phone!.replace(/\D/g, "")}${PHONE_ONLY_DOMAIN}`;
-    const password = `${crypto.randomUUID()}${crypto.randomUUID()}`;
-    const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email: authEmail,
-      password,
-      email_confirm: true,
-      phone,
-      phone_confirm: Boolean(phone),
-      user_metadata: {
-        first_name: data.firstName,
-        middle_name: data.postNom,
-        phone: phone ?? null,
-        contact_email: email ?? null,
-      },
-    });
-    if (createError || !created.user) {
-      const dup = /already|duplicate|unique|registered/i.test(createError?.message ?? "");
-      return { ok: false as const, error: dup ? "Un compte existe déjà avec ces informations. Connectez-vous." : "Inscription impossible pour le moment" };
-    }
-
-    const sb = publicClient();
-    const { data: session, error: signInError } = await sb.auth.signInWithPassword({ email: authEmail, password });
-    if (signInError || !session.session) {
-      return { ok: false as const, error: "Compte créé. Connectez-vous avec votre identifiant." };
-    }
-    const { data: profile } = await supabaseAdmin.from("profiles").select("filax_id").eq("user_id", created.user.id).maybeSingle();
-    return {
-      ok: true as const,
-      access_token: session.session.access_token,
-      refresh_token: session.session.refresh_token,
-      filaxId: profile?.filax_id ?? null,
-    };
-  });
+  .inputValidator((d) => registrationInput.parse(d))
+  .handler(async ({ data }) => discoveryRegistration(data));
 
 /** Liste les canaux par lesquels un identifiant peut recevoir son code à 6 chiffres. */
 export const resolveLoginChannels = createServerFn({ method: "POST" })
@@ -156,7 +101,7 @@ export const sendLoginCode = createServerFn({ method: "POST" })
 export const verifyLoginCode = createServerFn({ method: "POST" })
   .inputValidator((d) =>
     z
-      .object({ identifier: z.string().trim().min(3).max(255), channel: z.enum(["email", "sms"]), token: z.string().regex(/^\d{6,8}$/) })
+      .object({ identifier: z.string().trim().min(3).max(255), channel: z.enum(["email", "sms"]), token: z.string().regex(/^\d{6}$/) })
       .parse(d),
   )
   .handler(async ({ data }) => {
@@ -173,30 +118,7 @@ export const verifyLoginCode = createServerFn({ method: "POST" })
     return { ok: true as const, access_token: res.session.access_token, refresh_token: res.session.refresh_token };
   });
 
-/**
- * Connexion Google en mode « Connexion » : si l'adresse Gmail choisie ne correspond à aucun
- * compte FILAX existant, le compte vide qui vient d'être créé automatiquement est supprimé,
- * pour ne jamais basculer sur un profil vide à 0 $.
- */
+/** Deprecated compatibility endpoint: accounts must never be automatically deleted. */
 export const discardFreshGoogleAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin.auth.admin.getUserById(context.userId);
-    const user = data?.user;
-    if (!user) return { discarded: false as const };
-    const ageMs = Date.now() - new Date(user.created_at).getTime();
-    if (ageMs > 10 * 60 * 1000) return { discarded: false as const, email: user.email ?? null };
-    const [{ data: accts }, { count: txCount }, { count: groupCount }] = await Promise.all([
-      supabaseAdmin.from("accounts").select("balance").eq("user_id", context.userId),
-      supabaseAdmin.from("transactions").select("id", { count: "exact", head: true }).eq("user_id", context.userId),
-      supabaseAdmin.from("groups").select("id", { count: "exact", head: true }).eq("owner_id", context.userId),
-    ]);
-    const empty = (accts ?? []).every((a) => Number(a.balance) === 0) && !txCount && !groupCount;
-    if (!empty) return { discarded: false as const, email: user.email ?? null };
-    await supabaseAdmin.from("accounts").delete().eq("user_id", context.userId);
-    await supabaseAdmin.from("notifications").delete().eq("user_id", context.userId);
-    await supabaseAdmin.from("profiles").delete().eq("user_id", context.userId);
-    await supabaseAdmin.auth.admin.deleteUser(context.userId);
-    return { discarded: true as const, email: user.email ?? null };
-  });
+  .handler(async () => ({ discarded: false as const, email: null }));

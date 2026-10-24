@@ -36,7 +36,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "FILAX : plateforme financière connectée à une banque partenaire. Épargne, objectifs, groupes de cotisation, transferts et Mobile Money.",
+          "FILAX : gestion de comptes, objectifs et groupes de cotisation. Connexions bancaires et Mobile Money en préparation.",
       },
       { property: "og:title", content: "FILAX — Plateforme financière intelligente" },
       { property: "og:description", content: "Épargnez, envoyez, recevez et organisez vos finances avec FILAX." },
@@ -147,7 +147,7 @@ function HomePage() {
       {!userId && discovery && (
         <div role="status" className="mt-3 rounded-xl border border-brand-gold/40 bg-brand-gold/10 p-3 text-xs text-foreground">
           <p className="font-semibold">Mode découverte — données fictives</p>
-          <p className="mt-1 text-muted-foreground">Bonjour {discovery.name}. Votre numéro n'est pas vérifié et aucun compte n'est créé. Les soldes affichés sont des exemples.</p>
+          <p className="mt-1 text-muted-foreground">Bonjour {discovery.name}. Vos coordonnées ne sont pas vérifiées et aucun compte n'est créé. Les soldes affichés sont des exemples.</p>
           <button type="button" onClick={exitDiscovery} className="mt-2 font-semibold text-brand-blue underline-offset-2 hover:underline">Créer mon vrai compte</button>
         </div>
       )}
@@ -155,7 +155,7 @@ function HomePage() {
 
       <PageTitle
         title="Prenez le contrôle de vos finances"
-        subtitle="Vos fonds sont sécurisés par notre banque partenaire."
+        subtitle="Connexions bancaires et Mobile Money en préparation."
       />
 
 

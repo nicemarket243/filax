@@ -24,7 +24,7 @@ const REMEMBER_MS = 30 * 86_400_000;
 type Remembered = { name: string; identifier: string; country?: CountryCode; expires: number };
 
 export const DISCOVERY_KEY = "filax-discovery";
-export type Discovery = { name: string; phone: string };
+export type Discovery = { name: string; phone: string; email?: string };
 
 export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthenticated: () => void; onDiscover?: (d: Discovery) => void }) {
   const [mode, setMode] = useState<Mode>("signup");
@@ -102,6 +102,7 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
     const normalized = contact === "phone" ? internationalPhone(phone, country) : null;
     if (contact === "phone" && !normalized) return void toast.error("Entrez un numéro de téléphone valide");
     if (contact === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) return void toast.error("Entrez une adresse e-mail valide");
+    if (!onDiscover) return void toast.error("Accès découverte indisponible");
     setBusy(true);
     try {
       const r = await register({
@@ -110,13 +111,13 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
           postNom: postNom.trim(),
           channel: contact,
           email: contact === "email" ? email.trim() : undefined,
-          phone: contact === "phone" ? normalized! : undefined,
+          phone: contact === "phone" ? normalized ?? undefined : undefined,
         },
       });
-      if (!r.ok) return void toast.error(r.error);
-      await supabase.auth.setSession({ access_token: r.access_token, refresh_token: r.refresh_token });
-      toast.success("Bienvenue sur FILAX", { description: r.filaxId ? `Votre ID FILAX : ${r.filaxId}` : undefined });
-      finish({ name: `${name.trim()} ${postNom.trim()}`, identifier: contact === "email" ? email.trim() : normalized!, country });
+      onDiscover(r.discovery);
+      toast.success("Mode découverte — données fictives");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Inscription impossible pour le moment");
     } finally {
       setBusy(false);
     }
@@ -275,7 +276,7 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
                 disabled={busy}
                 className="press flex w-full items-center justify-center gap-2 rounded-xl bg-filax-blue py-4 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_-12px_var(--brand-blue)] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
               >
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "S'inscrire"}
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continuer en découverte"}
               </button>
 
               {onDiscover && (

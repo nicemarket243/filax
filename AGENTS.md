@@ -1,5 +1,9 @@
 # Project Architecture
 
+- Quick access with an unproven contact returns discovery data only, never auth tokens or confirmed contact flags; existing authenticated sessions remain unchanged.
+- External withdrawal/transfer SQL functions fail closed before any mutation until documented providers and settlement are authorized; internal refunds require complete compensation before enabling.
+- Account preservation is unconditional in login compatibility endpoints; never automatically delete newly created Google or test accounts.
+
 - List available company PDFs in a shared catalog and preload validated same-origin files for FAQ actions; native file sharing runs directly on click, with explicit link-only fallbacks when unsupported.
 
 - Keep transaction review separate from commit: unconfigured external rails stop without mutation, internal transfers require a resolved recipient and explicit final review, and database RPCs validate PINs at commit so entering a PIN alone never moves money.
