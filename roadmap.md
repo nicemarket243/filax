@@ -4,7 +4,7 @@
 - [x] Inscription directe : nom, post-nom, téléphone OU e-mail, sans ID ni code, ID FILAX généré automatiquement
 - [x] Connexion par téléphone, ID FILAX ou e-mail avec fenêtre de choix du canal et code à 6 chiffres
 - [x] Reconnaissance d'appareil : reprise du profil en un clic, mémorisation limitée à 1 mois, jamais de code
-- [ ] Tester les deux parcours sur des comptes de test sans toucher au compte vitrine
+- [x] Tester les deux parcours sur des comptes de test sans toucher au compte vitrine (entrée directe, ID généré, doublons refusés, choix du canal, reprise en un clic, session persistante ; 9 tests unitaires)
 
 
 ## 24 oct. — PDF dans FAQ / Documents
