@@ -1,8 +1,10 @@
 # FILAX roadmap
 
 ## 24 oct. — Mission de finalisation indépendante des partenaires
-- [ ] Auditer le code et les règles financières hébergées en lecture seule
-- [ ] Livrer un état vérifiable et un plan priorisé avant les modifications structurelles
+- [x] Auditer le code et les règles financières hébergées en lecture seule (audit initial, non certification exhaustive)
+- [x] Corriger le test PDF non reconnu ; 10 tests passent
+- [x] Rédiger l'état vérifiable dans docs/finalization-audit-2026-10-24.md
+- [ ] Valider le plan priorisé avant les modifications structurelles — attend l'accord sur les lots et garde-fous
 - Les réalisations historiques ci-dessous ne constituent pas une certification de préparation à la production ; elles seront revalidées dans cette mission.
 
 ## 24 oct. — Tunnels d'inscription et de connexion
