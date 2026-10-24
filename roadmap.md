@@ -1,8 +1,8 @@
 # FILAX roadmap
 
 ## 24 oct. — PDF dans FAQ / Documents
-- [ ] Lister les PDF disponibles avec consultation, téléchargement, copie et partage
-- [ ] Tester le fichier téléchargé et le partage sans modifier les comptes ni la session
+- [x] Lister le mémorandum disponible avec consultation, téléchargement, copie et partage
+- [x] Vérifier le PDF téléchargé (15 pages), les liens WhatsApp/e-mail, la copie du lien et le passage du fichier au partage natif avec activation ; téléphone sans débordement, aucune écriture financière ni modification de session utilisateur
 
 ## 24 oct. — Parcours de transactions sécurisés
 - [x] Dépôt : téléphone et montant, confirmation simulée sans PIN ni crédit
