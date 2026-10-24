@@ -1,5 +1,7 @@
 # Project Architecture
 
+- Keep transaction review separate from commit: unconfigured external rails stop without mutation, internal transfers require a resolved recipient and explicit final review, and database RPCs validate PINs at commit so entering a PIN alone never moves money.
+
 - Keep STK/SMS simulators in an isolated frontend module without auth, financial callbacks, persistence or provider imports; simulated approval must never authorize a real operation.
 - Use a paired panoramic-photo/slogan catalog with source records and translated captions; preload the next photo and crossfade only the active and previous layers inside the clipped group banner, so loading never flashes empty space or exposes stacked edges and no slideshow action affects accounts.
 
