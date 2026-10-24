@@ -1,5 +1,10 @@
 # FILAX roadmap
 
+## 24 oct. — Mission de finalisation indépendante des partenaires
+- [ ] Auditer le code et les règles financières hébergées en lecture seule
+- [ ] Livrer un état vérifiable et un plan priorisé avant les modifications structurelles
+- Les réalisations historiques ci-dessous ne constituent pas une certification de préparation à la production ; elles seront revalidées dans cette mission.
+
 ## 24 oct. — Tunnels d'inscription et de connexion
 - [x] Inscription directe : nom, post-nom, téléphone OU e-mail, sans ID ni code, ID FILAX généré automatiquement
 - [x] Connexion par téléphone, ID FILAX ou e-mail avec fenêtre de choix du canal et code à 6 chiffres
