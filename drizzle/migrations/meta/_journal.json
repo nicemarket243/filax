@@ -106,6 +106,13 @@
       "when": 1791988642538,
       "tag": "0014_kyc_requires_pin",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792877876023,
+      "tag": "0015_close_unconfigured_external_rails_and_unsafe_refunds",
+      "breakpoints": true
     }
   ]
 }
