@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, CreditCard, QrCode, Search, Share2 } from "lucide-react";
+import { Check, Copy, QrCode, Search, Share2 } from "lucide-react";
 
 import {
   ACCENTS,
@@ -100,73 +100,6 @@ function minimumFor(kind: "deposit" | "withdraw", method: TxMethod, currency: Cu
 function MinError({ min, currency, value }: { min: number | null; currency?: Currency; value: number }) {
   if (min === null || value <= 0 || value >= min || !currency) return null;
   return <p role="alert" className="mt-1.5 text-[0.68rem] font-semibold text-brand-red">Montant minimum : {formatMoney(min, currency)}</p>;
-}
-
-/* ---------------- Carte bancaire (Visa / Mastercard) ---------------- */
-
-export interface CardDetails {
-  holder: string;
-  number: string;
-  expiry: string;
-  cvv: string;
-}
-
-function useCard(open: boolean) {
-  const [card, setCard] = useState<CardDetails>({ holder: "", number: "", expiry: "", cvv: "" });
-  useEffect(() => {
-    if (!open) setCard({ holder: "", number: "", expiry: "", cvv: "" });
-  }, [open]);
-  const valid =
-    card.holder.trim().length > 2 &&
-    card.number.replace(/\D/g, "").length >= 15 &&
-    card.expiry.length >= 4 &&
-    card.cvv.length >= 3;
-  return { card, setCard, valid };
-}
-
-function CardFields({ card, setCard }: { card: CardDetails; setCard: (c: CardDetails) => void }) {
-  const brand = /^5|^2[2-7]/.test(card.number.replace(/\D/g, "")) ? "Mastercard" : "Visa";
-  return (
-    <div className="space-y-3 rounded-2xl border border-border bg-muted/40 p-3">
-      <div className="flex items-center gap-2 text-[0.7rem] font-semibold text-muted-foreground">
-        <CreditCard className="h-4 w-4 text-brand-violet" /> {brand} · paiement sécurisé
-      </div>
-      <TextInput
-        placeholder="Nom du titulaire"
-        value={card.holder}
-        onChange={(e) => setCard({ ...card, holder: e.target.value })}
-      />
-      <TextInput
-        inputMode="numeric"
-        placeholder="0000 0000 0000 0000"
-        value={card.number}
-        onChange={(e) =>
-          setCard({
-            ...card,
-            number: e.target.value.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim(),
-          })
-        }
-      />
-      <div className="grid grid-cols-2 gap-2">
-        <TextInput
-          inputMode="numeric"
-          placeholder="MM/AA"
-          value={card.expiry}
-          onChange={(e) => {
-            const d = e.target.value.replace(/\D/g, "").slice(0, 4);
-            setCard({ ...card, expiry: d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d });
-          }}
-        />
-        <TextInput
-          inputMode="numeric"
-          type="password"
-          placeholder="CVV"
-          value={card.cvv}
-          onChange={(e) => setCard({ ...card, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) })}
-        />
-      </div>
-    </div>
-  );
 }
 
 /* ---------------- Dépôt ---------------- */
@@ -318,13 +251,6 @@ const DIRECTORY = [
   { name: "David Tshimanga", id: "FLX-5580-DT", phone: "+243 822 445 909" },
 ];
 
-const DESTINATIONS = [
-  { id: "RDC", label: "RD Congo", flag: "🇨🇩", currency: "USD", rail: "Mobile Money / banque locale" },
-  { id: "EU", label: "Europe", flag: "🇪🇺", currency: "EUR", rail: "Virement SEPA" },
-  { id: "US", label: "États-Unis", flag: "🇺🇸", currency: "USD", rail: "Virement ACH" },
-  { id: "CA", label: "Canada", flag: "🇨🇦", currency: "CAD", rail: "Interac / virement" },
-];
-
 export function TransferModal({
   open,
   onOpenChange,
@@ -352,20 +278,13 @@ export function TransferModal({
   const [scan, setScan] = useState(false);
   const [amount, setAmount, value] = useAmount(open);
 
-  // Transfert vers une autre banque / carte
-  const [destination, setDestination] = useState(DESTINATIONS[1] ?? DESTINATIONS[0]);
-  const [beneficiary, setBeneficiary] = useState("");
-  const [bankName, setBankName] = useState("");
-  const { card, setCard, valid: cardOk } = useCard(open);
-
   useEffect(() => {
     setAccountId(defaultAccountId);
     if (!open) {
       setQuery("");
       setRecipient(null);
       setMode("filax");
-      setBeneficiary("");
-      setBankName("");
+
     }
   }, [defaultAccountId, open]);
 
@@ -390,7 +309,6 @@ export function TransferModal({
       ? DIRECTORY.filter((d) => [d.name, d.id, d.phone].some((f) => f.toLowerCase().includes(query.toLowerCase())))
       : [];
 
-  const bankReady = beneficiary.trim().length > 2 && bankName.trim().length > 1 && cardOk;
   const [pinOpen, setPinOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewPin, setReviewPin] = useState("");
@@ -399,9 +317,9 @@ export function TransferModal({
   const sendWith = async (pin: string) => {
     if (busy || !source || !canReviewOutflow(value, source.balance, pin, recipient?.name ?? "")) return;
     setBusy(true);
-    const label = mode === "filax" ? recipient?.name ?? "" : `${beneficiary} · ${bankName} (${destination.label})`;
+    const label = recipient?.name ?? "";
     try {
-      await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient?.id, pin, accountPin } : { external: true, pin, accountPin });
+      await onConfirm(accountId, value, label, { filaxId: recipient?.id, pin, accountPin });
     } catch (e) {
       toast.error("Transfert échoué", { description: (e as Error).message });
       setReviewOpen(false); setReviewPin("");
@@ -413,7 +331,7 @@ export function TransferModal({
     toast.success("Transfert réussi", { description: `Votre transfert vers ${label} a réussi avec succès.` });
   };
   const source = accounts.find((a) => a.id === accountId);
-  const ready = mode === "filax" && !!source && accountPinReady && Number.isFinite(value) && value > 0 && value + transactionFee(value) <= source.balance && (mode === "filax" ? !!recipient : bankReady);
+  const ready = mode === "filax" && !!source && accountPinReady && Number.isFinite(value) && value > 0 && value + transactionFee(value) <= source.balance && !!recipient;
   const prepareReview = async (pin: string) => {
     if (!source || !canReviewOutflow(value, source.balance, pin, recipient?.name ?? "")) return;
     setPinOpen(false); setReviewPin(pin); setReviewOpen(true);
