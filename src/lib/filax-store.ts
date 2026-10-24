@@ -137,7 +137,6 @@ export const MOBILE_MONEY: { id: TxMethod; label: string; color: AccentKey }[] =
   { id: "orange", label: "Orange Money", color: "brand-gold" },
   { id: "airtel", label: "Airtel Money", color: "brand-red" },
   { id: "mpesa", label: "M-Pesa", color: "brand-green" },
-  { id: "banque", label: "Banque partenaire", color: "brand-blue" },
   { id: "carte", label: "Carte Visa / Mastercard", color: "brand-violet" },
 ];
 
