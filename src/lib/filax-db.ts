@@ -152,12 +152,19 @@ export async function setDbTwoFactor(enabled: boolean) {
 /** Comptes réels de l'utilisateur. */
 export function useDbAccounts(userId: string | null) {
   const [accounts, setAccounts] = useState<Account[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const refresh = useCallback(async () => {
     if (!userId) {
       setAccounts(null);
+      setError(null);
       return;
     }
-    const { data } = await supabase.from("accounts").select("*").eq("user_id", userId).order("created_at");
+    const { data, error: queryError } = await supabase.from("accounts").select("*").eq("user_id", userId).order("created_at");
+    if (queryError) {
+      setError(queryError.message);
+      return;
+    }
+    setError(null);
     setAccounts(
       (data ?? []).map((a) => ({
         id: a.id,
@@ -189,7 +196,7 @@ export function useDbAccounts(userId: string | null) {
       void supabase.removeChannel(ch);
     };
   }, [userId, refresh]);
-  return { accounts, refresh };
+  return { accounts, refresh, error };
 }
 
 /** Groupes réels (créés ou rejoints), avec membres et cotisations. */
