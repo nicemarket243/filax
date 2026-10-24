@@ -1,9 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { discardFreshGoogleAccount } from "@/lib/filax-auth.functions";
+import { DISCOVERY_ACCOUNTS } from "@/lib/discovery-data";
 import { ArrowDownLeft, ArrowUpRight, BadgeCheck, History, LineChart, Lock, Send, ShieldAlert, ShieldCheck, Target, Wallet } from "lucide-react";
 
 import { AppHeader, BottomNav } from "@/components/filax/shell";
@@ -16,7 +14,7 @@ import { BankBadge, PageTitle, ProgressBar, accentVar } from "@/components/filax
 import { VisualPicker } from "@/components/filax/visual-picker";
 import { Modal } from "@/components/filax/ui-kit";
 import { Glyph } from "@/components/filax/glyph";
-import { AUTH_INTENT_KEY, DISCOVERY_KEY, PublicWelcome, type Discovery } from "@/components/filax/public-welcome";
+import { DISCOVERY_KEY, PublicWelcome, type Discovery } from "@/components/filax/public-welcome";
 import {
   DepositModal,
   FundGoalModal,
@@ -59,15 +57,15 @@ function HomePage() {
   const filax = useFilax();
   const { userId, ready } = useDbAuthState();
   const dbNotif = useDbNotifications(userId);
-  const notifications = userId && dbNotif.notifications ? dbNotif.notifications : filax.data.notifications;
+  const notifications = userId ? dbNotif.notifications ?? [] : [];
   const { profile: dbProfile } = useDbProfile(userId);
   const db = useDbAccounts(userId);
   const dbTx = useDbTransactions(userId, db.accounts);
   const live = !!userId && !!db.accounts && db.accounts.length > 0;
-  const accounts = live && db.accounts ? db.accounts : filax.data.accounts;
+  const accounts = userId ? db.accounts ?? [] : DISCOVERY_ACCOUNTS;
   const dbGoals = useDbGoals(userId);
-  const goals = live ? dbGoals.goals ?? [] : filax.data.goals;
-  const transactions = live ? dbTx.transactions ?? [] : filax.data.transactions;
+  const goals = userId ? dbGoals.goals ?? [] : [];
+  const transactions = userId ? dbTx.transactions ?? [] : [];
   const reload = async () => {
     await db.refresh();
   };
@@ -76,41 +74,16 @@ function HomePage() {
   const [modal, setModal] = useState<string | null>(null);
   const [visualBusy, setVisualBusy] = useState(false);
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [checkingLogin, setCheckingLogin] = useState(false);
-  const discardFresh = useServerFn(discardFreshGoogleAccount);
   const [discovery, setDiscovery] = useState<Discovery | null | undefined>(undefined);
   useEffect(() => {
     try { setDiscovery(JSON.parse(localStorage.getItem(DISCOVERY_KEY) ?? "null")); } catch { setDiscovery(null); }
   }, []);
   const exitDiscovery = () => { localStorage.removeItem(DISCOVERY_KEY); setDiscovery(null); };
 
-  // Connexion Google : un Gmail non lié à un compte FILAX ne doit jamais ouvrir un profil vide.
-  useEffect(() => {
-    if (!userId) return;
-    if (sessionStorage.getItem(AUTH_INTENT_KEY) !== "login") return;
-    sessionStorage.removeItem(AUTH_INTENT_KEY);
-    setCheckingLogin(true);
-    void (async () => {
-      try {
-        const r = await discardFresh();
-        if (r.discarded) {
-          await supabase.auth.signOut();
-          toast.error("Aucun compte FILAX lié à ce Gmail", {
-            description: `${r.email ?? "Cette adresse"} n'a pas de compte. Choisissez l'adresse Gmail de votre compte ou connectez-vous avec votre ID FILAX.`,
-            duration: 9000,
-          });
-        }
-      } finally {
-        setCheckingLogin(false);
-      }
-    })();
-  }, [userId, discardFresh]);
-
   const active = accounts[activeIndex] ?? accounts[0];
-  if (!active) return <main aria-label="Chargement" />;
   const unread = notifications.filter((n) => !n.read).length;
-  const accountTx = transactions.filter((t) => t.accountId === active.id);
-  const accountGoals = goals.filter((g) => g.accountId === active.id);
+  const accountTx = transactions.filter((t) => t.accountId === active?.id);
+  const accountGoals = goals.filter((g) => g.accountId === active?.id);
 
   const openAction = (key: string) => {
     // Mode découverte : aucune session, donc aucune opération possible (le serveur refuse aussi sans compte vérifié).
@@ -122,18 +95,20 @@ function HomePage() {
       });
       return;
     }
-    if (key === "withdraw" && isLocked(active)) {
+    if (key === "withdraw" && active && isLocked(active)) {
       lockedWithdrawToast();
       return;
     }
     setModal(key);
   };
 
-  if (!ready || checkingLogin || (!userId && discovery === undefined)) {
+  if (!ready || (!userId && discovery === undefined)) {
     return <main className="flex min-h-screen items-center justify-center bg-background"><span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-blue border-t-transparent" aria-label="Chargement" /></main>;
   }
 
   if (!userId && !discovery) return <PublicWelcome onAuthenticated={() => window.location.reload()} onDiscover={(d) => { localStorage.setItem(DISCOVERY_KEY, JSON.stringify(d)); setDiscovery(d); }} />;
+
+  if (!active) return <main className="flex min-h-screen items-center justify-center bg-background"><p className="text-sm text-muted-foreground">{db.error ? "Impossible de charger vos comptes." : "Chargement de vos comptes…"}</p></main>;
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-28 pt-6">

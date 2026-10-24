@@ -100,9 +100,9 @@ export function BankBadge({ compact = false }: { compact?: boolean }) {
         EB
       </span>
       <div className="leading-tight">
-        <p className="text-[0.7rem] font-bold text-foreground">{PARTNER_BANK}</p>
+        <p className="text-[0.7rem] font-bold text-foreground">Connexion bancaire en attente</p>
         {!compact && (
-          <p className="text-[0.62rem] text-muted-foreground">Vos fonds sont sécurisés par notre banque partenaire.</p>
+          <p className="text-[0.62rem] text-muted-foreground">Aucun partenaire bancaire connecté.</p>
         )}
       </div>
     </div>

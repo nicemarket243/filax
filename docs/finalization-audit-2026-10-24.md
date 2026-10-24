@@ -37,4 +37,13 @@ Date : 24 octobre 2026. Audit du code et lecture seule des définitions héberg�
 
 Sources : src/lib/filax-auth.functions.ts, src/lib/filax-db.ts, src/routes/admin_.operations.tsx, src/lib/*test.ts, migrations Drizzle et Supabase, catalogue information_schema/pg_proc/pg_indexes/pg_tables hébergé. Les données financières personnelles n'ont pas été utilisées pour les tests.
 
-Le journal de compilation a montré build OK à 21:28:32 UTC avant la correction du test. Aucun nouveau résultat de compilation n'était disponible au dernier contrôle ; ne pas présenter ce résultat antérieur comme une compilation après correction.
+## Premier lot appliqué après approbation
+
+- Migration 0015 appliquée : withdraw et transfer_external lèvent une erreur sans aucune mutation. Les remboursements transfer_out/contribution sont fermés tant qu'une compensation complète n'existe pas. Droits réduits sur transactions, rôles, tables PIN/frais et plusieurs fonctions sensibles.
+- registerFilaxAccount ne crée plus de compte confirmé depuis des coordonnées non prouvées ; il retourne un accès découverte sans token. C'est un changement explicite du parcours récent : la création d'un vrai compte sans preuve est remplacée par découverte. Les comptes et sessions existants ne sont pas modifiés.
+- Suppression automatique Google désactivée, appel et déconnexion associés retirés de l'accueil.
+- Accueil : exemples isolés (500 USD, 0 CDF), sans historique personnel ; aucune substitution de soldes locaux pendant le chargement d'un utilisateur connecté. Promesses de connexion bancaire supprimées de l'accueil et du badge partagé.
+- 14 tests passent ; navigateur signé-out : nom/post-nom/e-mail → découverte, blocage dépôt, absence de tokens et persistance découverte au rechargement vérifiés. Capture examinée.
+- Erreur de compilation intermédiaire sur l'état d'erreur des comptes corrigée. Dernier résultat à 21:41:58 UTC : build OK.
+- Documents KYC : bucket privé et policies propriétaire/admin confirmés en lecture seule. Aucune limite de taille/type configurée : restant à traiter.
+- Autorisation d'ouverture de FLX-6405AF9C refusée : aucun test financier connecté exécuté, aucune tentative sur le compte vitrine, aucun mouvement financier. La qualification financière complète et les lots suivants restent non terminés.
