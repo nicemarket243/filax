@@ -1,5 +1,9 @@
 # FILAX roadmap
 
+## 24 oct. — PDF dans FAQ / Documents
+- [ ] Lister les PDF disponibles avec consultation, téléchargement, copie et partage
+- [ ] Tester le fichier téléchargé et le partage sans modifier les comptes ni la session
+
 ## 24 oct. — Parcours de transactions sécurisés
 - [x] Dépôt : téléphone et montant, confirmation simulée sans PIN ni crédit
 - [x] Retrait : destination, montant, PIN puis récapitulatif final sans envoi externe non configuré
