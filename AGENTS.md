@@ -1,5 +1,7 @@
 # Project Architecture
 
+- List available company PDFs in a shared catalog and preload validated same-origin files for FAQ actions; native file sharing runs directly on click, with explicit link-only fallbacks when unsupported.
+
 - Keep transaction review separate from commit: unconfigured external rails stop without mutation, internal transfers require a resolved recipient and explicit final review, and database RPCs validate PINs at commit so entering a PIN alone never moves money.
 
 - Keep STK/SMS simulators in an isolated frontend module without auth, financial callbacks, persistence or provider imports; simulated approval must never authorize a real operation.

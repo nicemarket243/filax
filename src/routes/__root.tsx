@@ -89,8 +89,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "FILAX — Finance connectée" },
       { name: "twitter:description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/huAzq9cUcQh9YLLeaO9wY0kG83z2/social-images/social-1780717378361-cool.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/huAzq9cUcQh9YLLeaO9wY0kG83z2/social-images/social-1780717378361-cool.webp" },
     ],
     links: [
       {
