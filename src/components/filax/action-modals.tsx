@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, CreditCard, QrCode, Search, Share2 } from "lucide-react";
+import { Check, Copy, QrCode, Search, Share2 } from "lucide-react";
 
 import {
   ACCENTS,
@@ -24,6 +24,8 @@ import { VisualPicker } from "./visual-picker";
 import { subaccountSchema, type SubaccountInput } from "@/lib/filax-db";
 import { PinConfirmModal } from "./pin-confirm";
 import { TransactionDemoLauncher } from "./payment-simulators";
+import { TransactionReview } from "./transaction-review";
+import { canReviewOutflow, canValidateDeposit, transactionFee } from "@/lib/transaction-review";
 import { QrScanModal, ReceiveQrModal } from "@/components/filax/qr-scanner";
 
 
@@ -100,73 +102,6 @@ function MinError({ min, currency, value }: { min: number | null; currency?: Cur
   return <p role="alert" className="mt-1.5 text-[0.68rem] font-semibold text-brand-red">Montant minimum : {formatMoney(min, currency)}</p>;
 }
 
-/* ---------------- Carte bancaire (Visa / Mastercard) ---------------- */
-
-export interface CardDetails {
-  holder: string;
-  number: string;
-  expiry: string;
-  cvv: string;
-}
-
-function useCard(open: boolean) {
-  const [card, setCard] = useState<CardDetails>({ holder: "", number: "", expiry: "", cvv: "" });
-  useEffect(() => {
-    if (!open) setCard({ holder: "", number: "", expiry: "", cvv: "" });
-  }, [open]);
-  const valid =
-    card.holder.trim().length > 2 &&
-    card.number.replace(/\D/g, "").length >= 15 &&
-    card.expiry.length >= 4 &&
-    card.cvv.length >= 3;
-  return { card, setCard, valid };
-}
-
-function CardFields({ card, setCard }: { card: CardDetails; setCard: (c: CardDetails) => void }) {
-  const brand = /^5|^2[2-7]/.test(card.number.replace(/\D/g, "")) ? "Mastercard" : "Visa";
-  return (
-    <div className="space-y-3 rounded-2xl border border-border bg-muted/40 p-3">
-      <div className="flex items-center gap-2 text-[0.7rem] font-semibold text-muted-foreground">
-        <CreditCard className="h-4 w-4 text-brand-violet" /> {brand} · paiement sécurisé
-      </div>
-      <TextInput
-        placeholder="Nom du titulaire"
-        value={card.holder}
-        onChange={(e) => setCard({ ...card, holder: e.target.value })}
-      />
-      <TextInput
-        inputMode="numeric"
-        placeholder="0000 0000 0000 0000"
-        value={card.number}
-        onChange={(e) =>
-          setCard({
-            ...card,
-            number: e.target.value.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim(),
-          })
-        }
-      />
-      <div className="grid grid-cols-2 gap-2">
-        <TextInput
-          inputMode="numeric"
-          placeholder="MM/AA"
-          value={card.expiry}
-          onChange={(e) => {
-            const d = e.target.value.replace(/\D/g, "").slice(0, 4);
-            setCard({ ...card, expiry: d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d });
-          }}
-        />
-        <TextInput
-          inputMode="numeric"
-          type="password"
-          placeholder="CVV"
-          value={card.cvv}
-          onChange={(e) => setCard({ ...card, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) })}
-        />
-      </div>
-    </div>
-  );
-}
-
 /* ---------------- Dépôt ---------------- */
 
 export function DepositModal({
@@ -185,70 +120,37 @@ export function DepositModal({
   const [accountId, setAccountId] = useState(defaultAccountId);
   const [method, setMethod] = useState<TxMethod>("mpesa");
   const [amount, setAmount, value] = useAmount(open);
-  const [scan, setScan] = useState(false);
-  const [beneficiary, setBeneficiary] = useState<string | null>(null);
-  const { card, setCard, valid: cardOk } = useCard(open);
-
+  const { data } = useFilax();
+  const [phone, setPhone] = useState("");
+  const [validated, setValidated] = useState(false);
   useEffect(() => {
     setAccountId(defaultAccountId);
-    if (!open) setBeneficiary(null);
-  }, [defaultAccountId, open]);
-
-  const byCard = method === "carte";
-  const depCur = accounts.find((a) => a.id === accountId)?.currency;
-  const depMin = minimumFor("deposit", method, depCur);
-  const ready = value > 0 && (depMin === null || value >= depMin) && (!byCard || cardOk);
-
+    setPhone(data.profile.phone ?? "");
+    setValidated(false);
+  }, [defaultAccountId, open, data.profile.phone]);
+  const account = accounts.find((a) => a.id === accountId);
+  const depMin = minimumFor("deposit", method, account?.currency);
+  const ready = !!account && canValidateDeposit(value, phone, depMin);
   return (
-    <Modal open={open} onOpenChange={onOpenChange} title="Déposer de l'argent" subtitle="Mobile Money, banque, carte Visa/Mastercard ou QR code">
-      <div className="space-y-4">
+    <Modal open={open} onOpenChange={onOpenChange} title={validated ? "Validation de dépôt simulée" : "Déposer de l'argent"}>
+      {validated ? <div className="space-y-4">
+        <p role="status" className="text-sm text-foreground">Prestataire non connecté : aucun paiement envoyé et aucun solde crédité.</p>
+        <p className="text-sm text-foreground">{METHOD_LABEL[method]} · {phone} · {formatMoney(value, account?.currency ?? "USD")}</p>
+        <PrimaryButton onClick={() => onOpenChange(false)}>Terminer</PrimaryButton>
+      </div> : <div className="space-y-4">
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} />
         <MethodPicker value={method} onChange={setMethod} />
-        {byCard && <CardFields card={card} setCard={setCard} />}
-
-        <button
-          type="button"
-          onClick={() => setScan(true)}
-          className="press flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-[0.72rem] font-semibold text-brand-blue"
-        >
-          <QrCode className="h-4 w-4" /> Déposer sur le compte d'une autre personne (scanner son QR)
-        </button>
-        {beneficiary && (
-          <p className="rounded-xl bg-brand-green/10 px-3 py-2 text-[0.7rem] font-semibold text-brand-green">
-            Bénéficiaire : {beneficiary}
-          </p>
-        )}
-
+        <Field label="Numéro de téléphone">
+          <TextInput type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+243…" />
+        </Field>
+        {data.profile.phone && <PrimaryButton onClick={() => setPhone(data.profile.phone)}>Utiliser mon numéro</PrimaryButton>}
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
-          <MinError min={depMin} currency={depCur} value={value} />
+          <MinError min={depMin} currency={account?.currency} value={value} />
         </Field>
-        <PrimaryButton
-          color="brand-green"
-          disabled={!ready}
-          onClick={async () => {
-            if (beneficiary) {
-              onOpenChange(false);
-              toast.success("Dépôt envoyé", { description: `${value} déposés sur le compte de ${beneficiary}.` });
-              return;
-            }
-            try { await onConfirm(accountId, value, method); } catch (e) { toast.error("Dépôt refusé", { description: (e as Error).message }); return; }
-            onOpenChange(false);
-            toast.success("Dépôt en attente", { description: `${value} seront crédités dès confirmation du paiement.` });
-          }}
-        >
-          Confirmer le dépôt
-        </PrimaryButton>
+        <PrimaryButton color="brand-green" disabled={!ready} onClick={() => setValidated(true)}>Confirmer le dépôt</PrimaryButton>
         <TransactionDemoLauncher kind="deposit" />
-      </div>
-      <QrScanModal
-        open={scan}
-        onOpenChange={setScan}
-        onResult={(v) => {
-          setBeneficiary(v);
-          toast.success("Bénéficiaire identifié", { description: v });
-        }}
-      />
+      </div>}
     </Modal>
   );
 }
@@ -277,19 +179,22 @@ export function WithdrawModal({
   const [accountPin, setAccountPin] = useState("");
   const [pinOpen, setPinOpen] = useState(false);
   useEffect(() => setAccountPin(""), [open, accountId]);
-  const run = async (globalPin: string) => {
-    try { await onConfirm(accountId, value, method, accountPin, globalPin); }
-    catch (e) { toast.error("Retrait échoué", { description: (e as Error).message }); setPinOpen(false); return; }
-    setPinOpen(false);
-    onOpenChange(false);
-    toast.success("Retrait réussi", { description: `Vous avez retiré ${value} sur votre ${accounts.find((a) => a.id === accountId)?.name ?? "compte"}.` });
+  const [phone, setPhone] = useState("");
+  const [reviewPin, setReviewPin] = useState("");
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  useEffect(() => {
+    setPhone(data.profile.phone ?? ""); setReviewPin(""); setReviewOpen(false); setPinOpen(false); setUnavailable(false);
+  }, [open, data.profile.phone]);
+  const review = async (pin: string) => {
+    if (!account || !canReviewOutflow(value, account.balance, pin, phone)) return;
+    setReviewPin(pin); setPinOpen(false); setReviewOpen(true);
   };
   const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
   const accountPinReady = !needsAccountPin || /^\d{4}$/.test(accountPin);
   const [method, setMethod] = useState<TxMethod>("orange");
   const [amount, setAmount, value] = useAmount(open);
-  const [receive, setReceive] = useState(false);
-  const { card, setCard, valid: cardOk } = useCard(open);
+
   useEffect(() => {
     const ok = available.some((a) => a.id === defaultAccountId);
     setAccountId(ok ? defaultAccountId : (available[0]?.id ?? ""));
@@ -297,8 +202,7 @@ export function WithdrawModal({
   }, [defaultAccountId, open]);
 
   const account = accounts.find((a) => a.id === accountId);
-  const tooMuch = !!account && value > account.balance;
-  const byCard = method === "carte";
+  const tooMuch = !!account && value > 0 && value + transactionFee(value) > account.balance;
   const wMin = minimumFor("withdraw", method, account?.currency);
   const belowMin = wMin !== null && value > 0 && value < wMin;
 
@@ -308,15 +212,8 @@ export function WithdrawModal({
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
         {needsAccountPin && <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" maxLength={4} autoComplete="off" value={accountPin} onChange={(e) => setAccountPin(e.target.value.replace(/\D/g, ""))} /></Field>}
         <MethodPicker value={method} onChange={setMethod} />
-        {byCard && <CardFields card={card} setCard={setCard} />}
-
-        <button
-          type="button"
-          onClick={() => setReceive(true)}
-          className="press flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-[0.72rem] font-semibold text-brand-blue"
-        >
-          <QrCode className="h-4 w-4" /> Recevoir via QR code
-        </button>
+        <Field label="Numéro de destination"><TextInput type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+243…" /></Field>
+        {data.profile.phone && <PrimaryButton onClick={() => setPhone(data.profile.phone)}>Utiliser mon numéro</PrimaryButton>}
 
         <Field label="Montant">
           <TextInput inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
@@ -325,20 +222,22 @@ export function WithdrawModal({
         {tooMuch && <p role="alert" className="rounded-xl border border-brand-red/40 bg-brand-red/10 px-3 py-2 text-[0.72rem] font-bold text-brand-red">Votre montant de retrait est supérieur au solde disponible sur ce compte.</p>}
         <PrimaryButton
           color="brand-red"
-          disabled={!accountPinReady || value <= 0 || tooMuch || belowMin || !accountId || (byCard && !cardOk)}
-          onClick={() => (requirePin ? setPinOpen(true) : void run(""))}
+          disabled={!accountPinReady || !canValidateDeposit(value, phone, wMin) || tooMuch || belowMin || !accountId}
+          onClick={() => setPinOpen(true)}
         >
           Confirmer le retrait
         </PrimaryButton>
         <TransactionDemoLauncher kind="withdraw" />
       </div>
-      <PinConfirmModal open={pinOpen} onOpenChange={setPinOpen} onSubmit={run} />
-      <ReceiveQrModal
-        open={receive}
-        onOpenChange={setReceive}
-        filaxId={data.profile.filaxId}
-        name={`${data.profile.firstName} ${data.profile.lastName}`}
-      />
+      <PinConfirmModal open={open && pinOpen} onOpenChange={setPinOpen} onSubmit={review} />
+      <TransactionReview open={open && reviewOpen} onOpenChange={(o) => { setReviewOpen(o); if (!o) setReviewPin(""); }} amount={value} currency={account?.currency ?? "USD"} account={account?.name ?? ""} recipient={phone} method={METHOD_LABEL[method]} onConfirm={() => {
+        if (!account || !canReviewOutflow(value, account.balance, reviewPin, phone)) return;
+        setReviewOpen(false); setReviewPin(""); setUnavailable(true);
+      }} />
+      <Modal open={open && unavailable} onOpenChange={setUnavailable} title="Retrait indisponible">
+        <p role="status" className="mb-4 text-sm text-foreground">Prestataire non connecté : aucun retrait envoyé et aucun solde débité.</p>
+        <PrimaryButton onClick={() => onOpenChange(false)}>Terminer</PrimaryButton>
+      </Modal>
     </Modal>
   );
 }
@@ -350,13 +249,6 @@ const DIRECTORY = [
   { name: "Patrick Lukusa", id: "FLX-3391-PL", phone: "+243 819 771 004" },
   { name: "Sarah Kabeya", id: "FLX-7734-SK", phone: "+243 990 118 226" },
   { name: "David Tshimanga", id: "FLX-5580-DT", phone: "+243 822 445 909" },
-];
-
-const DESTINATIONS = [
-  { id: "RDC", label: "RD Congo", flag: "🇨🇩", currency: "USD", rail: "Mobile Money / banque locale" },
-  { id: "EU", label: "Europe", flag: "🇪🇺", currency: "EUR", rail: "Virement SEPA" },
-  { id: "US", label: "États-Unis", flag: "🇺🇸", currency: "USD", rail: "Virement ACH" },
-  { id: "CA", label: "Canada", flag: "🇨🇦", currency: "CAD", rail: "Interac / virement" },
 ];
 
 export function TransferModal({
@@ -386,20 +278,13 @@ export function TransferModal({
   const [scan, setScan] = useState(false);
   const [amount, setAmount, value] = useAmount(open);
 
-  // Transfert vers une autre banque / carte
-  const [destination, setDestination] = useState(DESTINATIONS[1]!);
-  const [beneficiary, setBeneficiary] = useState("");
-  const [bankName, setBankName] = useState("");
-  const { card, setCard, valid: cardOk } = useCard(open);
-
   useEffect(() => {
     setAccountId(defaultAccountId);
     if (!open) {
       setQuery("");
       setRecipient(null);
       setMode("filax");
-      setBeneficiary("");
-      setBankName("");
+
     }
   }, [defaultAccountId, open]);
 
@@ -408,7 +293,7 @@ export function TransferModal({
   useEffect(() => {
     setFound(null);
     const q = query.trim();
-    if (!requirePin || q.length < 5) return;
+    if (!open || !requirePin || q.length < 5) return;
     let alive = true;
     const t = setTimeout(async () => {
       const { supabase } = await import("@/integrations/supabase/client");
@@ -417,30 +302,40 @@ export function TransferModal({
       if (alive && r) setFound({ name: r.name || r.filax_id, id: r.filax_id, phone: "Membre FILAX vérifié" });
     }, 350);
     return () => { alive = false; clearTimeout(t); };
-  }, [query, requirePin]);
+  }, [query, requirePin, open]);
   const results = requirePin
     ? (found ? [found] : [])
     : query
       ? DIRECTORY.filter((d) => [d.name, d.id, d.phone].some((f) => f.toLowerCase().includes(query.toLowerCase())))
       : [];
 
-  const bankReady = beneficiary.trim().length > 2 && bankName.trim().length > 1 && cardOk;
   const [pinOpen, setPinOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviewPin, setReviewPin] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { setPinOpen(false); setReviewOpen(false); setReviewPin(""); }, [open]);
   const sendWith = async (pin: string) => {
-    const label = mode === "filax" ? recipient?.name ?? "" : `${beneficiary} · ${bankName} (${destination.label})`;
+    if (busy || !source || !canReviewOutflow(value, source.balance, pin, recipient?.name ?? "")) return;
+    setBusy(true);
+    const label = recipient?.name ?? "";
     try {
-      await onConfirm(accountId, value, label, mode === "filax" ? { filaxId: recipient?.id, pin, accountPin } : { external: true, pin, accountPin });
+      await onConfirm(accountId, value, label, { filaxId: recipient?.id, pin, accountPin });
     } catch (e) {
       toast.error("Transfert échoué", { description: (e as Error).message });
-      setPinOpen(false);
+      setReviewOpen(false); setReviewPin("");
       return;
-    }
+    } finally { setBusy(false); }
+    setReviewOpen(false); setReviewPin("");
     setPinOpen(false);
     onOpenChange(false);
     toast.success("Transfert réussi", { description: `Votre transfert vers ${label} a réussi avec succès.` });
   };
-  const ready = accountPinReady && value > 0 && (mode === "filax" ? !!recipient : bankReady);
-  const typedId = requirePin && !recipient && /^FLX-[A-Z0-9-]{4,}$/i.test(query.trim()) ? query.trim().toUpperCase() : null;
+  const source = accounts.find((a) => a.id === accountId);
+  const ready = mode === "filax" && !!source && accountPinReady && Number.isFinite(value) && value > 0 && value + transactionFee(value) <= source.balance && !!recipient;
+  const prepareReview = async (pin: string) => {
+    if (!source || !canReviewOutflow(value, source.balance, pin, recipient?.name ?? "")) return;
+    setPinOpen(false); setReviewPin(pin); setReviewOpen(true);
+  };
 
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Envoyer de l'argent" subtitle="Vers un membre FILAX, une autre banque ou une carte">
@@ -503,16 +398,6 @@ export function TransferModal({
               </div>
             ) : (
               <>
-              {typedId && !results.some((r) => r.id === typedId) && (
-                <button
-                  type="button"
-                  onClick={() => setRecipient({ name: typedId, id: typedId, phone: "—" })}
-                  className="press flex w-full items-center justify-between rounded-xl border border-border px-3 py-2.5 text-left"
-                >
-                  <span className="text-[0.78rem] font-semibold text-foreground">Envoyer à cet ID FILAX</span>
-                  <span className="text-[0.65rem] text-muted-foreground">{typedId}</span>
-                </button>
-              )}
               {results.map((r) => (
                 <button
                   key={r.id}
@@ -528,35 +413,7 @@ export function TransferModal({
             )}
           </>
         ) : (
-          <>
-            <Field label="Destination">
-              <div className="grid grid-cols-2 gap-2">
-                {DESTINATIONS.map((d) => (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => setDestination(d)}
-                    className={`press rounded-xl border px-3 py-2.5 text-left text-[0.72rem] font-semibold ${
-                      destination.id === d.id ? "border-brand-blue text-foreground" : "border-border text-muted-foreground"
-                    }`}
-                  >
-                    <span className="mr-1.5">{d.flag}</span>
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-            </Field>
-            <p className="text-[0.66rem] text-muted-foreground">
-              {destination.flag} {destination.label} · {destination.rail} · devise {destination.currency}
-            </p>
-            <Field label="Nom du bénéficiaire">
-              <TextInput placeholder="Jean Kalala" value={beneficiary} onChange={(e) => setBeneficiary(e.target.value)} />
-            </Field>
-            <Field label="Banque du bénéficiaire">
-              <TextInput placeholder="Equity BCDC, Revolut, BNP…" value={bankName} onChange={(e) => setBankName(e.target.value)} />
-            </Field>
-            <CardFields card={card} setCard={setCard} />
-          </>
+          <p role="status" className="text-sm text-muted-foreground">Les transferts externes sont indisponibles tant que le prestataire n’est pas connecté.</p>
         )}
 
         <AccountSelect accounts={accounts} value={accountId} onChange={setAccountId} hideLocked />
@@ -569,27 +426,26 @@ export function TransferModal({
           disabled={!ready}
           onClick={() => {
             if (mode === "filax" && !recipient) return;
-            if (requirePin) setPinOpen(true);
-            else void sendWith("");
+            setPinOpen(true);
           }}
         >
           Envoyer maintenant
         </PrimaryButton>
       </div>
-      <PinConfirmModal open={pinOpen} onOpenChange={setPinOpen} onSubmit={sendWith} />
+      <PinConfirmModal open={open && pinOpen} onOpenChange={setPinOpen} onSubmit={prepareReview} />
+      <TransactionReview open={open && reviewOpen} onOpenChange={(o) => { if (!busy) { setReviewOpen(o); if (!o) setReviewPin(""); } }} amount={value} currency={source?.currency ?? "USD"} account={source?.name ?? ""} recipient={`${recipient?.name ?? ""} · ${recipient?.id ?? ""}`} method="Membre FILAX" busy={busy} onConfirm={() => void sendWith(reviewPin)} />
 
       <QrScanModal
         open={scan}
         onOpenChange={setScan}
         onResult={(v) => {
+          if (requirePin) { setRecipient(null); setQuery(v); return; }
           const found = DIRECTORY.find((d) => d.id.toLowerCase() === v.toLowerCase());
           if (found) {
             setRecipient(found);
             toast.success("Destinataire identifié", { description: `${found.name} · ${found.id}` });
           } else {
-            const unknown = { name: v, id: v, phone: "—" };
-            setRecipient(unknown);
-            toast.success("QR code lu", { description: v });
+            setRecipient(null); setQuery(v);
           }
         }}
       />
