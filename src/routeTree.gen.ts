@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AnalyseRouteImport } from './routes/analyse'
+import { Route as DepensesRouteImport } from './routes/depenses'
 import { Route as GroupesRouteImport } from './routes/groupes'
 import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as ProfilRouteImport } from './routes/profil'
@@ -24,6 +25,7 @@ import { Route as AdminOperationsRouteImport } from './routes/admin_.operations'
 import { Route as GroupesIdRouteImport } from './routes/groupes_.$id'
 import { Route as UserUsernameRouteImport } from './routes/user.$username'
 import { Route as ApiPublicFilaxSupportRouteImport } from './routes/api/public/filax-support'
+import { Route as ApiPublicReceiptScanRouteImport } from './routes/api/public/receipt-scan'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -38,6 +40,11 @@ const AdminRoute = AdminRouteImport.update({
 const AnalyseRoute = AnalyseRouteImport.update({
   id: '/analyse',
   path: '/analyse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DepensesRoute = DepensesRouteImport.update({
+  id: '/depenses',
+  path: '/depenses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupesRoute = GroupesRouteImport.update({
@@ -100,11 +107,17 @@ const ApiPublicFilaxSupportRoute = ApiPublicFilaxSupportRouteImport.update({
   path: '/api/public/filax-support',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicReceiptScanRoute = ApiPublicReceiptScanRouteImport.update({
+  id: '/api/public/receipt-scan',
+  path: '/api/public/receipt-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/analyse': typeof AnalyseRoute
+  '/depenses': typeof DepensesRoute
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
@@ -117,11 +130,13 @@ export interface FileRoutesByFullPath {
   '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
   '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
+  '/api/public/receipt-scan': typeof ApiPublicReceiptScanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/analyse': typeof AnalyseRoute
+  '/depenses': typeof DepensesRoute
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
@@ -134,12 +149,14 @@ export interface FileRoutesByTo {
   '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
   '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
+  '/api/public/receipt-scan': typeof ApiPublicReceiptScanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/analyse': typeof AnalyseRoute
+  '/depenses': typeof DepensesRoute
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
@@ -152,6 +169,7 @@ export interface FileRoutesById {
   '/groupes_/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
   '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
+  '/api/public/receipt-scan': typeof ApiPublicReceiptScanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/analyse'
+    | '/depenses'
     | '/groupes'
     | '/inscription'
     | '/profil'
@@ -171,11 +190,13 @@ export interface FileRouteTypes {
     | '/groupes/$id'
     | '/user/$username'
     | '/api/public/filax-support'
+    | '/api/public/receipt-scan'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/analyse'
+    | '/depenses'
     | '/groupes'
     | '/inscription'
     | '/profil'
@@ -188,11 +209,13 @@ export interface FileRouteTypes {
     | '/groupes/$id'
     | '/user/$username'
     | '/api/public/filax-support'
+    | '/api/public/receipt-scan'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/analyse'
+    | '/depenses'
     | '/groupes'
     | '/inscription'
     | '/profil'
@@ -205,12 +228,14 @@ export interface FileRouteTypes {
     | '/groupes_/$id'
     | '/user/$username'
     | '/api/public/filax-support'
+    | '/api/public/receipt-scan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AnalyseRoute: typeof AnalyseRoute
+  DepensesRoute: typeof DepensesRoute
   GroupesRoute: typeof GroupesRoute
   InscriptionRoute: typeof InscriptionRoute
   ProfilRoute: typeof ProfilRoute
@@ -223,6 +248,7 @@ export interface RootRouteChildren {
   GroupesIdRoute: typeof GroupesIdRoute
   UserUsernameRoute: typeof UserUsernameRoute
   ApiPublicFilaxSupportRoute: typeof ApiPublicFilaxSupportRoute
+  ApiPublicReceiptScanRoute: typeof ApiPublicReceiptScanRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -246,6 +272,13 @@ declare module '@tanstack/react-router' {
       path: '/analyse'
       fullPath: '/analyse'
       preLoaderRoute: typeof AnalyseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/depenses': {
+      id: '/depenses'
+      path: '/depenses'
+      fullPath: '/depenses'
+      preLoaderRoute: typeof DepensesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groupes': {
@@ -332,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicFilaxSupportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/receipt-scan': {
+      id: '/api/public/receipt-scan'
+      path: '/api/public/receipt-scan'
+      fullPath: '/api/public/receipt-scan'
+      preLoaderRoute: typeof ApiPublicReceiptScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -339,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AnalyseRoute: AnalyseRoute,
+  DepensesRoute: DepensesRoute,
   GroupesRoute: GroupesRoute,
   InscriptionRoute: InscriptionRoute,
   ProfilRoute: ProfilRoute,
@@ -351,6 +392,7 @@ const rootRouteChildren: RootRouteChildren = {
   GroupesIdRoute: GroupesIdRoute,
   UserUsernameRoute: UserUsernameRoute,
   ApiPublicFilaxSupportRoute: ApiPublicFilaxSupportRoute,
+  ApiPublicReceiptScanRoute: ApiPublicReceiptScanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

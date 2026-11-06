@@ -161,6 +161,51 @@ export type Database = {
           },
         ]
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          currency: string
+          description: string | null
+          doc_type: string
+          expense_date: string | null
+          file_name: string | null
+          file_path: string | null
+          id: string
+          user_id: string
+          vendor: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          doc_type?: string
+          expense_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          user_id?: string
+          vendor?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          doc_type?: string
+          expense_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          user_id?: string
+          vendor?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           account_id: string

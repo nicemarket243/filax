@@ -1,5 +1,9 @@
 # FILAX roadmap
 
+## 6 nov. — Factures et reçus
+- [ ] Import de factures/reçus, lecture et catégorie par IA, tableau de dépenses exportable
+- [ ] Vérifier les protections financières sur un nouveau compte test (autorisé, jamais le compte vitrine)
+
 ## 24 oct. — Mission de finalisation indépendante des partenaires
 - [x] Auditer le code et les règles financières hébergées en lecture seule (audit initial, non certification exhaustive)
 - [x] Corriger le test PDF non reconnu ; 10 tests passent

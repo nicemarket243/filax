@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { line as d3Line, curveMonotoneX } from "d3-shape";
 import { ArrowDownLeft, ArrowUpRight, History, Target, TrendingUp } from "lucide-react";
@@ -143,6 +143,11 @@ function AnalysePage() {
       <AppHeader />
 
       <PageTitle title="Analyse" subtitle="Vision globale de tout votre portefeuille." />
+
+      <Link to="/depenses" className="press mt-4 flex items-center justify-between rounded-2xl border border-border bg-surface/70 px-4 py-3 text-sm font-semibold">
+        <span>{t("Factures et reçus")}</span>
+        <span className="text-brand-blue">{t("Importer")} →</span>
+      </Link>
 
       <div data-testid="portfolio-card" className="premium-blue-surface mt-5 rounded-3xl p-5 text-photo-foreground soft-shadow">
         <p className="text-[0.7rem] text-photo-foreground/80">{t("Portefeuille total")} · {accounts.length} {t("comptes")}</p>

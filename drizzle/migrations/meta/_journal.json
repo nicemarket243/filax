@@ -113,6 +113,13 @@
       "when": 1792877876023,
       "tag": "0015_close_unconfigured_external_rails_and_unsafe_refunds",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793952591594,
+      "tag": "0016_create_expenses",
+      "breakpoints": true
     }
   ]
 }
