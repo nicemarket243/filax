@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AnalyseRouteImport } from './routes/analyse'
+import { Route as DepensesRouteImport } from './routes/depenses'
 import { Route as GroupesRouteImport } from './routes/groupes'
 import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as ProfilRouteImport } from './routes/profil'
@@ -39,6 +40,11 @@ const AdminRoute = AdminRouteImport.update({
 const AnalyseRoute = AnalyseRouteImport.update({
   id: '/analyse',
   path: '/analyse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DepensesRoute = DepensesRouteImport.update({
+  id: '/depenses',
+  path: '/depenses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupesRoute = GroupesRouteImport.update({
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/analyse': typeof AnalyseRoute
+  '/depenses': typeof DepensesRoute
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/analyse': typeof AnalyseRoute
+  '/depenses': typeof DepensesRoute
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/analyse': typeof AnalyseRoute
+  '/depenses': typeof DepensesRoute
   '/groupes': typeof GroupesRoute
   '/inscription': typeof InscriptionRoute
   '/profil': typeof ProfilRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/analyse'
+    | '/depenses'
     | '/groupes'
     | '/inscription'
     | '/profil'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/analyse'
+    | '/depenses'
     | '/groupes'
     | '/inscription'
     | '/profil'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/analyse'
+    | '/depenses'
     | '/groupes'
     | '/inscription'
     | '/profil'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AnalyseRoute: typeof AnalyseRoute
+  DepensesRoute: typeof DepensesRoute
   GroupesRoute: typeof GroupesRoute
   InscriptionRoute: typeof InscriptionRoute
   ProfilRoute: typeof ProfilRoute
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       path: '/analyse'
       fullPath: '/analyse'
       preLoaderRoute: typeof AnalyseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/depenses': {
+      id: '/depenses'
+      path: '/depenses'
+      fullPath: '/depenses'
+      preLoaderRoute: typeof DepensesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groupes': {
@@ -359,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AnalyseRoute: AnalyseRoute,
+  DepensesRoute: DepensesRoute,
   GroupesRoute: GroupesRoute,
   InscriptionRoute: InscriptionRoute,
   ProfilRoute: ProfilRoute,
