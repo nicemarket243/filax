@@ -24,6 +24,7 @@ import { Route as AdminOperationsRouteImport } from './routes/admin_.operations'
 import { Route as GroupesIdRouteImport } from './routes/groupes_.$id'
 import { Route as UserUsernameRouteImport } from './routes/user.$username'
 import { Route as ApiPublicFilaxSupportRouteImport } from './routes/api/public/filax-support'
+import { Route as ApiPublicReceiptScanRouteImport } from './routes/api/public/receipt-scan'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -100,6 +101,11 @@ const ApiPublicFilaxSupportRoute = ApiPublicFilaxSupportRouteImport.update({
   path: '/api/public/filax-support',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicReceiptScanRoute = ApiPublicReceiptScanRouteImport.update({
+  id: '/api/public/receipt-scan',
+  path: '/api/public/receipt-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
   '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
+  '/api/public/receipt-scan': typeof ApiPublicReceiptScanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/groupes/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
   '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
+  '/api/public/receipt-scan': typeof ApiPublicReceiptScanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/groupes_/$id': typeof GroupesIdRoute
   '/user/$username': typeof UserUsernameRoute
   '/api/public/filax-support': typeof ApiPublicFilaxSupportRoute
+  '/api/public/receipt-scan': typeof ApiPublicReceiptScanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/groupes/$id'
     | '/user/$username'
     | '/api/public/filax-support'
+    | '/api/public/receipt-scan'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/groupes/$id'
     | '/user/$username'
     | '/api/public/filax-support'
+    | '/api/public/receipt-scan'
   id:
     | '__root__'
     | '/'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/groupes_/$id'
     | '/user/$username'
     | '/api/public/filax-support'
+    | '/api/public/receipt-scan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   GroupesIdRoute: typeof GroupesIdRoute
   UserUsernameRoute: typeof UserUsernameRoute
   ApiPublicFilaxSupportRoute: typeof ApiPublicFilaxSupportRoute
+  ApiPublicReceiptScanRoute: typeof ApiPublicReceiptScanRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -332,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicFilaxSupportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/receipt-scan': {
+      id: '/api/public/receipt-scan'
+      path: '/api/public/receipt-scan'
+      fullPath: '/api/public/receipt-scan'
+      preLoaderRoute: typeof ApiPublicReceiptScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -351,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   GroupesIdRoute: GroupesIdRoute,
   UserUsernameRoute: UserUsernameRoute,
   ApiPublicFilaxSupportRoute: ApiPublicFilaxSupportRoute,
+  ApiPublicReceiptScanRoute: ApiPublicReceiptScanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
