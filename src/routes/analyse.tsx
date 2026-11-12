@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { GoalEvolution, type GeneralGoal } from "@/components/filax/goal-evolution";
 import { Modal, PageTitle, ProgressBar, accentVar } from "@/components/filax/ui-kit";
 import { useI18n } from "@/lib/i18n";
+import { CDF_PER_USD, DAY, balanceSeries, isIn, periodStats, toUsd } from "@/lib/analyse-stats";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useDbUser, useDbAccounts, useDbTransactions, useDbGoals } from "@/lib/filax-db";
@@ -35,20 +36,12 @@ export const Route = createFileRoute("/analyse")({
   component: AnalysePage,
 });
 
-const DAY = 86_400_000;
 const PERIODS: { key: string; label: string; ms: number | null }[] = [
   { key: "7j", label: "7 jours", ms: 7 * DAY },
   { key: "30j", label: "30 jours", ms: 30 * DAY },
   { key: "12m", label: "12 mois", ms: 365 * DAY },
   { key: "all", label: "Tout", ms: null },
 ];
-
-function isIn(t: Transaction) {
-  return t.type === "depot" || t.type === "reception";
-}
-
-const CDF_PER_USD = 2299;
-const toUsd = (amount: number, currency: string) => (currency === "CDF" ? amount / CDF_PER_USD : amount);
 
 function AnalysePage() {
   const { t } = useI18n();
@@ -94,35 +87,10 @@ function AnalysePage() {
   }, [transactions, period.ms]);
   const accName = (id: string) => accounts.find((a) => a.id === id)?.name ?? "Compte";
 
-  const stats = useMemo(() => {
-    const since = period.ms ? Date.now() - period.ms : 0;
-    const list = transactions.filter((t) => t.at >= since && (!t.status || t.status === "confirmed")).sort((a, b) => a.at - b.at);
-    let inflow = 0;
-    let outflow = 0;
-    const byMethod = new Map<Transaction["method"], number>();
-    for (const t of list) {
-      const v = toUsd(t.amount, t.currency);
-      if (isIn(t)) inflow += v;
-      else outflow += v;
-      byMethod.set(t.method, (byMethod.get(t.method) ?? 0) + v);
-    }
-    return { list, inflow, outflow, net: inflow - outflow, byMethod };
-  }, [transactions, period.ms]);
+  const stats = useMemo(() => periodStats(transactions, period.ms, Date.now()), [transactions, period.ms]);
 
   // Courbe agrégée de tous les comptes (en USD).
-  const series = useMemo(() => {
-    const deltas = stats.list.map((t) => (isIn(t) ? 1 : -1) * toUsd(t.amount, t.currency));
-    let start = totalUsd;
-    for (const d of deltas) start -= d;
-    const pts = [{ at: period.ms ? Date.now() - period.ms : (stats.list[0]?.at ?? Date.now()) - 1, value: start, tx: null as Transaction | null }];
-    let running = start;
-    stats.list.forEach((t, i) => {
-      running += deltas[i] ?? 0;
-      pts.push({ at: t.at, value: running, tx: t });
-    });
-    pts.push({ at: Date.now(), value: totalUsd, tx: null });
-    return pts;
-  }, [stats.list, totalUsd, period.ms]);
+  const series = useMemo(() => balanceSeries(stats.list, totalUsd, period.ms, Date.now()), [stats.list, totalUsd, period.ms]);
 
   const w = 300;
   const h = 120;
