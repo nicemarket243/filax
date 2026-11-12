@@ -1,11 +1,12 @@
 # FILAX roadmap
 
 ## 12 nov. — Stabilisation du moteur financier interne
-- [ ] Journal à double entrée équilibré, chaîné et interdit en modification/suppression
-- [ ] Soldes disponible, réservé et en attente sans changer les soldes existants
-- [ ] Idempotence persistante sur toutes les sorties, y compris objectifs et cotisations
-- [ ] Sandbox isolée : succès, attente, refus, annulation et tests de stress
-- [ ] Tests complets, typecheck et construction de production ; aucune session de compte existant
+- [x] Journal à double entrée équilibré, chaîné et interdit en modification/suppression
+- [x] Soldes disponible, réservé et en attente sans changer les soldes existants
+- [x] Idempotence persistante sur toutes les sorties, y compris objectifs et cotisations
+- [x] Sandbox isolée : succès, attente, refus, annulation et tests de stress
+- [x] 45 tests et rapprochement SQL réussis ; aucune session de compte existant
+- [ ] Test de concurrence SQL avec deux nouvelles sessions isolées (aucune session créée dans ce lot)
 
 ## 6 nov. — Factures et reçus
 - [ ] Import de factures/reçus, lecture et catégorie par IA, tableau de dépenses exportable
