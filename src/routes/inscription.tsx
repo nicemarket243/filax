@@ -102,6 +102,30 @@ function InscriptionPage() {
     });
   }, []);
 
+  // Le lien de l'e-mail ouvre une session : on avance automatiquement dès qu'elle apparaît.
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session?.user?.email_confirmed_at) setStep((prev) => (prev === "verify" ? "document" : prev));
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  const checkConfirmed = async () => {
+    setLoading(true);
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      // Le lien a pu être ouvert dans un autre onglet/appareil : on tente la connexion avec le mot de passe choisi.
+      const res = password ? await supabase.auth.signInWithPassword({ email, password }) : null;
+      setLoading(false);
+      if (res && !res.error) { toast.success("E-mail vérifié avec succès."); setStep("document"); return; }
+      toast.error("E-mail pas encore confirmé. Cliquez d'abord sur le lien reçu.");
+      return;
+    }
+    setLoading(false);
+    toast.success("E-mail vérifié avec succès.");
+    setStep("document");
+  };
+
   const stepIndex = STEPS.findIndex((s) => s.key === step);
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
 
@@ -132,7 +156,7 @@ function InscriptionPage() {
       toast.error(error.message);
       return;
     }
-    toast.success("Code de validation envoyé à votre adresse e-mail.");
+    toast.success("E-mail de confirmation envoyé.");
     setStep("verify");
   };
 
@@ -301,8 +325,11 @@ function InscriptionPage() {
             <SectionTitle
               icon={<Mail className="h-5 w-5 text-brand-blue" />}
               title="Vérification e-mail"
-              subtitle={`Saisissez le code à 6 chiffres envoyé à ${email}.`}
+              subtitle={`Ouvrez l'e-mail envoyé à ${email} : cliquez sur le lien de confirmation, ou saisissez le code à 6 chiffres s'il y figure.`}
             />
+            <Button type="button" variant="outline" disabled={loading} onClick={() => void checkConfirmed()} className="w-full">
+              J'ai cliqué sur le lien de confirmation
+            </Button>
             <div className="flex justify-center py-2">
               <InputOTP maxLength={6} value={code} onChange={setCode}>
                 <InputOTPGroup>

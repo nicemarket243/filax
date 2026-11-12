@@ -74,13 +74,24 @@ function AnalysePage() {
     toast.success("Réclamation envoyée à l'équipe FILAX");
     setDisputeTx(null); setReason("");
   };
-  const [periodKey, setPeriodKey] = useState("30j");
+  const [periodKey, setPeriodKey] = useState<string | null>(null);
   const [point, setPoint] = useState<number | null>(null);
   const [goalId, setGoalId] = useState<string | null>(null);
 
-  const period = PERIODS.find((p) => p.key === periodKey) ?? PERIODS[1] ?? { ms: null };
+  // Période par défaut : la plus courte qui contient la dernière opération confirmée.
+  const autoKey = useMemo(() => {
+    const last = transactions.reduce((m, t) => (!t.status || t.status === "confirmed") && t.at > m ? t.at : m, 0);
+    if (!last) return "30j";
+    const age = Date.now() - last;
+    return PERIODS.find((p) => p.ms != null && age <= p.ms)?.key ?? "all";
+  }, [transactions]);
+  const activeKey = periodKey ?? autoKey;
+  const period = PERIODS.find((p) => p.key === activeKey) ?? PERIODS[1] ?? { key: "30j", label: "30 jours", ms: 30 * DAY };
   const totalUsd = accounts.reduce((s, a) => s + toUsd(a.balance, a.currency), 0);
-  const allTx = useMemo(() => [...transactions].sort((a, b) => b.at - a.at), [transactions]);
+  const allTx = useMemo(() => {
+    const since = period.ms ? Date.now() - period.ms : 0;
+    return transactions.filter((t) => t.at >= since).sort((a, b) => b.at - a.at);
+  }, [transactions, period.ms]);
   const accName = (id: string) => accounts.find((a) => a.id === id)?.name ?? "Compte";
 
   const stats = useMemo(() => {
@@ -109,6 +120,7 @@ function AnalysePage() {
       running += deltas[i] ?? 0;
       pts.push({ at: t.at, value: running, tx: t });
     });
+    pts.push({ at: Date.now(), value: totalUsd, tx: null });
     return pts;
   }, [stats.list, totalUsd, period.ms]);
 
@@ -118,8 +130,10 @@ function AnalysePage() {
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || 1;
-  const step = series.length > 1 ? w / (series.length - 1) : w;
-  const coords = series.map((p, i) => [series.length === 1 ? w / 2 : i * step, h - ((p.value - min) / span) * (h - 20) - 10] as const);
+  const t0 = series[0]?.at ?? Date.now();
+  const tSpan = Math.max(1, (series[series.length - 1]?.at ?? t0) - t0);
+  const flat = max === min;
+  const coords = series.map((p) => [((p.at - t0) / tSpan) * w, flat ? h / 2 : h - ((p.value - min) / span) * (h - 20) - 10] as const);
   const line = d3Line<readonly [number, number]>().x((p) => p[0]).y((p) => p[1]).curve(curveMonotoneX)(coords) ?? "";
   const area = `${line} L${w},${h} L0,${h} Z`;
   const selected = point != null ? series[point] : null;
@@ -127,7 +141,9 @@ function AnalysePage() {
   const scrub = (e: React.PointerEvent<SVGSVGElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width) * w;
-    setPoint(Math.max(0, Math.min(series.length - 1, Math.round(x / step))));
+    let best = 0;
+    coords.forEach((c, i) => { if (Math.abs(c[0] - x) < Math.abs((coords[best]?.[0] ?? 0) - x)) best = i; });
+    setPoint(best);
   };
 
   const totalFlow = stats.inflow + stats.outflow || 1;
@@ -144,10 +160,6 @@ function AnalysePage() {
 
       <PageTitle title="Analyse" subtitle="Vision globale de tout votre portefeuille." />
 
-      <Link to="/depenses" className="press mt-4 flex items-center justify-between rounded-2xl border border-border bg-surface/70 px-4 py-3 text-sm font-semibold">
-        <span>{t("Factures et reçus")}</span>
-        <span className="text-brand-blue">{t("Importer")} →</span>
-      </Link>
 
       <div data-testid="portfolio-card" className="premium-blue-surface mt-5 rounded-3xl p-5 text-photo-foreground soft-shadow">
         <p className="text-[0.7rem] text-photo-foreground/80">{t("Portefeuille total")} · {accounts.length} {t("comptes")}</p>
@@ -168,7 +180,7 @@ function AnalysePage() {
               setPoint(null);
             }}
             className={`press flex-1 rounded-full py-2 text-[0.68rem] font-bold transition ${
-              p.key === periodKey ? "bg-surface text-brand-blue soft-shadow" : "text-muted-foreground"
+              p.key === activeKey ? "bg-surface text-brand-blue soft-shadow" : "text-muted-foreground"
             }`}
           >
             {p.label}
@@ -213,7 +225,12 @@ function AnalysePage() {
             </g>
           )}
         </svg>
-        <div className="mt-2 min-h-16" aria-live="polite">
+        <div className="mt-1 flex justify-between text-[0.58rem] text-muted-foreground">
+          <span>{new Date(t0).toLocaleDateString(undefined, { day: "numeric", month: "short", year: period.ms && period.ms <= 30 * DAY ? undefined : "2-digit" })}</span>
+          <span>{t("Aujourd'hui")}</span>
+        </div>
+        {stats.list.length === 0 && !selected && <p className="mt-2 rounded-xl bg-muted/50 px-3 py-2 text-center text-[0.64rem] text-muted-foreground">{t("Aucune opération sur cette période")} ({t(period.label)}). {t("Le solde est resté stable.")}</p>}
+        <div className="mt-2 min-h-12" aria-live="polite">
           {selected && <div data-testid="chart-tooltip" className="rounded-xl bg-muted/50 px-3 py-2 text-center text-[0.66rem] leading-relaxed">
             <p className="font-semibold text-foreground">{new Date(selected.at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "medium" })} · {t(period.label ?? "Tout")}</p>
             <p className="font-bold" style={{ color: selectedColor }}>{formatMoney(selected.value, "USD")}</p>
@@ -221,6 +238,11 @@ function AnalysePage() {
           </div>}
         </div>
       </div>
+
+      <Link to="/depenses" className="press mt-2 flex items-center justify-between rounded-xl border border-border bg-surface/70 px-3 py-1.5 text-[0.7rem] font-semibold">
+        <span>{t("Factures et reçus")}</span>
+        <span className="text-brand-blue">{t("Importer")} →</span>
+      </Link>
 
       <div className="mt-4 grid grid-cols-3 gap-2">
         <StatCard label="Entrées" value={formatMoney(stats.inflow, "USD")} color="brand-green" icon={<ArrowDownLeft className="h-3.5 w-3.5" />} />
