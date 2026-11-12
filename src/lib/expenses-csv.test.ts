@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { expensesToCsv } from "./expenses";
 
-const base = { vendor: "V", expense_date: "2026-11-01", currency: "USD", category: "Autre", doc_type: "reçu", description: null };
+const base = { vendor: "V", expense_date: "2026-11-01", currency: "USD", category: "Autre", doc_type: "reçu", description: null as string | null };
 const line = (r: Partial<typeof base> & { amount: number }) => expensesToCsv([{ ...base, ...r }]).split("\n")[1];
 const amountCell = (amount: number) => line({ amount }).split(";")[4];
 
