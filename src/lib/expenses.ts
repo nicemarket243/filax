@@ -24,7 +24,7 @@ export type ExpenseRow = {
 };
 
 function cell(v: string) {
-  return /[",;\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+  return /[";\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
 }
 
 /** CSV with `;` separator (Excel FR) and UTF-8 BOM so accents open correctly. */
