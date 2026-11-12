@@ -3,7 +3,7 @@
 ## 6 nov. — Factures et reçus
 - [ ] Import de factures/reçus, lecture et catégorie par IA, tableau de dépenses exportable
 - [x] Tester bout en bout import IA → enregistrement → export CSV sur un nouveau compte isolé, sans session ni compte existant : reçu fictif 42,75 USD, catégorie Alimentation, document joint, persistance après rechargement, CSV UTF-8 à 7 colonnes validé, aucune erreur console
-- [ ] Aligner la vérification d’inscription : l’e-mail réel contient un lien de confirmation alors que l’écran demande un code à 6 chiffres (constaté pendant le test isolé)
+- [ ] Envoyer un code d’inscription réel à 6 chiffres compatible avec le formulaire et tester sa validation sur un nouveau compte isolé, sans toucher aux comptes ou sessions existants
 - [ ] Vérifier les protections financières sur un nouveau compte test (autorisé, jamais le compte vitrine)
 
 ## 24 oct. — Mission de finalisation indépendante des partenaires
