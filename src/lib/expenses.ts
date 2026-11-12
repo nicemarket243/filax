@@ -23,6 +23,12 @@ export type ExpenseRow = {
   description: string | null;
 };
 
+const amountFmt = new Intl.NumberFormat("en-US", { useGrouping: false, minimumFractionDigits: 2, maximumFractionDigits: 2 });
+/** Plain decimal with comma (Excel FR), never grouped or in exponent form. */
+export function formatAmount(n: number): string {
+  return amountFmt.format(n).replace(".", ",");
+}
+
 function cell(v: string) {
   return /[";\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
 }
@@ -31,7 +37,7 @@ function cell(v: string) {
 export function expensesToCsv(rows: ExpenseRow[]): string {
   const head = ["Date", "Fournisseur", "Catégorie", "Type", "Montant", "Devise", "Description"];
   const lines = rows.map((r) =>
-    [r.expense_date ?? "", r.vendor, r.category, r.doc_type, r.amount.toFixed(2).replace(".", ","), r.currency, r.description ?? ""]
+    [r.expense_date ?? "", r.vendor, r.category, r.doc_type, formatAmount(r.amount), r.currency, r.description ?? ""]
       .map((v) => cell(String(v)))
       .join(";"),
   );
