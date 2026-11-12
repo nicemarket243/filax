@@ -31,7 +31,7 @@ function cell(v: string) {
 export function expensesToCsv(rows: ExpenseRow[]): string {
   const head = ["Date", "Fournisseur", "Catégorie", "Type", "Montant", "Devise", "Description"];
   const lines = rows.map((r) =>
-    [r.expense_date ?? "", r.vendor, r.category, r.doc_type, r.amount.toFixed(2), r.currency, r.description ?? ""]
+    [r.expense_date ?? "", r.vendor, r.category, r.doc_type, r.amount.toFixed(2).replace(".", ","), r.currency, r.description ?? ""]
       .map((v) => cell(String(v)))
       .join(";"),
   );

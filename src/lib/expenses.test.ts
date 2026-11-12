@@ -13,6 +13,6 @@ describe("expenses export", () => {
   });
   test("CSV escapes separators and quotes", () => {
     const csv = expensesToCsv(rows);
-    expect(csv.split("\n")[1]).toBe('2026-11-01;"Shop ""A""; RDC";Alimentation;reçu;12.50;USD;');
+    expect(csv.split("\n")[1]).toBe('2026-11-01;"Shop ""A""; RDC";Alimentation;reçu;12,50;USD;');
   });
 });
