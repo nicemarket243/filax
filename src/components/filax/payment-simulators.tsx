@@ -3,6 +3,7 @@ import { CheckCircle2, FlaskConical, Plus, RotateCcw, Trash2 } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Field, Modal, TextInput } from "./ui-kit";
 import { useI18n } from "@/lib/i18n";
+import { createSandbox, executeSandbox, settleSandbox, type SandboxScenario, type SandboxStatus } from "@/lib/financial-sandbox";
 
 type Kind = "deposit" | "withdraw";
 type Step = "form" | "confirm" | "pin" | "success";
@@ -24,7 +25,10 @@ const DEMO_PIN = "1234";
 function DemoContent({ initialKind }: { initialKind: Kind }) {
   const { t } = useI18n();
   const [kind, setKind] = useState<Kind>(initialKind);
-  const [balance, setBalance] = useState(500);
+  const [sandbox, setSandbox] = useState(() => createSandbox());
+  const [scenario, setScenario] = useState<SandboxScenario>("success");
+  const [outcome, setOutcome] = useState<SandboxStatus>("confirmed");
+  const [operationKey, setOperationKey] = useState(() => crypto.randomUUID());
   const [country, setCountry] = useState("CD");
   const [operator, setOperator] = useState("M-Pesa");
   const [numbers, setNumbers] = useState<string[]>(["+243 000 000 001"]);
@@ -35,6 +39,7 @@ function DemoContent({ initialKind }: { initialKind: Kind }) {
   const [pinError, setPinError] = useState(false);
   const [step, setStep] = useState<Step>("form");
   const value = Number(amount.replace(",", "."));
+  const balance = sandbox.available / 100;
   const tooMuch = kind === "withdraw" && value > balance;
   const valid = Number.isFinite(value) && value > 0 && !tooMuch && !!phone && !!operator;
   const fmt = (n: number) => `${n.toFixed(2)} $`;
@@ -47,7 +52,22 @@ function DemoContent({ initialKind }: { initialKind: Kind }) {
     setNumbers(l => [...l, n]); setPhone(n); setNewNumber("");
   };
   const removeNumber = (n: string) => { setNumbers(l => l.filter(x => x !== n)); if (phone === n) setPhone(""); };
-  const apply = () => { setBalance(b => kind === "deposit" ? b + value : b - value); setStep("success"); };
+  const apply = () => {
+    const run = executeSandbox(sandbox, { key: operationKey, kind, amount: value, scenario });
+    setSandbox(run.state);
+    setOutcome(run.result.status);
+    setStep("success");
+  };
+  const settle = (response: "success" | "cancelled") => {
+    setSandbox(current => settleSandbox(current, operationKey, response));
+    setOutcome(response === "success" ? "confirmed" : "cancelled");
+  };
+  const restart = () => {
+    setAmount("");
+    setScenario("success");
+    setOperationKey(crypto.randomUUID());
+    setStep("form");
+  };
 
   return <div className="space-y-4">
     <p className="rounded-lg border border-brand-gold/30 bg-brand-gold/10 p-3 text-xs font-semibold text-foreground">
@@ -62,6 +82,15 @@ function DemoContent({ initialKind }: { initialKind: Kind }) {
       <div className="grid grid-cols-2 gap-2">
         {(["deposit", "withdraw"] as const).map(k => <Button key={k} variant={kind === k ? "secondary" : "ghost"} onClick={() => setKind(k)}>{t(k === "deposit" ? "Dépôt" : "Retrait")}</Button>)}
       </div>
+      <Field label={t("Réponse simulée")}>
+        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t("Réponse simulée")}>
+          {(["success", "pending", "refused", "cancelled"] as const).map(value => (
+            <Button key={value} type="button" size="sm" role="radio" aria-checked={scenario === value} variant={scenario === value ? "secondary" : "outline"} onClick={() => setScenario(value)}>
+              {t(value === "success" ? "Succès fictif" : value === "pending" ? "Mise en attente fictive" : value === "refused" ? "Refus fictif" : "Annulation fictive")}
+            </Button>
+          ))}
+        </div>
+      </Field>
       <Field label={t("Pays (démo)")}>
         <select aria-label={t("Pays (démo)")} value={country} onChange={e => pickCountry(e.target.value)} className="h-11 w-full rounded-lg border border-input bg-background p-2 text-sm">
           {Object.entries(DEMO_OPERATORS).map(([c, v]) => <option key={c} value={c}>{t(v.label)}</option>)}
@@ -107,11 +136,17 @@ function DemoContent({ initialKind }: { initialKind: Kind }) {
     </>}
 
     {step === "success" && <>
-      <div role="status" className="rounded-lg bg-brand-green/10 p-4 text-center text-brand-green">
+      <div role="status" className={`rounded-lg p-4 text-center ${outcome === "confirmed" ? "bg-brand-green/10 text-brand-green" : outcome === "pending" ? "bg-brand-gold/10 text-brand-gold" : "bg-brand-red/10 text-brand-red"}`}>
         <CheckCircle2 className="mx-auto mb-2 h-8 w-8" />
-        <p className="text-sm font-semibold">{t(kind === "deposit" ? "Dépôt fictif réussi" : "Retrait fictif réussi")} · {fmt(value)}</p>
+        <p className="text-sm font-semibold">
+          {t(outcome === "confirmed" ? (kind === "deposit" ? "Dépôt fictif réussi" : "Retrait fictif réussi") : outcome === "pending" ? "Opération fictive en attente" : outcome === "refused" ? "Opération fictive refusée" : "Opération fictive annulée")} · {fmt(value)}
+        </p>
       </div>
-      <Button variant="outline" className="w-full" onClick={() => { setAmount(""); setStep("form"); }}><RotateCcw />{t("Nouvelle opération démo")}</Button>
+      {outcome === "pending" && <div className="grid grid-cols-2 gap-2">
+        <Button onClick={() => settle("success")}>{t("Confirmer la réponse fictive")}</Button>
+        <Button variant="outline" onClick={() => settle("cancelled")}>{t("Annuler l'opération fictive")}</Button>
+      </div>}
+      <Button variant="outline" className="w-full" onClick={restart}><RotateCcw />{t("Nouvelle opération démo")}</Button>
     </>}
   </div>;
 }

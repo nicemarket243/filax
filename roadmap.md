@@ -1,5 +1,12 @@
 # FILAX roadmap
 
+## 12 nov. — Stabilisation du moteur financier interne
+- [ ] Journal à double entrée équilibré, chaîné et interdit en modification/suppression
+- [ ] Soldes disponible, réservé et en attente sans changer les soldes existants
+- [ ] Idempotence persistante sur toutes les sorties, y compris objectifs et cotisations
+- [ ] Sandbox isolée : succès, attente, refus, annulation et tests de stress
+- [ ] Tests complets, typecheck et construction de production ; aucune session de compte existant
+
 ## 6 nov. — Factures et reçus
 - [ ] Import de factures/reçus, lecture et catégorie par IA, tableau de dépenses exportable
 - [x] Tester bout en bout import IA → enregistrement → export CSV sur un nouveau compte isolé, sans session ni compte existant : reçu fictif 42,75 USD, catégorie Alimentation, document joint, persistance après rechargement, CSV UTF-8 à 7 colonnes validé, aucune erreur console

@@ -304,8 +304,8 @@ function HomePage() {
         onConfirm={
           live
             ? async (id, amt, label, extra) => {
-                if (extra?.external) await transferExternalDb(id, amt, label, extra.pin ?? "", extra.accountPin ?? "");
-                else await transferDb(id, amt, extra?.filaxId ?? "", extra?.pin ?? "", extra?.accountPin ?? "");
+                if (extra?.external) await transferExternalDb(id, amt, label, extra.pin ?? "", extra.accountPin ?? "", extra.operationKey);
+                else await transferDb(id, amt, extra?.filaxId ?? "", extra?.pin ?? "", extra?.accountPin ?? "", extra?.operationKey);
                 await reload();
               }
             : filax.transfer
@@ -333,7 +333,7 @@ function HomePage() {
         onOpenChange={(o) => !o && setModal(null)}
         goal={goal}
         accounts={accounts}
-        onConfirm={live ? async (gid, amt, acc, pin) => { await fundGoalDb(gid, amt, acc, pin); await Promise.all([dbGoals.refresh(), reload()]); } : filax.fundGoal}
+        onConfirm={live ? async (gid, amt, acc, pin, operationKey) => { await fundGoalDb(gid, amt, acc, pin, operationKey); await Promise.all([dbGoals.refresh(), reload()]); } : filax.fundGoal}
       />
       <AllAccountsModal
         open={modal === "all"}

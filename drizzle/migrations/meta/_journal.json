@@ -134,6 +134,27 @@
       "when": 1794512869257,
       "tag": "0018_partner_banks_opening_fees",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794524833516,
+      "tag": "0019_create_immutable_double_entry_ledger",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794524915553,
+      "tag": "0020_enforce_balance_buckets_and_persistent_idempotency",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794525090215,
+      "tag": "0021_preserve_existing_idempotency_receipts",
+      "breakpoints": true
     }
   ]
 }

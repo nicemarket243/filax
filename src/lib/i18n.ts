@@ -151,6 +151,8 @@ const EN: Record<string, string> = {
   "Compte verrouillé": "Account locked",
   "Compte actif": "Active account",
   "Solde disponible": "Available balance",
+  bloqué: "reserved",
+  "en attente": "pending",
   "Créer un nouveau compte": "Create a new account",
   "Portefeuille total": "Total portfolio",
   comptes: "accounts",

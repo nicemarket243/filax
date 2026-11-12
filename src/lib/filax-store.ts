@@ -11,6 +11,11 @@ export interface Account {
   icon: string;
   color: AccentKey;
   balance: number;
+  /** Compartiments comptables réels ; les anciennes données locales utilisent le repli calculé. */
+  availableBalance?: number;
+  reservedBalance?: number;
+  pendingIncoming?: number;
+  pendingOutgoing?: number;
   visualKey?: string | null;
   parentAccountId?: string | null;
   hasDedicatedPin?: boolean;
@@ -603,6 +608,21 @@ export function formatDate(ts: number) {
 
 export function isLocked(a: Account) {
   return !!a.lockedUntil && a.lockedUntil > Date.now();
+}
+
+/** Montant réellement utilisable : jamais le total d'un compte verrouillé ni une réserve sortante. */
+export function spendableBalance(a: Account) {
+  if (isLocked(a)) return 0;
+  if (a.availableBalance === undefined) return Math.max(0, a.balance - (a.pendingOutgoing ?? 0));
+  return Math.max(0, a.availableBalance - (a.pendingOutgoing ?? 0));
+}
+
+export function reservedBalance(a: Account) {
+  return a.reservedBalance ?? (isLocked(a) ? a.balance : 0);
+}
+
+export function pendingBalance(a: Account) {
+  return (a.pendingIncoming ?? 0) + (a.pendingOutgoing ?? 0);
 }
 
 /** Membres triés : dernière cotisation en premier. */

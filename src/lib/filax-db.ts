@@ -173,6 +173,10 @@ export function useDbAccounts(userId: string | null) {
         icon: a.kind === "savings" ? "piggy" : "wallet",
         color: a.currency === "USD" ? "brand-blue" : "brand-green",
         balance: Number(a.balance),
+        availableBalance: Number(a.available_balance),
+        reservedBalance: Number(a.reserved_balance),
+        pendingIncoming: Number(a.pending_incoming),
+        pendingOutgoing: Number(a.pending_outgoing),
         visualKey: a.visual_key,
         parentAccountId: a.parent_account_id,
         hasDedicatedPin: a.has_dedicated_pin,
@@ -296,8 +300,8 @@ export async function createDbGroup(input: { name: string; category: GroupCatego
 }
 
 /** Cotisation réelle : débit du compte, frais 0,5 %, notification des membres. */
-export async function contributeDb(groupId: string, accountId: string, amount: number, pin = "") {
-  await outflow({ _operation: "contribute", _related: groupId, _account: accountId, _amount: amount, _pin: pin });
+export async function contributeDb(groupId: string, accountId: string, amount: number, pin = "", operationKey = newOperationKey()) {
+  await outflow({ _operation: "contribute", _related: groupId, _account: accountId, _amount: amount, _pin: pin }, operationKey);
 }
 
 /** Invitation par username ou FILAX-ID. */
@@ -375,19 +379,15 @@ export function moneyError(message: string) {
   if (/solde insuffisant|supérieur au solde/i.test(message)) return "Votre montant de retrait est supérieur au solde disponible sur ce compte.";
   return message;
 }
-// Même demande répétée en moins de 10 s (double clic) = même clé : le serveur ne l'exécute qu'une fois.
-const recentKeys = new Map<string, { key: string; at: number }>();
-function keyFor(args: unknown) {
-  const sig = JSON.stringify(args);
-  const hit = recentKeys.get(sig);
-  if (hit && Date.now() - hit.at < 10_000) return hit.key;
-  const key = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-  recentKeys.set(sig, { key, at: Date.now() });
-  return key;
+/** Une clé par intention de transaction, conservée pendant toutes les reprises du même parcours. */
+export function newOperationKey() {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
 }
 type Outflow = { _operation: string; _account: string; _amount: number; _destination?: string; _pin?: string; _global_pin?: string; _related?: string };
-async function outflow(args: Outflow) {
-  const { data, error } = await supabase.rpc("account_outflow", { ...args, _idempotency_key: keyFor(args) });
+async function outflow(args: Outflow, operationKey: string) {
+  const { data, error } = await supabase.rpc("account_outflow", { ...args, _idempotency_key: operationKey });
   const r = data as { ok?: boolean; error?: string } | null;
   const reason = error ? moneyError(error.message) : r && r.ok === false ? (r.error ?? "Opération refusée") : null;
   if (reason) {
@@ -406,18 +406,18 @@ export async function hasDbPin() {
 }
 
 /** Dépôt : crée une demande en attente, créditée seulement après confirmation du paiement. */
-export async function depositDb(accountId: string, amount: number, method: string) {
-  const { error } = await supabase.rpc("request_deposit", { _account: accountId, _amount: amount, _method: method, _idempotency_key: keyFor({ d: accountId, amount, method }) });
+export async function depositDb(accountId: string, amount: number, method: string, operationKey = newOperationKey()) {
+  const { error } = await supabase.rpc("request_deposit", { _account: accountId, _amount: amount, _method: method, _idempotency_key: operationKey });
   if (error) throw new Error(moneyError(error.message));
 }
-export async function withdrawDb(accountId: string, amount: number, method: string, pin = "", globalPin = "") {
-  await outflow({ _operation: "withdraw", _account: accountId, _amount: amount, _destination: method, _pin: pin, _global_pin: globalPin });
+export async function withdrawDb(accountId: string, amount: number, method: string, pin = "", globalPin = "", operationKey = newOperationKey()) {
+  await outflow({ _operation: "withdraw", _account: accountId, _amount: amount, _destination: method, _pin: pin, _global_pin: globalPin }, operationKey);
 }
-export async function transferDb(accountId: string, amount: number, filaxId: string, pin: string, accountPin = "") {
-  await outflow({ _operation: "transfer", _account: accountId, _destination: filaxId, _amount: amount, _global_pin: pin, _pin: accountPin });
+export async function transferDb(accountId: string, amount: number, filaxId: string, pin: string, accountPin = "", operationKey = newOperationKey()) {
+  await outflow({ _operation: "transfer", _account: accountId, _destination: filaxId, _amount: amount, _global_pin: pin, _pin: accountPin }, operationKey);
 }
-export async function transferExternalDb(accountId: string, amount: number, label: string, pin: string, accountPin = "") {
-  await outflow({ _operation: "external", _account: accountId, _amount: amount, _destination: label, _global_pin: pin, _pin: accountPin });
+export async function transferExternalDb(accountId: string, amount: number, label: string, pin: string, accountPin = "", operationKey = newOperationKey()) {
+  await outflow({ _operation: "external", _account: accountId, _amount: amount, _destination: label, _global_pin: pin, _pin: accountPin }, operationKey);
 }
 
 /** Objectifs d'épargne réels, mis à jour en direct. */
@@ -471,8 +471,8 @@ export async function createGoalDb(userId: string, g: { accountId: string; name:
   if (error) throw new Error(error.message);
 }
 
-export async function fundGoalDb(goalId: string, amount: number, accountId: string, pin = "") {
-  await outflow({ _operation: "goal", _related: goalId, _account: accountId, _amount: amount, _pin: pin });
+export async function fundGoalDb(goalId: string, amount: number, accountId: string, pin = "", operationKey = newOperationKey()) {
+  await outflow({ _operation: "goal", _related: goalId, _account: accountId, _amount: amount, _pin: pin }, operationKey);
 }
 
 /** Enregistre la banque partenaire choisie par l'utilisateur. */

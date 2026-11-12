@@ -74,6 +74,7 @@ export type Database = {
       }
       accounts: {
         Row: {
+          available_balance: number
           balance: number
           created_at: string
           currency: string
@@ -83,12 +84,16 @@ export type Database = {
           locked_until: string | null
           name: string
           parent_account_id: string | null
+          pending_incoming: number
+          pending_outgoing: number
+          reserved_balance: number
           status: string
           target: number | null
           user_id: string
           visual_key: string | null
         }
         Insert: {
+          available_balance?: number
           balance?: number
           created_at?: string
           currency?: string
@@ -98,12 +103,16 @@ export type Database = {
           locked_until?: string | null
           name: string
           parent_account_id?: string | null
+          pending_incoming?: number
+          pending_outgoing?: number
+          reserved_balance?: number
           status?: string
           target?: number | null
           user_id: string
           visual_key?: string | null
         }
         Update: {
+          available_balance?: number
           balance?: number
           created_at?: string
           currency?: string
@@ -113,6 +122,9 @@ export type Database = {
           locked_until?: string | null
           name?: string
           parent_account_id?: string | null
+          pending_incoming?: number
+          pending_outgoing?: number
+          reserved_balance?: number
           status?: string
           target?: number | null
           user_id?: string
@@ -511,6 +523,101 @@ export type Database = {
         }
         Relationships: []
       }
+      ledger_entries: {
+        Row: {
+          account_id: string | null
+          created_at: string
+          credit: number
+          currency: string
+          debit: number
+          id: number
+          journal_id: string
+          ledger_account: string
+          line_no: number
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string
+          credit?: number
+          currency: string
+          debit?: number
+          id?: never
+          journal_id: string
+          ledger_account: string
+          line_no: number
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string
+          credit?: number
+          currency?: string
+          debit?: number
+          id?: never
+          journal_id?: string
+          ledger_account?: string
+          line_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_journal_id_fkey"
+            columns: ["journal_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_journals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ledger_journals: {
+        Row: {
+          created_at: string
+          hash: string
+          id: string
+          operation: string
+          payload: Json
+          previous_hash: string | null
+          sequence: number
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hash: string
+          id?: string
+          operation: string
+          payload: Json
+          previous_hash?: string | null
+          sequence?: never
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hash?: string
+          id?: string
+          operation?: string
+          payload?: Json
+          previous_hash?: string | null
+          sequence?: never
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_journals_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: true
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -537,6 +644,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      operation_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          fingerprint: string
+          idempotency_key: string
+          operation: string
+          result: Json | null
+          state: string
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          fingerprint: string
+          idempotency_key: string
+          operation: string
+          result?: Json | null
+          state?: string
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          fingerprint?: string
+          idempotency_key?: string
+          operation?: string
+          result?: Json | null
+          state?: string
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_requests_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partner_banks: {
         Row: {
@@ -1021,7 +1172,24 @@ export type Database = {
         Args: { _account: string; _amount: number; _method: string }
         Returns: string
       }
+      execute_contribution: {
+        Args: { _amount: number; _from: string; _group: string }
+        Returns: string
+      }
+      execute_goal_fund: {
+        Args: { _amount: number; _from: string; _goal: string }
+        Returns: string
+      }
       filax_fee: { Args: { _amount: number }; Returns: number }
+      finance_fee: {
+        Args: {
+          _amount: number
+          _currency: string
+          _method: string
+          _operation: string
+        }
+        Returns: number
+      }
       find_recipient: {
         Args: { _identifier: string }
         Returns: {
@@ -1062,11 +1230,39 @@ export type Database = {
       }
       kyc_ok: { Args: { _user: string }; Returns: boolean }
       leave_group: { Args: { _group: string }; Returns: undefined }
+      ledger_integrity: {
+        Args: never
+        Returns: {
+          broken_hash_count: number
+          journal_count: number
+          unbalanced_count: number
+        }[]
+      }
+      operation_fingerprint: {
+        Args: {
+          _account: string
+          _amount: number
+          _destination: string
+          _operation: string
+          _related: string
+        }
+        Returns: string
+      }
       owner_update_group: {
         Args: { _deadline: string; _id: string; _name: string; _target: number }
         Returns: undefined
       }
       pin_failure: { Args: never; Returns: undefined }
+      post_journal: {
+        Args: {
+          _lines: Json
+          _metadata?: Json
+          _operation: string
+          _tx: string
+          _user: string
+        }
+        Returns: string
+      }
       public_profile: {
         Args: { _username: string }
         Returns: {

@@ -11,6 +11,7 @@ import {
   formatMoney,
   isLocked,
   useFilax,
+  spendableBalance,
   type AccentKey,
   type Account,
   type Currency,
@@ -21,7 +22,7 @@ import {
 
 import { Field, Modal, PrimaryButton, TextInput, accentVar } from "@/components/filax/ui-kit";
 import { VisualPicker } from "./visual-picker";
-import { subaccountSchema, type SubaccountInput } from "@/lib/filax-db";
+import { newOperationKey, subaccountSchema, type SubaccountInput } from "@/lib/filax-db";
 import { PinConfirmModal } from "./pin-confirm";
 import { TransactionDemoLauncher } from "./payment-simulators";
 import { TransactionReview } from "./transaction-review";
@@ -187,7 +188,7 @@ export function WithdrawModal({
     setPhone(data.profile.phone ?? ""); setReviewPin(""); setReviewOpen(false); setPinOpen(false); setUnavailable(false);
   }, [open, data.profile.phone]);
   const review = async (pin: string) => {
-    if (!account || !canReviewOutflow(value, account.balance, pin, phone)) return;
+    if (!account || !canReviewOutflow(value, spendableBalance(account), pin, phone)) return;
     setReviewPin(pin); setPinOpen(false); setReviewOpen(true);
   };
   const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
@@ -202,7 +203,7 @@ export function WithdrawModal({
   }, [defaultAccountId, open]);
 
   const account = accounts.find((a) => a.id === accountId);
-  const tooMuch = !!account && value > 0 && value + transactionFee(value) > account.balance;
+  const tooMuch = !!account && value > 0 && value + transactionFee(value) > spendableBalance(account);
   const wMin = minimumFor("withdraw", method, account?.currency);
   const belowMin = wMin !== null && value > 0 && value < wMin;
 
@@ -231,7 +232,7 @@ export function WithdrawModal({
       </div>
       <PinConfirmModal open={open && pinOpen} onOpenChange={setPinOpen} onSubmit={review} />
       <TransactionReview open={open && reviewOpen} onOpenChange={(o) => { setReviewOpen(o); if (!o) setReviewPin(""); }} amount={value} currency={account?.currency ?? "USD"} account={account?.name ?? ""} recipient={phone} method={METHOD_LABEL[method]} onConfirm={() => {
-        if (!account || !canReviewOutflow(value, account.balance, reviewPin, phone)) return;
+        if (!account || !canReviewOutflow(value, spendableBalance(account), reviewPin, phone)) return;
         setReviewOpen(false); setReviewPin(""); setUnavailable(true);
       }} />
       <Modal open={open && unavailable} onOpenChange={setUnavailable} title="Retrait indisponible">
@@ -263,7 +264,7 @@ export function TransferModal({
   onOpenChange: (o: boolean) => void;
   accounts: Account[];
   defaultAccountId: string;
-  onConfirm: (accountId: string, amount: number, recipient: string, extra?: { filaxId?: string; pin?: string; accountPin?: string; external?: boolean }) => void | Promise<void>;
+  onConfirm: (accountId: string, amount: number, recipient: string, extra?: { filaxId?: string; pin?: string; accountPin?: string; external?: boolean; operationKey?: string }) => void | Promise<void>;
   /** Mode base réelle : demande le code secret et accepte un ID FILAX saisi. */
   requirePin?: boolean;
 }) {
@@ -313,13 +314,15 @@ export function TransferModal({
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewPin, setReviewPin] = useState("");
   const [busy, setBusy] = useState(false);
+  const [operationKey, setOperationKey] = useState(newOperationKey);
+  useEffect(() => { if (open) setOperationKey(newOperationKey()); }, [open]);
   useEffect(() => { setPinOpen(false); setReviewOpen(false); setReviewPin(""); }, [open]);
   const sendWith = async (pin: string) => {
-    if (busy || !source || !canReviewOutflow(value, source.balance, pin, recipient?.name ?? "")) return;
+    if (busy || !source || !canReviewOutflow(value, spendableBalance(source), pin, recipient?.name ?? "")) return;
     setBusy(true);
     const label = recipient?.name ?? "";
     try {
-      await onConfirm(accountId, value, label, { filaxId: recipient?.id, pin, accountPin });
+      await onConfirm(accountId, value, label, { filaxId: recipient?.id, pin, accountPin, operationKey });
     } catch (e) {
       toast.error("Transfert échoué", { description: (e as Error).message });
       setReviewOpen(false); setReviewPin("");
@@ -331,9 +334,9 @@ export function TransferModal({
     toast.success("Transfert réussi", { description: `Votre transfert vers ${label} a réussi avec succès.` });
   };
   const source = accounts.find((a) => a.id === accountId);
-  const ready = mode === "filax" && !!source && accountPinReady && Number.isFinite(value) && value > 0 && value + transactionFee(value) <= source.balance && !!recipient;
+  const ready = mode === "filax" && !!source && accountPinReady && Number.isFinite(value) && value > 0 && value + transactionFee(value) <= spendableBalance(source) && !!recipient;
   const prepareReview = async (pin: string) => {
-    if (!source || !canReviewOutflow(value, source.balance, pin, recipient?.name ?? "")) return;
+    if (!source || !canReviewOutflow(value, spendableBalance(source), pin, recipient?.name ?? "")) return;
     setPinOpen(false); setReviewPin(pin); setReviewOpen(true);
   };
 
@@ -480,7 +483,7 @@ export function NewAccountModal({ open, onOpenChange, onConfirm, accounts, defau
   const parent = principals.find((a) => a.id === parentId);
   const subCount = accounts.filter((a) => a.kind && a.kind !== "main").length;
   const lockEnd = lockDays ? Date.now() + lockDays * 86_400_000 : null;
-  const valid = !!parent && subCount < 10 && name.trim().length >= 2 && name.trim().length <= 80 && Number(target) > 0 && Number(target) <= 1000000000000 && /^\d{4}$/.test(pin);
+  const valid = !!parent && subCount < 8 && name.trim().length >= 2 && name.trim().length <= 80 && Number(target) > 0 && Number(target) <= 1000000000000 && /^\d{4}$/.test(pin);
   const create = async () => {
     if (!parent || busy) return;
     setBusy(true);
@@ -518,7 +521,7 @@ export function NewAccountModal({ open, onOpenChange, onConfirm, accounts, defau
         {LOCK_OPTIONS.map(([d, l]) => <option key={d} value={d}>{l}</option>)}
       </select></Field>
       {lockEnd && <p className="text-[0.72rem] text-muted-foreground">Échéance : {new Date(lockEnd).toLocaleDateString("fr-FR")} — aucun déblocage anticipé possible.</p>}
-      {subCount >= 10 && <p className="text-sm text-destructive">Limite atteinte : 10 sous-comptes maximum</p>}
+      {subCount >= 8 && <p className="text-sm text-destructive">Limite atteinte : 8 sous-comptes maximum (10 comptes au total)</p>}
       <PrimaryButton disabled={!valid || busy} onClick={() => (lockEnd ? setStep(1) : void create())}>{busy ? "Création en cours…" : "Créer / Confirmer le compte"}</PrimaryButton>
     </div>
   </Modal>;
@@ -606,7 +609,7 @@ export function ContributeModal({
   onOpenChange: (o: boolean) => void;
   group: Group | null;
   accounts: Account[];
-  onConfirm: (groupId: string, amount: number, accountId: string, accountPin?: string) => void | Promise<void>;
+  onConfirm: (groupId: string, amount: number, accountId: string, accountPin?: string, operationKey?: string) => void | Promise<void>;
 }) {
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(available[0]?.id ?? "");
@@ -615,6 +618,9 @@ export function ContributeModal({
   const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
   const accountPinReady = !needsAccountPin || /^\d{4}$/.test(accountPin);
   const [amount, setAmount, value] = useAmount(open);
+  const [busy, setBusy] = useState(false);
+  const [operationKey, setOperationKey] = useState(newOperationKey);
+  useEffect(() => { if (open) { setOperationKey(newOperationKey()); setBusy(false); } }, [open]);
   useEffect(() => setAccountId(available[0]?.id ?? ""), [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -627,15 +633,17 @@ export function ContributeModal({
         </Field>
         <PrimaryButton
           color="brand-green"
-          disabled={!accountPinReady || !group || value <= 0 || !accountId}
+          disabled={busy || !accountPinReady || !group || value <= 0 || !accountId}
           onClick={async () => {
+            if (busy) return;
+            setBusy(true);
             try {
-              await onConfirm(group?.id ?? "", value, accountId, accountPin);
+              await onConfirm(group?.id ?? "", value, accountId, accountPin, operationKey);
               onOpenChange(false);
               toast.success("Cotisation enregistrée");
             } catch (e) {
               toast.error(e instanceof Error ? e.message : "Cotisation impossible");
-            }
+            } finally { setBusy(false); }
           }}
         >
           Cotiser
@@ -794,7 +802,7 @@ export function FundGoalModal({
   onOpenChange: (o: boolean) => void;
   goal: Goal | null;
   accounts: Account[];
-  onConfirm: (goalId: string, amount: number, accountId: string, accountPin?: string) => void | Promise<void>;
+  onConfirm: (goalId: string, amount: number, accountId: string, accountPin?: string, operationKey?: string) => void | Promise<void>;
 }) {
   const available = accounts.filter((a) => !isLocked(a));
   const [accountId, setAccountId] = useState(available[0]?.id ?? "");
@@ -803,6 +811,9 @@ export function FundGoalModal({
   const needsAccountPin = !!accounts.find((a) => a.id === accountId)?.hasDedicatedPin;
   const accountPinReady = !needsAccountPin || /^\d{4}$/.test(accountPin);
   const [amount, setAmount, value] = useAmount(open);
+  const [busy, setBusy] = useState(false);
+  const [operationKey, setOperationKey] = useState(newOperationKey);
+  useEffect(() => { if (open) { setOperationKey(newOperationKey()); setBusy(false); } }, [open]);
   useEffect(() => setAccountId(available[0]?.id ?? ""), [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -815,9 +826,12 @@ export function FundGoalModal({
         </Field>
         <PrimaryButton
           color="brand-green"
-          disabled={!accountPinReady || !goal || value <= 0 || !accountId}
+          disabled={busy || !accountPinReady || !goal || value <= 0 || !accountId}
           onClick={async () => {
-            try { await onConfirm(goal?.id ?? "", value, accountId, accountPin); } catch (e) { toast.error("Épargne refusée", { description: (e as Error).message }); return; }
+            if (busy) return;
+            setBusy(true);
+            try { await onConfirm(goal?.id ?? "", value, accountId, accountPin, operationKey); } catch (e) { toast.error("Épargne refusée", { description: (e as Error).message }); return; }
+            finally { setBusy(false); }
             onOpenChange(false);
             toast.success("Épargne ajoutée");
           }}

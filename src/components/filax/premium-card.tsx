@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { themeImageFor } from "@/components/filax/account-theme";
 
 import { accentVar } from "@/components/filax/ui-kit";
-import { formatMoney, isLocked, type Account } from "@/lib/filax-store";
+import { formatMoney, isLocked, pendingBalance, reservedBalance, spendableBalance, type Account } from "@/lib/filax-store";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   account: Account;
@@ -22,6 +23,7 @@ interface Props {
 
 /** Carte bancaire premium FILAX — une seule carte à la fois. */
 export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate, onChangeVisual }: Props) {
+  const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const visualTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -107,9 +109,13 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
         {/* Solde */}
         <div className="relative">
           <p className="text-[2rem] font-extrabold leading-none tracking-tight">
-            {formatMoney(account.balance, account.currency)}
+            {formatMoney(spendableBalance(account), account.currency)}
           </p>
-          <p className="mt-1 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/60">Solde disponible</p>
+          <p className="mt-1 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/60">
+            {t("Solde disponible")}
+            {reservedBalance(account) > 0 ? ` · ${formatMoney(reservedBalance(account), account.currency)} ${t("bloqué")}` : ""}
+            {pendingBalance(account) > 0 ? ` · ${formatMoney(pendingBalance(account), account.currency)} ${t("en attente")}` : ""}
+          </p>
 
         </div>
 
