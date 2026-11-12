@@ -155,6 +155,20 @@
       "when": 1794525090215,
       "tag": "0021_preserve_existing_idempotency_receipts",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794525632017,
+      "tag": "0022_temporary_isolated_concurrency_fixture",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1794525647585,
+      "tag": "0023_remove_isolated_concurrency_fixture_helper",
+      "breakpoints": true
     }
   ]
 }

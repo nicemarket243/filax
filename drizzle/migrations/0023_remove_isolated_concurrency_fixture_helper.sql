@@ -1,0 +1,1 @@
+DROP FUNCTION public.test_fixture_confirm_deposit(uuid);

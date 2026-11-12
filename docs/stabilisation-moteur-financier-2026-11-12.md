@@ -36,7 +36,15 @@ Mission limitée au moteur interne : journal comptable, compartiments de solde, 
 - Première reprise : 30 journaux et 66 lignes, tous équilibrés ; 5 anciens reçus d'idempotence préservés.
 - Aucun paiement, retrait ou transfert réel exécuté.
 
+### Concurrence SQL sur nouvelles données fictives
+- Deux nouveaux comptes de test ont été créés avec de vrais liens de confirmation ; deux sessions distinctes ont été ouvertes pour le compte source. Aucun compte ou session existant n'a été utilisé.
+- Le source a reçu 1 000 USD fictifs par une écriture d'ouverture équilibrée. La fonction temporaire de préparation a été supprimée avant le test.
+- Les deux sessions ont validé simultanément le même transfert de 100 USD avec la même clé : deux réponses de succès logique, dont une marquée `duplicate`, un seul identifiant de transaction, un seul reçu terminé et une seule sortie.
+- Résultat : source 899,50 USD après 0,50 USD de frais, destinataire 100 USD ; aucun double débit et aucun compartiment en attente résiduel.
+- Les trois journaux des comptes fictifs sont équilibrés et leurs empreintes SHA-256 sont valides. Le solde du source correspond exactement à son solde comptable.
+- La réutilisation de la même clé avec un montant différent a été refusée sans modifier les soldes.
+- Les deux comptes fictifs et leurs historiques sont conservés conformément à la politique de préservation des comptes de test.
+
 ## Limites restantes
-- Les tests de stress de la Sandbox ne constituent pas un test de concurrence sur les fonctions SQL avec deux sessions authentifiées isolées.
 - La démo n'est pas accessible depuis l'accès découverte sans compte ; son moteur a été vérifié par tests automatiques, pas par un parcours navigateur authentifié.
 - Les callbacks signés, règlements et rapprochements de prestataires externes restent conditionnés à de futurs contrats et à leurs documentations.

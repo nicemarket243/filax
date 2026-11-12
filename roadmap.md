@@ -6,7 +6,7 @@
 - [x] Idempotence persistante sur toutes les sorties, y compris objectifs et cotisations
 - [x] Sandbox isolée : succès, attente, refus, annulation et tests de stress
 - [x] 45 tests et rapprochement SQL réussis ; aucune session de compte existant
-- [ ] Test de concurrence SQL avec deux nouvelles sessions isolées (aucune session créée dans ce lot)
+- [x] Concurrence SQL réussie avec deux sessions distinctes d’un nouveau compte source fictif et un nouveau destinataire fictif : une exécution, un doublon, un débit, journaux équilibrés et empreintes valides
 
 ## 6 nov. — Factures et reçus
 - [ ] Import de factures/reçus, lecture et catégorie par IA, tableau de dépenses exportable
