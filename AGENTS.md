@@ -22,3 +22,4 @@
 
 - Share international phone parsing and the region-grouped country catalog across access screens; detect country client-side without GPS and never override manual input, so country choice cannot change a session or financial data.
 - Use the shared premium gradient tokens for the portfolio summary and main account card; render the analysis chart blue at rest and reveal transaction color and exact details only during captured pointer interaction.
+- Fees come from the admin-managed fee_rules table via src/lib/fees.ts (most specific rule wins); never hardcode rates, so pricing changes need no deploy.

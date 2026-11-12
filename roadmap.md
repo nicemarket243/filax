@@ -135,3 +135,9 @@
 - [ ] Parcours complet nouveau client : choix de la banque, ouverture, sous-comptes, dépôts/retraits/transferts
 - [ ] Transferts « simple et fluide » en mode Sandbox (Mobile Money, banque, carte), sans copie ni annonce officielle avant partenaires
 - [ ] Vérifier sur un nouveau compte test (session test en attente de ton accord)
+
+## 12 nov. — Cahier des charges (plan par lots approuvé)
+- [x] Lot 1 audit d'écarts (docs/cahier-des-charges-ecarts-2026-11-12.md)
+- [~] Lot 2 banques administrables + demandes d'ouverture (base faite, écran d'inscription à brancher)
+- [~] Lot 4 grille de frais (base + calcul testé ; écran admin à faire)
+- [ ] Lots 3, 5, 6, 8, 9 (affichage soldes, formulaire rouge/vert, Envoyer/Recevoir, Sandbox, test bout en bout)

@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_opening_requests: {
+        Row: {
+          bank_code: string
+          created_at: string
+          currencies: string[]
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          bank_code: string
+          created_at?: string
+          currencies: string[]
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Update: {
+          bank_code?: string
+          created_at?: string
+          currencies?: string[]
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_opening_requests_bank_code_fkey"
+            columns: ["bank_code"]
+            isOneToOne: false
+            referencedRelation: "partner_banks"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       account_security: {
         Row: {
           account_id: string
@@ -203,6 +238,45 @@ export type Database = {
           id?: string
           user_id?: string
           vendor?: string
+        }
+        Relationships: []
+      }
+      fee_rules: {
+        Row: {
+          active: boolean
+          created_at: string
+          currency: string | null
+          fixed: number
+          id: string
+          method: string | null
+          min_fee: number
+          operation: string
+          partner: string | null
+          percent: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          currency?: string | null
+          fixed?: number
+          id?: string
+          method?: string | null
+          min_fee?: number
+          operation: string
+          partner?: string | null
+          percent?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          currency?: string | null
+          fixed?: number
+          id?: string
+          method?: string | null
+          min_fee?: number
+          operation?: string
+          partner?: string | null
+          percent?: number
         }
         Relationships: []
       }
@@ -461,6 +535,33 @@ export type Database = {
           read?: boolean
           title?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      partner_banks: {
+        Row: {
+          api_opening: boolean
+          code: string
+          created_at: string
+          name: string
+          sort_order: number
+          status: string
+        }
+        Insert: {
+          api_opening?: boolean
+          code: string
+          created_at?: string
+          name: string
+          sort_order?: number
+          status?: string
+        }
+        Update: {
+          api_opening?: boolean
+          code?: string
+          created_at?: string
+          name?: string
+          sort_order?: number
+          status?: string
         }
         Relationships: []
       }
