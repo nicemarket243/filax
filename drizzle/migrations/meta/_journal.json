@@ -120,6 +120,13 @@
       "when": 1793952591594,
       "tag": "0016_create_expenses",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1794512388562,
+      "tag": "0017_account_cap_and_demo_protection",
+      "breakpoints": true
     }
   ]
 }

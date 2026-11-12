@@ -128,3 +128,10 @@
 - [x] Simulateurs frontend Push STK et SMS à six chiffres, explicitement sans paiement ni message réel
 - [x] Remplacer le diaporama par 30 photos de cotisation, banque et conseil financier
 - [x] Vérifier les simulations et le diaporama sans modifier le compte vitrine ni la session : STK accepté/refusé/expiré, OTP incorrect/valide/expiré/renvoyé/bloqué, aucun appel financier, accueil inchangé
+
+## 12 nov. — Continuité démo / nouveaux clients
+- [x] Bloquer côté base toute suppression des comptes, historiques et profils de démonstration
+- [x] Inscription : USD + CDF automatiques (déjà en place) ; maximum 8 sous-comptes, 10 comptes au total
+- [ ] Parcours complet nouveau client : choix de la banque, ouverture, sous-comptes, dépôts/retraits/transferts
+- [ ] Transferts « simple et fluide » en mode Sandbox (Mobile Money, banque, carte), sans copie ni annonce officielle avant partenaires
+- [ ] Vérifier sur un nouveau compte test (session test en attente de ton accord)
