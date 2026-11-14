@@ -5,8 +5,12 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useLayerHistory } from "@/lib/use-layer-history";
 
-const Dialog = DialogPrimitive.Root;
+function Dialog({ open, onOpenChange, ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  const change = useLayerHistory(!!open, open !== undefined, onOpenChange);
+  return <DialogPrimitive.Root open={open} onOpenChange={open === undefined ? onOpenChange : change} {...props} />;
+}
 
 const DialogTrigger = DialogPrimitive.Trigger;
 

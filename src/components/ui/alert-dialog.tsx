@@ -3,8 +3,12 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { useLayerHistory } from "@/lib/use-layer-history";
 
-const AlertDialog = AlertDialogPrimitive.Root;
+function AlertDialog({ open, onOpenChange, ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
+  const change = useLayerHistory(!!open, open !== undefined, onOpenChange);
+  return <AlertDialogPrimitive.Root open={open} onOpenChange={open === undefined ? onOpenChange : change} {...props} />;
+}
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 

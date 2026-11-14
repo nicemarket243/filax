@@ -1,5 +1,11 @@
 # FILAX roadmap
 
+## 14 nov. — Carrousel, fenêtres et ouverture à 50 pays
+- [x] Rendre le passage entre comptes aussi naturel qu’un défilement de photos, sans gestes accidentels ni changement du design
+- [x] Garder tous les tiroirs fermés par défaut et faire fermer la fenêtre active par Retour avant de quitter la page
+- [x] Limiter le choix à 50 pays : 20 Afrique, 10 Amérique, 10 Asie et 10 Europe, avec les pays prioritaires demandés
+- [x] Tester les règles, la compilation et les parcours mobiles sans toucher aux comptes ni aux données financières : 63 tests, un compte par geste, scroll vertical préservé, Retour vérifié
+
 ## 14 nov. — Fluidité et vitesse perçue
 - [x] Stabiliser le balayage des cartes : verrouillage d’axe, seuils anti-accident et animations sans à-coup
 - [x] Réutiliser instantanément les données privées déjà chargées, puis actualiser en arrière-plan

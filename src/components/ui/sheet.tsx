@@ -6,8 +6,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useLayerHistory } from "@/lib/use-layer-history";
 
-const Sheet = SheetPrimitive.Root;
+function Sheet({ open, onOpenChange, ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
+  const change = useLayerHistory(!!open, open !== undefined, onOpenChange);
+  return <SheetPrimitive.Root open={open} onOpenChange={open === undefined ? onOpenChange : change} {...props} />;
+}
 
 const SheetTrigger = SheetPrimitive.Trigger;
 

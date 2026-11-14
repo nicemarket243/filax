@@ -137,11 +137,9 @@ function HomePage() {
 
       <div className="mt-5">
         <PremiumCard
-          account={active}
+          accounts={accounts}
           index={activeIndex}
-          total={accounts.length}
-          onNext={() => setActiveIndex((i) => (i + 1) % accounts.length)}
-          onPrev={() => setActiveIndex((i) => (i - 1 + accounts.length) % accounts.length)}
+          onIndexChange={setActiveIndex}
           onShowAll={() => setModal("all")}
           onCreate={() => setModal("account")}
           onChangeVisual={() => setModal("visual")}

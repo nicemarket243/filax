@@ -1,10 +1,10 @@
 import { getCountryCallingCode, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 
 export const COUNTRY_GROUPS: { label: string; codes: CountryCode[] }[] = [
-  { label: "Afrique", codes: ["CD", "CG", "CM", "CI", "SN", "GA", "KE", "NG", "RW", "GH", "TG", "BJ", "ML", "BF", "GN", "UG", "TZ", "ZA", "AO", "ZM", "MW", "MZ", "MG", "ET", "EG", "MA", "TN", "DZ", "SL", "LR"] },
-  { label: "Europe", codes: ["FR", "BE", "CH", "DE", "GB", "IT", "ES", "NL", "PT", "SE", "NO", "DK", "IE", "LU", "AT"] },
-  { label: "Amérique", codes: ["US", "CA", "BR", "MX", "CO", "AR", "CL", "PE", "EC", "BO", "UY", "PY", "VE", "DO", "HT"] },
-  { label: "Asie", codes: ["CN", "AE", "QA", "TR", "IN", "JP", "KR", "SG", "MY", "SA"] },
+  { label: "Afrique", codes: ["CD", "CG", "AO", "ZA", "NG", "KE", "TZ", "UG", "RW", "CM", "CI", "SN", "GH", "GA", "ZM", "EG", "MA", "DZ", "MZ", "ET"] },
+  { label: "Amérique", codes: ["US", "CA", "BR", "MX", "CO", "AR", "CL", "PE", "EC", "DO"] },
+  { label: "Asie", codes: ["CN", "AE", "IN", "JP", "KR", "SG", "MY", "SA", "QA", "TR"] },
+  { label: "Europe", codes: ["FR", "BE", "GB", "CH", "DE", "IT", "ES", "NL", "PT", "LU"] },
 ];
 export const COUNTRY_CODES = COUNTRY_GROUPS.flatMap((g) => g.codes);
 export const countryFlag = (code: string) => String.fromCodePoint(...[...code].map((c) => 127397 + c.charCodeAt(0)));
