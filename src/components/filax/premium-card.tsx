@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { themeImageFor } from "@/components/filax/account-theme";
 
 import { accentVar } from "@/components/filax/ui-kit";
-import { formatMoney, isLocked, pendingBalance, reservedBalance, spendableBalance, type Account } from "@/lib/filax-store";
+import { accountDisplayBalance, formatMoney, isLocked, type Account } from "@/lib/filax-store";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -106,17 +106,14 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
 
 
 
-        {/* Solde */}
+        {/* Solde total toujours visible ; le disponible reste contrôlé lors des opérations. */}
         <div className="relative">
           <p className="text-[2rem] font-extrabold leading-none tracking-tight">
-            {formatMoney(spendableBalance(account), account.currency)}
+            {formatMoney(accountDisplayBalance(account), account.currency)}
           </p>
-          <p className="mt-1 text-[0.6rem] font-medium uppercase tracking-[0.16em] text-white/60">
-            {t("Solde disponible")}
-            {reservedBalance(account) > 0 ? ` · ${formatMoney(reservedBalance(account), account.currency)} ${t("bloqué")}` : ""}
-            {pendingBalance(account) > 0 ? ` · ${formatMoney(pendingBalance(account), account.currency)} ${t("en attente")}` : ""}
+          <p className="mt-1 text-[0.82rem] font-bold uppercase tracking-tight text-white/70">
+            {locked ? t("Solde inactif") : t("Solde actif")}
           </p>
-
         </div>
 
         {/* Statut + bouton créer un compte */}

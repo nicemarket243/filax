@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Landmark, Moon, Sun } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PARTNER_BANK, type AccentKey } from "@/lib/filax-store";
 import { useI18n } from "@/lib/i18n";
@@ -90,21 +90,14 @@ export function ProgressBar({ value, color = "brand-blue" }: { value: number; co
   );
 }
 
-export function BankBadge({ compact = false }: { compact?: boolean }) {
+export function BankBadge() {
+  const { t } = useI18n();
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface px-3 py-2">
-      <span
-        className="flex h-7 w-7 items-center justify-center rounded-lg text-[0.7rem] font-black text-white"
-        style={{ background: "var(--gradient-blue)" }}
-      >
-        EB
+    <div className="flex items-center justify-center gap-2.5 rounded-2xl border border-border bg-surface px-3 py-3">
+      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
+        <Landmark className="h-4 w-4" />
       </span>
-      <div className="leading-tight">
-        <p className="text-[0.7rem] font-bold text-foreground">Connexion bancaire en attente</p>
-        {!compact && (
-          <p className="text-[0.62rem] text-muted-foreground">Aucun partenaire bancaire connecté.</p>
-        )}
-      </div>
+      <p className="text-[0.78rem] font-bold tracking-tight text-foreground">{t("Votre banque numérique dans la poche.")}</p>
     </div>
   );
 }

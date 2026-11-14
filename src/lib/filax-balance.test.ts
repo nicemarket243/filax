@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { pendingBalance, reservedBalance, spendableBalance, type Account } from "./filax-store";
+import { accountDisplayBalance, pendingBalance, reservedBalance, spendableBalance, type Account } from "./filax-store";
 
 const account = (extra: Partial<Account>): Account => ({ id: "test", name: "Test", currency: "USD", icon: "wallet", color: "brand-blue", balance: 1_000, ...extra });
 
@@ -29,5 +29,10 @@ describe("Compartiments de solde", () => {
     const value = account({ availableBalance: 900, pendingIncoming: 100, pendingOutgoing: 50 });
     expect(pendingBalance(value)).toBe(150);
     expect(spendableBalance(value)).toBe(850);
+  });
+  test("la carte affiche le montant total même quand le compte est verrouillé", () => {
+    const locked = account({ balance: 4_200, availableBalance: 0, reservedBalance: 4_200, lockedUntil: Date.now() + 86_400_000 });
+    expect(accountDisplayBalance(locked)).toBe(4_200);
+    expect(spendableBalance(locked)).toBe(0);
   });
 });

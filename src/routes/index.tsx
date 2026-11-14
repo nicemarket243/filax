@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "FILAX : gestion de comptes, objectifs et groupes de cotisation. Connexions bancaires et Mobile Money en préparation.",
+          "FILAX : gestion de comptes, objectifs et groupes de cotisation. Votre banque numérique dans la poche.",
       },
       { property: "og:title", content: "FILAX — Plateforme financière intelligente" },
       { property: "og:description", content: "Épargnez, envoyez, recevez et organisez vos finances avec FILAX." },
@@ -130,7 +130,7 @@ function HomePage() {
 
       <PageTitle
         title="Prenez le contrôle de vos finances"
-        subtitle="Connexions bancaires et Mobile Money en préparation."
+        subtitle="Votre banque numérique dans la poche."
       />
 
 

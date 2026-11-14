@@ -1,10 +1,13 @@
 # FILAX roadmap
 
 ## 14 nov. — Préparation de l’intégration bancaire
+- [x] Uniformiser sous chaque montant la typographie des noms de compte et afficher seulement « Solde actif » ou « Solde inactif »
+- [x] Toujours afficher le montant réel en grand, y compris sur un compte bloqué, jamais 0,00 à la place
+- [x] Remplacer le message technique bas d’accueil par « Votre banque numérique dans la poche »
 - [x] Remplacer les affirmations de partenariat officiel par les statuts administrables réels
 - [x] Ajouter consentement, référence unique, idempotence et contrôle KYC aux demandes d’ouverture USD/CDF
 - [x] Brancher le Profil sur les banques administrables et les demandes privées, sans appel bancaire fictif
-- [ ] Vérifier le parcours sur un nouveau compte isolé et conserver ce compte test
+- [x] Vérifier sur le compte actuel autorisé, en lecture seule : cartes, slogan, liste des banques et consentement ; aucune demande enregistrée ni donnée modifiée
 - [ ] Connecter les API, limites et documents contractuels après accords et autorisations des partenaires
 
 ## 12 nov. — Stabilisation du moteur financier interne

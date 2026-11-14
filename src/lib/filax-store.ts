@@ -610,6 +610,11 @@ export function isLocked(a: Account) {
   return !!a.lockedUntil && a.lockedUntil > Date.now();
 }
 
+/** Montant principal de la carte : toujours le total, même si le disponible est bloqué. */
+export function accountDisplayBalance(a: Account) {
+  return a.balance;
+}
+
 /** Montant réellement utilisable : jamais le total d'un compte verrouillé ni une réserve sortante. */
 export function spendableBalance(a: Account) {
   if (isLocked(a)) return 0;
