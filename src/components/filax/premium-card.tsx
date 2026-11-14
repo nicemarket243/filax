@@ -216,6 +216,24 @@ export function PremiumCard({ accounts, index, onIndexChange, onShowAll, onCreat
           ))}
         </div>
       </div>
+      {accounts.length > 1 && (
+        <div className="mt-3 flex items-center justify-center gap-1.5">
+          {accounts.map((account, i) => (
+            <button
+              type="button"
+              key={account.id}
+              aria-label={`Afficher ${account.name}`}
+              aria-current={i === index ? "true" : undefined}
+              onClick={() => emblaApi?.scrollTo(i)}
+              className="h-1.5 rounded-full transition-all duration-300"
+              style={{
+                width: i === index ? 18 : 6,
+                backgroundColor: i === index ? "var(--brand-blue)" : "var(--muted)",
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

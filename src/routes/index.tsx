@@ -135,7 +135,7 @@ function HomePage() {
 
 
 
-      <div className="mt-5">
+      <div className="mt-4">
         <PremiumCard
           accounts={accounts}
           index={activeIndex}
