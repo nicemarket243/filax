@@ -1,10 +1,10 @@
 # FILAX roadmap
 
 ## 14 nov. — Fluidité et vitesse perçue
-- [ ] Stabiliser le balayage des cartes : verrouillage d’axe, seuils anti-accident et animations sans à-coup
-- [ ] Réutiliser instantanément les données privées déjà chargées, puis actualiser en arrière-plan
-- [ ] Précharger la navigation et réduire les requêtes de groupes et les chargements répétés
-- [ ] Vérifier tests, build et parcours mobile sans modifier les comptes
+- [x] Stabiliser le balayage des cartes : verrouillage d’axe, seuils anti-accident et animations sans à-coup
+- [x] Réutiliser instantanément les données privées déjà chargées, puis actualiser en arrière-plan
+- [x] Précharger la navigation et réduire les requêtes de groupes et les chargements répétés
+- [x] Vérifier tests, build et parcours mobile sans modifier les comptes ; corriger aussi la restauration des anciens libellés dynamiques par i18n
 
 ## 14 nov. — Préparation de l’intégration bancaire
 - [x] Uniformiser sous chaque montant la typographie des noms de compte et afficher seulement « Solde actif » ou « Solde inactif »

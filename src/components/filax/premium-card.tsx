@@ -144,20 +144,18 @@ export function PremiumCard({ account, index, total, onNext, onPrev, onShowAll, 
       return;
     }
 
-    paintDx(direction * d.width * 0.42);
-    settleTimer.current = setTimeout(() => {
-      if (direction < 0) onNext();
-      else (onPrev ?? onNext)();
-      setAnim(false);
-      paintDx(-direction * d.width * 0.14);
+    if (direction < 0) onNext();
+    else (onPrev ?? onNext)();
+    // La nouvelle carte entre depuis le côté opposé, sans attente ni saut de contenu.
+    setAnim(false);
+    paintDx(-direction * d.width * 0.2);
+    enterFrame.current = requestAnimationFrame(() => {
       enterFrame.current = requestAnimationFrame(() => {
-        enterFrame.current = requestAnimationFrame(() => {
-          setAnim(true);
-          paintDx(0);
-          settleTimer.current = setTimeout(() => { settling.current = false; }, 240);
-        });
+        setAnim(true);
+        paintDx(0);
+        settleTimer.current = setTimeout(() => { settling.current = false; }, 240);
       });
-    }, 150);
+    });
   };
 
   return (

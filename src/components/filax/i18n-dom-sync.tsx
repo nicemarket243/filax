@@ -5,6 +5,7 @@ const originalText = new WeakMap<Text, string>();
 // Dernière valeur écrite par la traduction : toute autre valeur vient de React et devient la nouvelle source.
 const writtenText = new WeakMap<Text, string>();
 const originalAttributes = new WeakMap<Element, Map<string, string>>();
+const writtenAttributes = new WeakMap<Element, Map<string, string>>();
 const ATTRIBUTES = ["aria-label", "placeholder", "title"];
 
 function syncElement(root: Node, lang: "fr" | "en") {
@@ -32,16 +33,26 @@ function syncElement(root: Node, lang: "fr" | "en") {
     : [...document.querySelectorAll("*")];
   for (const element of elements) {
     let originals = originalAttributes.get(element);
+    let written = writtenAttributes.get(element);
     if (!originals) {
       originals = new Map<string, string>();
       originalAttributes.set(element, originals);
     }
+    if (!written) {
+      written = new Map<string, string>();
+      writtenAttributes.set(element, written);
+    }
     for (const attribute of ATTRIBUTES) {
       const current = element.getAttribute(attribute);
       if (current == null) continue;
-      if (!originals.has(attribute)) originals.set(attribute, current);
+      // Une valeur différente de notre dernière traduction vient de React :
+      // elle devient la nouvelle source au lieu d'être remplacée par l'ancienne.
+      if (!originals.has(attribute) || (written.has(attribute) && written.get(attribute) !== current)) {
+        originals.set(attribute, current);
+      }
       const source = originals.get(attribute) ?? current;
       const next = translate(source, lang);
+      written.set(attribute, next);
       if (current !== next) element.setAttribute(attribute, next);
     }
   }
@@ -58,7 +69,7 @@ export function I18nDomSync() {
         for (const node of mutation.addedNodes) syncElement(node, lang);
       }
     });
-    observer.observe(document.body, { childList: true, characterData: true, subtree: true });
+    observer.observe(document.body, { childList: true, characterData: true, attributes: true, attributeFilter: ATTRIBUTES, subtree: true });
     return () => observer.disconnect();
   }, [lang]);
 
