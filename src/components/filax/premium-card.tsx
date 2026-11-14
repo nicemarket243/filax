@@ -180,11 +180,23 @@ export function PremiumCard({ accounts, index, onIndexChange, onShowAll, onCreat
     if (emblaApi && emblaApi.selectedScrollSnap() !== index) emblaApi.scrollTo(index);
   }, [emblaApi, index]);
 
+  const activeAccent = accentVar(accounts[index]?.color ?? accounts[0].color);
+
   return (
-    <div>
+    <div className="relative">
+      {/* Lueur d'origine de la carte, rendue hors du carrousel pour ne pas être coupée. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 rounded-[1.6rem]"
+        style={{
+          aspectRatio: "1.6 / 1",
+          boxShadow: `0 26px 60px -28px color-mix(in oklab, ${activeAccent} 60%, #000)`,
+          transition: "box-shadow 0.35s ease",
+        }}
+      />
       <div
         ref={emblaRef}
-        className="overflow-hidden"
+        className="relative overflow-hidden rounded-[1.6rem]"
         aria-roledescription="carrousel"
         aria-label="Comptes FILAX"
       >
