@@ -93,7 +93,7 @@ function CardFace({ account, mounted, onShowAll, onCreate, onChangeVisual, onNex
       className="press card-sheen relative flex w-full select-none flex-col justify-between overflow-hidden rounded-[1.6rem] p-5 text-white"
       style={{
         background: `linear-gradient(140deg, color-mix(in oklab, ${accent} 62%, var(--premium-base)) 0%, color-mix(in oklab, ${accent} 48%, var(--premium-base)) 42%, color-mix(in oklab, ${accent} 26%, var(--premium-deep)) 78%, var(--premium-base) 100%)`,
-        boxShadow: `0 26px 60px -28px color-mix(in oklab, ${accent} 60%, #000), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.4)`,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.4)`,
         aspectRatio: "1.6 / 1",
         backfaceVisibility: "hidden",
       }}
@@ -185,14 +185,12 @@ export function PremiumCard({ accounts, index, onIndexChange, onShowAll, onCreat
   return (
     <div className="relative">
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 rounded-[1.6rem]"
-        style={{
-          aspectRatio: "1.6 / 1",
-          boxShadow: `0 26px 60px -28px color-mix(in oklab, ${activeAccent} 60%, #000)`,
-        }}
-      />
-      <div ref={emblaRef} className="overflow-hidden" aria-roledescription="carrousel" aria-label="Comptes FILAX">
+        ref={emblaRef}
+        className="overflow-hidden"
+        aria-roledescription="carrousel"
+        aria-label="Comptes FILAX"
+        style={{ filter: `drop-shadow(0 26px 30px color-mix(in oklab, ${activeAccent} 60%, #000))` }}
+      >
         <div className="flex touch-pan-y">
           {accounts.map((account) => (
             <div key={account.id} className="min-w-0 flex-[0_0_100%]" aria-roledescription="diapositive">
