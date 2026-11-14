@@ -169,6 +169,13 @@
       "when": 1794525647585,
       "tag": "0023_remove_isolated_concurrency_fixture_helper",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794666116026,
+      "tag": "0024_tighten_fee_rules_partner_banks_read",
+      "breakpoints": true
     }
   ]
 }
