@@ -15,6 +15,7 @@ import {
   PageTitle,
   PrimaryButton,
   TextInput,
+  TextSizeControl,
   ThemeToggle,
   accentVar,
 } from "@/components/filax/ui-kit";
@@ -408,9 +409,12 @@ function ProfilPage() {
         )}
 
         <Coffre {...drawer("appearance")} title="Apparence" subtitle="Mode clair ou sombre" icon={<Moon className="h-4 w-4" />}>
-          <div className="flex items-center justify-between rounded-2xl bg-muted/50 px-3 py-2.5">
-            <span className="text-[0.75rem] font-semibold text-foreground">Changer le mode d'apparence</span>
-            <ThemeToggle />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-2xl bg-muted/50 px-3 py-2.5">
+              <span className="text-[0.75rem] font-semibold text-foreground">Changer le mode d'apparence</span>
+              <ThemeToggle />
+            </div>
+            <TextSizeControl />
           </div>
         </Coffre>
 

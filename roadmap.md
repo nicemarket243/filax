@@ -1,5 +1,10 @@
 # FILAX roadmap
 
+## 14 nov. — Partage compact et taille du texte
+- [x] Réduire la hauteur de la fenêtre de partage et rendre le lien directement cliquable pour le copier
+- [x] Ajouter dans Apparence un réglage global du texte et des chiffres, de 80 % à 140 %, avec progression et pourcentage
+- [x] Vérifier la persistance, les limites et le rendu mobile sans toucher aux comptes : 74 tests, 120 % conservé entre pages et après rechargement, copie directe validée
+
 ## 14 nov. — Partager l’application
 - [x] Ajouter le partage FILAX sous le slogan des Paramètres, sans modifier le design général
 - [x] Relier les canaux demandés à un lien d’invitation unique pointant vers l’accueil et l’inscription simplifiée

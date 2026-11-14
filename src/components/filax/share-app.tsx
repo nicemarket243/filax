@@ -134,13 +134,25 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
         onOpenChange={(next) => { setOpen(next); if (!next) setCopied(false); }}
         title={t("Partager l'application")}
         subtitle={t("Votre lien ouvre directement l'inscription simplifiée FILAX.")}
+        contentClassName="max-h-[76vh] p-4 pb-5"
       >
-        <div className="rounded-2xl border border-brand-blue/20 bg-brand-blue/[0.06] p-3.5">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-brand-blue">{t("Votre lien d'invitation")}</p>
-          <p className="mt-1.5 break-all text-[0.72rem] leading-relaxed text-foreground" data-testid="invitation-link">{link}</p>
-        </div>
+        <button
+          type="button"
+          disabled={!link}
+          onClick={() => void copyLink()}
+          aria-label={t("Copier le lien d'invitation")}
+          className="magnetide-tap w-full rounded-2xl border border-brand-blue/20 bg-brand-blue/[0.06] p-2.5 text-left disabled:opacity-40"
+        >
+          <span className="flex items-start gap-2">
+            <span className="min-w-0 flex-1">
+              <span className="block text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-brand-blue">{t("Votre lien d'invitation")}</span>
+              <span className="mt-1 block break-all text-[0.7rem] leading-relaxed text-foreground" data-testid="invitation-link">{link}</span>
+            </span>
+            {copied ? <Check className="mt-1 h-4 w-4 shrink-0 text-brand-green" /> : <Copy className="mt-1 h-4 w-4 shrink-0 text-brand-blue" />}
+          </span>
+        </button>
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="mt-3 grid grid-cols-3 gap-1.5">
           {channels.map(({ id, label, icon: Icon, direct }) => (
             <button
               key={id}
@@ -148,9 +160,9 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
               disabled={!link}
               aria-label={`${t("Partager sur")} ${label}`}
               onClick={() => direct ? openDirect(id as DirectShareChannel) : void openCopyFirst(id as CopyOpenShareChannel)}
-              className="magnetide-tap flex min-h-[5.25rem] flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface px-2 py-3 text-[0.68rem] font-bold text-foreground disabled:opacity-40"
+              className="magnetide-tap flex min-h-[4.5rem] flex-col items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-2 py-2 text-[0.66rem] font-bold text-foreground disabled:opacity-40"
             >
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
                 <Icon className="h-[1.1rem] w-[1.1rem]" />
               </span>
               {label}
@@ -158,7 +170,7 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
           ))}
         </div>
 
-        <p className="mt-3 text-center text-[0.62rem] leading-relaxed text-muted-foreground">
+        <p className="mt-2 text-center text-[0.6rem] leading-relaxed text-muted-foreground">
           {t("Pour Messenger, Instagram et Snapchat, le lien est copié avant l'ouverture : collez-le dans votre message.")}
         </p>
 
@@ -166,7 +178,7 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
           type="button"
           disabled={!link}
           onClick={() => void copyLink()}
-          className="magnetide-tap mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-blue/30 bg-brand-blue/10 px-4 py-3 text-sm font-bold text-brand-blue disabled:opacity-40"
+          className="magnetide-tap mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-blue/30 bg-brand-blue/10 px-4 py-2.5 text-sm font-bold text-brand-blue disabled:opacity-40"
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           {t(copied ? "Lien copié" : "Copier le lien")}

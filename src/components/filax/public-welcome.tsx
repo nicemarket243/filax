@@ -17,7 +17,7 @@ type LoginChannel = { channel: "email" | "sms"; masked: string; available: boole
 
 const FIELD =
   "w-full rounded-xl border border-border/70 bg-transparent px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none transition-colors focus:border-brand-blue/60";
-const LABEL = "ml-1 block text-[10px] uppercase tracking-[0.18em] text-muted-foreground";
+const LABEL = "ml-1 block text-[0.625rem] uppercase tracking-[0.18em] text-muted-foreground";
 
 const REMEMBER_KEY = "filax-remembered-login";
 const REMEMBER_MS = 30 * 86_400_000;
@@ -310,7 +310,7 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
             </>
           )}
 
-          <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
+          <div className="flex items-center gap-3 text-[0.625rem] uppercase tracking-[0.18em] text-muted-foreground/60">
             <span className="h-px flex-1 bg-border" />ou<span className="h-px flex-1 bg-border" />
           </div>
 
@@ -324,7 +324,7 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
             {mode === "signup" ? "S'inscrire avec Gmail" : "Continuer avec Gmail"}
           </button>
 
-          <p className="px-4 text-center text-[11px] leading-relaxed text-muted-foreground/70">
+          <p className="px-4 text-center text-[0.6875rem] leading-relaxed text-muted-foreground/70">
             En continuant, vous acceptez les conditions d'utilisation et la politique de confidentialité FILAX.
           </p>
         </div>
@@ -340,7 +340,7 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
             return (
               <div key={label as string} className="flex items-center gap-1.5">
                 <FeatureIcon className="h-3.5 w-3.5" />
-                <span className="text-[9px] font-medium uppercase tracking-[0.14em]">{label as string}</span>
+                <span className="text-[0.5625rem] font-medium uppercase tracking-[0.14em]">{label as string}</span>
               </div>
             );
           })}
@@ -375,7 +375,7 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
                   <span className="block text-sm font-semibold">{c.channel === "email" ? "E-mail" : "SMS"}</span>
                   <span className="block truncate text-xs text-muted-foreground">{c.masked}</span>
                 </span>
-                {!c.available && <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[10px] font-medium text-muted-foreground">Indisponible pour le moment</span>}
+                {!c.available && <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[0.625rem] font-medium text-muted-foreground">Indisponible pour le moment</span>}
               </button>
             ))}
             {busy && <Loader2 className="mx-auto h-4 w-4 animate-spin text-muted-foreground" />}
