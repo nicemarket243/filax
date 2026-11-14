@@ -1281,6 +1281,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      release_expired_account_locks: { Args: never; Returns: number }
       request_deposit: {
         Args: {
           _account: string

@@ -614,10 +614,14 @@ export function isLocked(a: Account) {
 export function spendableBalance(a: Account) {
   if (isLocked(a)) return 0;
   if (a.availableBalance === undefined) return Math.max(0, a.balance - (a.pendingOutgoing ?? 0));
-  return Math.max(0, a.availableBalance - (a.pendingOutgoing ?? 0));
+  // Une réserve dont l'échéance est passée redevient utilisable immédiatement,
+  // sans attendre qu'une première sortie déclenche sa libération côté serveur.
+  const expiredReserve = a.lockedUntil ? (a.reservedBalance ?? 0) : 0;
+  return Math.max(0, a.availableBalance + expiredReserve - (a.pendingOutgoing ?? 0));
 }
 
 export function reservedBalance(a: Account) {
+  if (a.lockedUntil && !isLocked(a)) return 0;
   return a.reservedBalance ?? (isLocked(a) ? a.balance : 0);
 }
 

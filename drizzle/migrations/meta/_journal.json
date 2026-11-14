@@ -176,6 +176,13 @@
       "when": 1794666116026,
       "tag": "0024_tighten_fee_rules_partner_banks_read",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1794667432104,
+      "tag": "0025_release_expired_savings_reservations",
+      "breakpoints": true
     }
   ]
 }

@@ -159,6 +159,9 @@ export function useDbAccounts(userId: string | null) {
       setError(null);
       return;
     }
+    // Libère les réserves arrivées à échéance avant de lire les compartiments.
+    // Le repli visuel côté client reste correct si cet appel est momentanément indisponible.
+    await supabase.rpc("release_expired_account_locks");
     const { data, error: queryError } = await supabase.from("accounts").select("*").eq("user_id", userId).order("created_at");
     if (queryError) {
       setError(queryError.message);
