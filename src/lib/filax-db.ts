@@ -1,10 +1,11 @@
 // Couche de données réelle FILAX (Lovable Cloud).
 // Chaque hook renvoie null tant qu'aucun utilisateur n'est connecté :
 // les pages gardent alors leurs données de démonstration locales.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import type { Account, Currency, Group, GroupCategory, GroupMember, Profile } from "./filax-store";
+import { clearFilaxCache, readFilaxCache, writeFilaxCache } from "./filax-cache";
+import type { Account, AppNotification, Currency, Goal, Group, GroupCategory, GroupMember, Profile, Transaction } from "./filax-store";
 
 export interface DbProfile extends Profile {
   userId: string;
@@ -17,16 +18,46 @@ export interface DbProfile extends Profile {
   isDemo: boolean;
 }
 
-/** Utilisateur connecté (ou null). */
+let lastUserId: string | null = null;
+
+/** Valeur mise en cache par propriétaire : aucun ancien compte ne peut s'afficher après un changement de session. */
+function useCachedValue<T>(namespace: string, userId: string | null) {
+  const activeUser = useRef(userId);
+  activeUser.current = userId;
+  const [state, setState] = useState<{ owner: string | null; value: T | null }>(() => ({
+    owner: userId,
+    value: readFilaxCache<T>(namespace, userId),
+  }));
+  useEffect(() => {
+    setState({ owner: userId, value: readFilaxCache<T>(namespace, userId) });
+  }, [namespace, userId]);
+  const update = useCallback((owner: string, value: T) => {
+    if (activeUser.current !== owner) return;
+    writeFilaxCache(namespace, owner, value);
+    setState({ owner, value });
+  }, [namespace]);
+  return [state.owner === userId ? state.value : null, update] as const;
+}
+
+function rememberSession(event: string, userId: string | null) {
+  lastUserId = userId;
+  if (event === "SIGNED_OUT") clearFilaxCache();
+}
+
+/** Utilisateur connecté (ou null), retrouvé localement sans attendre un aller-retour réseau. */
 export function useDbUser() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(lastUserId);
   useEffect(() => {
     let alive = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (alive) setUserId(data.session?.user.id ?? null);
+      if (!alive) return;
+      const id = data.session?.user.id ?? null;
+      lastUserId = id;
+      setUserId(id);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUserId(session?.user.id ?? null);
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      rememberSession(event, session?.user.id ?? null);
+      setUserId(lastUserId);
     });
     return () => {
       alive = false;
@@ -38,15 +69,18 @@ export function useDbUser() {
 
 /** État d'authentification avec indicateur de résolution, pour éviter un écran public fugace. */
 export function useDbAuthState() {
-  const [state, setState] = useState<{ userId: string | null; ready: boolean }>({ userId: null, ready: false });
+  const [state, setState] = useState<{ userId: string | null; ready: boolean }>({ userId: lastUserId, ready: false });
   useEffect(() => {
     let alive = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (alive) setState({ userId: data.user?.id ?? null, ready: true });
+    supabase.auth.getSession().then(({ data }) => {
+      if (!alive) return;
+      lastUserId = data.session?.user.id ?? null;
+      setState({ userId: lastUserId, ready: true });
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!["INITIAL_SESSION", "SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
-      setState({ userId: session?.user.id ?? null, ready: true });
+      rememberSession(event, session?.user.id ?? null);
+      setState({ userId: lastUserId, ready: true });
     });
     return () => {
       alive = false;
@@ -58,19 +92,13 @@ export function useDbAuthState() {
 
 /** Profil réel depuis la base, null si non connecté. */
 export function useDbProfile(userId: string | null) {
-  const [profile, setProfile] = useState<DbProfile | null>(null);
+  const [profile, setProfile] = useCachedValue<DbProfile>("profile", userId);
 
   const refresh = useCallback(async () => {
-    if (!userId) {
-      setProfile(null);
-      return;
-    }
+    if (!userId) return;
     const { data } = await supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle();
-    if (!data) {
-      setProfile(null);
-      return;
-    }
-    setProfile({
+    if (!data) return;
+    setProfile(userId, {
       userId: data.user_id,
       firstName: data.first_name ?? "",
       lastName: data.last_name ?? "",
@@ -91,7 +119,7 @@ export function useDbProfile(userId: string | null) {
       middleName: data.middle_name ?? "",
       isDemo: data.is_demo,
     });
-  }, [userId]);
+  }, [userId, setProfile]);
 
   useEffect(() => {
     void refresh();
@@ -151,24 +179,22 @@ export async function setDbTwoFactor(enabled: boolean) {
 
 /** Comptes réels de l'utilisateur. */
 export function useDbAccounts(userId: string | null) {
-  const [accounts, setAccounts] = useState<Account[] | null>(null);
+  const [accounts, setAccounts] = useCachedValue<Account[]>("accounts", userId);
   const [error, setError] = useState<string | null>(null);
   const refresh = useCallback(async () => {
     if (!userId) {
-      setAccounts(null);
       setError(null);
       return;
     }
-    // Libère les réserves arrivées à échéance avant de lire les compartiments.
-    // Le repli visuel côté client reste correct si cet appel est momentanément indisponible.
-    await supabase.rpc("release_expired_account_locks");
+    // La lecture part immédiatement ; le déblocage et le temps réel actualisent ensuite les compartiments.
+    void supabase.rpc("release_expired_account_locks");
     const { data, error: queryError } = await supabase.from("accounts").select("*").eq("user_id", userId).order("created_at");
     if (queryError) {
       setError(queryError.message);
       return;
     }
     setError(null);
-    setAccounts(
+    setAccounts(userId,
       (data ?? []).map((a) => ({
         id: a.id,
         name: a.name,
@@ -189,7 +215,7 @@ export function useDbAccounts(userId: string | null) {
         status: a.status,
       })) as Account[],
     );
-  }, [userId]);
+  }, [userId, setAccounts]);
   useEffect(() => {
     void refresh();
   }, [refresh]);
@@ -208,71 +234,71 @@ export function useDbAccounts(userId: string | null) {
 
 /** Groupes réels (créés ou rejoints), avec membres et cotisations. */
 export function useDbGroups(userId: string | null) {
-  const [groups, setGroups] = useState<Group[] | null>(null);
+  const [groups, setGroups] = useCachedValue<Group[]>("groups", userId);
 
   const refresh = useCallback(async () => {
-    if (!userId) {
-      setGroups(null);
-      return;
-    }
+    if (!userId) return;
     const { data: rows } = await supabase.from("groups").select("*").order("created_at", { ascending: false });
-    if (!rows) {
-      setGroups(null);
+    if (!rows) return;
+    if (rows.length === 0) {
+      setGroups(userId, []);
       return;
     }
-    const mapped: Group[] = await Promise.all(
-      rows.map(async (g) => {
-        const [{ data: members }, { data: contribs }] = await Promise.all([
-          supabase.from("group_members").select("user_id, joined_at").eq("group_id", g.id),
-          supabase.from("group_contributions").select("id, user_id, contributor_name, amount, created_at").eq("group_id", g.id).order("created_at", { ascending: false }),
-        ]);
-        const avatarFor = (seed: string) => `https://i.pravatar.cc/96?u=${encodeURIComponent(seed)}`;
-        const byUser = new Map<string, GroupMember>();
-        for (const m of members ?? []) {
-          byUser.set(m.user_id, {
-            id: m.user_id,
-            name: "Membre FILAX",
-            amount: 0,
-            avatar: avatarFor(m.user_id),
-            lastAt: new Date(m.joined_at).getTime(),
-          });
-        }
-        for (const c of contribs ?? []) {
-          const at = new Date(c.created_at).getTime();
-          const existing = byUser.get(c.user_id);
-          byUser.set(c.user_id, {
-            id: c.user_id,
-            name: c.contributor_name || existing?.name || "Membre FILAX",
-            amount: (existing?.amount ?? 0) + Number(c.amount),
-            avatar: avatarFor(c.contributor_name || c.user_id),
-            lastAt: Math.max(existing?.lastAt ?? 0, at),
-          });
-        }
-        return {
-          id: g.id,
-          ownerId: g.owner_id,
-          name: g.name,
-          description: "",
-          icon: "users",
-          target: Number(g.target ?? 0),
-          currency: g.currency as Currency,
-          category: (g.category as GroupCategory) ?? "Famille",
-          deadline: g.deadline ? new Date(g.deadline).getTime() : undefined,
-          collected: Number(g.collected),
-          visualKey: (g as { visual_key?: string | null }).visual_key ?? null,
-          members: [...byUser.values()],
-          contributions: (contribs ?? []).map((c) => ({
-            id: c.id,
-            name: c.contributor_name || "Membre FILAX",
-            avatar: avatarFor(c.contributor_name || c.user_id),
-            amount: Number(c.amount),
-            at: new Date(c.created_at).getTime(),
-          })),
-        } as Group;
-      }),
-    );
-    setGroups(mapped);
-  }, [userId]);
+    const groupIds = rows.map((g) => g.id);
+    // Trois requêtes au total, au lieu de deux requêtes supplémentaires par groupe.
+    const [{ data: memberRows }, { data: contributionRows }] = await Promise.all([
+      supabase.from("group_members").select("group_id, user_id, joined_at").in("group_id", groupIds),
+      supabase.from("group_contributions").select("id, group_id, user_id, contributor_name, amount, created_at").in("group_id", groupIds).order("created_at", { ascending: false }),
+    ]);
+    const avatarFor = (seed: string) => `https://i.pravatar.cc/96?u=${encodeURIComponent(seed)}`;
+    const mapped = rows.map((g) => {
+      const members = (memberRows ?? []).filter((m) => m.group_id === g.id);
+      const contribs = (contributionRows ?? []).filter((c) => c.group_id === g.id);
+      const byUser = new Map<string, GroupMember>();
+      for (const m of members) {
+        byUser.set(m.user_id, {
+          id: m.user_id,
+          name: "Membre FILAX",
+          amount: 0,
+          avatar: avatarFor(m.user_id),
+          lastAt: new Date(m.joined_at).getTime(),
+        });
+      }
+      for (const c of contribs) {
+        const at = new Date(c.created_at).getTime();
+        const existing = byUser.get(c.user_id);
+        byUser.set(c.user_id, {
+          id: c.user_id,
+          name: c.contributor_name || existing?.name || "Membre FILAX",
+          amount: (existing?.amount ?? 0) + Number(c.amount),
+          avatar: avatarFor(c.contributor_name || c.user_id),
+          lastAt: Math.max(existing?.lastAt ?? 0, at),
+        });
+      }
+      return {
+        id: g.id,
+        ownerId: g.owner_id,
+        name: g.name,
+        description: "",
+        icon: "users",
+        target: Number(g.target ?? 0),
+        currency: g.currency as Currency,
+        category: (g.category as GroupCategory) ?? "Famille",
+        deadline: g.deadline ? new Date(g.deadline).getTime() : undefined,
+        collected: Number(g.collected),
+        visualKey: (g as { visual_key?: string | null }).visual_key ?? null,
+        members: [...byUser.values()],
+        contributions: contribs.map((c) => ({
+          id: c.id,
+          name: c.contributor_name || "Membre FILAX",
+          avatar: avatarFor(c.contributor_name || c.user_id),
+          amount: Number(c.amount),
+          at: new Date(c.created_at).getTime(),
+        })),
+      } as Group;
+    });
+    setGroups(userId, mapped);
+  }, [userId, setGroups]);
 
   useEffect(() => {
     void refresh();
@@ -325,42 +351,51 @@ const TX_TYPE: Record<string, import("./filax-store").TxType> = {
 };
 const KNOWN_METHODS = ["orange", "airtel", "mpesa", "banque", "carte", "filax"];
 
-/** Opérations réelles de l'utilisateur, triées de la plus récente à la plus ancienne. */
+type TransactionRow = import("@/integrations/supabase/types").Database["public"]["Tables"]["transactions"]["Row"];
+
+function mapTransactions(rows: TransactionRow[], accounts: Account[] | null): Transaction[] {
+  const currencies = new Map((accounts ?? []).map((a) => [a.id, a.currency]));
+  return rows.map((t) => ({
+    id: t.id,
+    accountId: t.account_id,
+    type: TX_TYPE[t.type] ?? "depot",
+    amount: Number(t.amount),
+    currency: currencies.get(t.account_id) ?? "USD",
+    method: (KNOWN_METHODS.includes(t.method ?? "") ? t.method : t.method === "groupe" ? "filax" : "banque") as Transaction["method"],
+    label: (t.label ?? "") + (t.status === "pending" ? " · En attente" : t.status === "failed" ? " · Échouée" : t.status === "refunded" ? " · Remboursée" : ""),
+    at: new Date(t.created_at).getTime(),
+    reference: t.id.slice(0, 8).toUpperCase(),
+    origin: t.counterparty ?? undefined,
+    sourceType: t.type,
+    fee: Number(t.fee),
+    status: t.status as Transaction["status"],
+  }));
+}
+
+/** Opérations réelles : première page visible immédiatement, historique complet poursuivi en arrière-plan. */
 export function useDbTransactions(userId: string | null, accounts: Account[] | null) {
-  const [txs, setTxs] = useState<import("./filax-store").Transaction[] | null>(null);
+  const activeUser = useRef(userId);
+  activeUser.current = userId;
+  const accountsRef = useRef(accounts);
+  accountsRef.current = accounts;
+  const [cached, setCached] = useCachedValue<Transaction[]>("transactions", userId);
+  const [raw, setRaw] = useState<{ owner: string | null; rows: TransactionRow[] | null }>({ owner: null, rows: null });
   const [error, setError] = useState<string | null>(null);
   const refresh = useCallback(async () => {
-    if (!userId) {
-      setTxs(null);
-      return;
-    }
-    const rows: import("@/integrations/supabase/types").Database["public"]["Tables"]["transactions"]["Row"][] = [];
+    if (!userId) return;
+    const rows: TransactionRow[] = [];
     for (let offset = 0; ; offset += 500) {
       const result = await supabase.from("transactions").select("*").eq("user_id", userId)
         .order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + 499);
       if (result.error) { setError(result.error.message); return; }
+      if (activeUser.current !== userId) return;
       rows.push(...(result.data ?? []));
+      setRaw({ owner: userId, rows: [...rows] });
+      setCached(userId, mapTransactions(rows, accountsRef.current));
       if ((result.data?.length ?? 0) < 500) break;
     }
     setError(null);
-    setTxs(
-      rows.map((t) => ({
-        id: t.id,
-        accountId: t.account_id,
-        type: TX_TYPE[t.type] ?? "depot",
-        amount: Number(t.amount),
-        currency: (accounts?.find((a) => a.id === t.account_id)?.currency ?? "USD") as Currency,
-        method: (KNOWN_METHODS.includes(t.method ?? "") ? t.method : t.method === "groupe" ? "filax" : "banque") as import("./filax-store").TxMethod,
-        label: (t.label ?? "") + (t.status === "pending" ? " · En attente" : t.status === "failed" ? " · Échouée" : t.status === "refunded" ? " · Remboursée" : ""),
-        at: new Date(t.created_at).getTime(),
-        reference: t.id.slice(0, 8).toUpperCase(),
-        origin: t.counterparty ?? undefined,
-        sourceType: t.type,
-        fee: Number(t.fee),
-        status: t.status as "created" | "pending" | "confirmed" | "failed" | "refunded",
-      })),
-    );
-  }, [userId, accounts]);
+  }, [userId, setCached]);
   useEffect(() => {
     void refresh();
   }, [refresh]);
@@ -374,7 +409,11 @@ export function useDbTransactions(userId: string | null, accounts: Account[] | n
       void supabase.removeChannel(ch);
     };
   }, [userId, refresh]);
-  return { transactions: txs, refresh, error };
+  const transactions = useMemo(() => {
+    if (raw.owner !== userId || !raw.rows) return cached;
+    return mapTransactions(raw.rows, accounts);
+  }, [raw, userId, accounts, cached]);
+  return { transactions, refresh, error };
 }
 
 /** Traduit les erreurs du moteur financier en message clair. */
@@ -425,15 +464,13 @@ export async function transferExternalDb(accountId: string, amount: number, labe
 
 /** Objectifs d'épargne réels, mis à jour en direct. */
 export function useDbGoals(userId: string | null) {
-  const [goals, setGoals] = useState<import("./filax-store").Goal[] | null>(null);
+  const [goals, setGoals] = useCachedValue<Goal[]>("goals", userId);
   const refresh = useCallback(async () => {
-    if (!userId) {
-      setGoals(null);
-      return;
-    }
+    if (!userId) return;
     const { data } = await supabase.from("goals").select("*").eq("user_id", userId).order("created_at");
-    setGoals(
-      (data ?? []).map((g) => ({
+    if (!data) return;
+    setGoals(userId,
+      data.map((g) => ({
         id: g.id,
         accountId: g.account_id,
         name: g.name,
@@ -444,7 +481,7 @@ export function useDbGoals(userId: string | null) {
         currency: g.currency as Currency,
       })),
     );
-  }, [userId]);
+  }, [userId, setGoals]);
   useEffect(() => {
     void refresh();
   }, [refresh]);
@@ -580,23 +617,24 @@ export async function adminDeleteGroup(id: string) {
 
 /** Notifications réelles, mises à jour en direct. */
 export function useDbNotifications(userId: string | null) {
-  const [items, setItems] = useState<import("./filax-store").AppNotification[] | null>(null);
+  const [items, setItems] = useCachedValue<AppNotification[]>("notifications", userId);
   const refresh = useCallback(async () => {
-    if (!userId) return setItems(null);
+    if (!userId) return;
     const { data } = await supabase
       .from("notifications")
       .select("id,title,body,read,created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(50);
-    setItems(
-      (data ?? []).map((n) => {
+    if (!data) return;
+    setItems(userId,
+      data.map((n) => {
         const t = n.title.toLowerCase();
         const kind = t.includes("dépôt") ? "depot" : t.includes("retrait") ? "retrait" : t.includes("reçu") ? "reception" : t.includes("cotis") ? "cotisation" : t.includes("envoi") || t.includes("transfert") ? "envoi" : "systeme";
         return { id: n.id, title: n.title, body: n.body ?? "", read: n.read, at: new Date(n.created_at).getTime(), kind };
       }),
     );
-  }, [userId]);
+  }, [userId, setItems]);
   useEffect(() => {
     void refresh();
   }, [refresh]);

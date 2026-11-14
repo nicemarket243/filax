@@ -9,6 +9,7 @@ import { themeImageFor } from "@/components/filax/account-theme";
 
 import { accentVar } from "@/components/filax/ui-kit";
 import { accountDisplayBalance, formatMoney, isLocked, type Account } from "@/lib/filax-store";
+import { swipeAxis, swipeDirection } from "@/lib/card-swipe";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -44,43 +45,119 @@ export function PremiumCard({ account, index, total, onNext, onPrev, onShowAll, 
     if (pressTimer.current) clearTimeout(pressTimer.current);
   };
 
-  // Balayage horizontal fluide pour changer de compte
-  const drag = useRef<{ x: number; y: number; id: number; horizontal: boolean | null } | null>(null);
+  // Le geste est mesuré dans une ref : la décision au relâchement utilise
+  // toujours la dernière position, même si React n'a pas encore rerendu la carte.
+  const gesture = useRef<{
+    id: number;
+    startX: number;
+    startY: number;
+    lastX: number;
+    lastAt: number;
+    velocity: number;
+    width: number;
+    axis: "pending" | "horizontal" | "vertical";
+    captured: boolean;
+  } | null>(null);
+  const dragX = useRef(0);
+  const moveFrame = useRef<number | null>(null);
+  const enterFrame = useRef<number | null>(null);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const settling = useRef(false);
   const [dx, setDx] = useState(0);
   const [anim, setAnim] = useState(false);
+
+  const paintDx = (value: number) => {
+    dragX.current = value;
+    setDx(value);
+  };
+  const clearMotion = () => {
+    if (moveFrame.current !== null) cancelAnimationFrame(moveFrame.current);
+    if (enterFrame.current !== null) cancelAnimationFrame(enterFrame.current);
+    if (settleTimer.current) clearTimeout(settleTimer.current);
+    moveFrame.current = null;
+    enterFrame.current = null;
+    settleTimer.current = null;
+  };
+  useEffect(() => clearMotion, []);
+
   const onSwipeDown = (e: RPointerEvent) => {
-    drag.current = { x: e.clientX, y: e.clientY, id: e.pointerId, horizontal: null };
+    if (!e.isPrimary || total < 2 || settling.current || (e.pointerType === "mouse" && e.button !== 0)) return;
+    clearMotion();
+    gesture.current = {
+      id: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      lastX: e.clientX,
+      lastAt: e.timeStamp,
+      velocity: 0,
+      width: e.currentTarget.getBoundingClientRect().width,
+      axis: "pending",
+      captured: false,
+    };
+    dragX.current = 0;
     setAnim(false);
   };
   const onSwipeMove = (e: RPointerEvent) => {
-    const d = drag.current;
-    if (!d || d.id !== e.pointerId || total < 2) return;
-    const mx = e.clientX - d.x, my = e.clientY - d.y;
-    if (d.horizontal === null && (Math.abs(mx) > 8 || Math.abs(my) > 8)) {
-      d.horizontal = Math.abs(mx) > Math.abs(my);
-      if (d.horizontal) { endPress(); (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId); }
+    const d = gesture.current;
+    if (!d || d.id !== e.pointerId) return;
+    const mx = e.clientX - d.startX;
+    const my = e.clientY - d.startY;
+    if (d.axis === "vertical") return;
+    if (d.axis === "pending") {
+      d.axis = swipeAxis(mx, my);
+      if (d.axis === "vertical") endPress();
+      if (d.axis !== "horizontal") return;
+      endPress();
     }
-    if (d.horizontal) setDx(mx);
+    if (!d.captured) {
+      e.currentTarget.setPointerCapture(e.pointerId);
+      d.captured = true;
+    }
+    const elapsed = Math.max(1, e.timeStamp - d.lastAt);
+    const instantaneous = (e.clientX - d.lastX) / elapsed;
+    d.velocity = d.velocity * 0.65 + instantaneous * 0.35;
+    d.lastX = e.clientX;
+    d.lastAt = e.timeStamp;
+    const resisted = Math.sign(mx) * Math.min(Math.abs(mx), d.width * 0.68);
+    dragX.current = resisted;
+    if (moveFrame.current === null) {
+      moveFrame.current = requestAnimationFrame(() => {
+        moveFrame.current = null;
+        setDx(dragX.current);
+      });
+    }
   };
-  const onSwipeEnd = () => {
-    const d = drag.current;
-    drag.current = null;
-    if (!d?.horizontal) return;
-    const w = 360;
-    if (Math.abs(dx) > 60) {
-      const dir = dx < 0 ? -1 : 1;
-      setAnim(true);
-      setDx(dir * w);
-      setTimeout(() => {
-        if (dir < 0) onNext(); else (onPrev ?? onNext)();
-        setAnim(false);
-        setDx(-dir * w * 0.6);
-        requestAnimationFrame(() => requestAnimationFrame(() => { setAnim(true); setDx(0); }));
-      }, 180);
-    } else {
-      setAnim(true);
-      setDx(0);
+  const onSwipeEnd = (e: RPointerEvent, cancelled = false) => {
+    const d = gesture.current;
+    if (!d || d.id !== e.pointerId) return;
+    gesture.current = null;
+    endPress();
+    if (d.axis !== "horizontal") return;
+    if (moveFrame.current !== null) cancelAnimationFrame(moveFrame.current);
+    moveFrame.current = null;
+    const direction = cancelled ? 0 : swipeDirection(dragX.current, d.velocity, d.width);
+    settling.current = true;
+    setAnim(true);
+    if (!direction) {
+      paintDx(0);
+      settleTimer.current = setTimeout(() => { settling.current = false; }, 230);
+      return;
     }
+
+    paintDx(direction * d.width * 0.42);
+    settleTimer.current = setTimeout(() => {
+      if (direction < 0) onNext();
+      else (onPrev ?? onNext)();
+      setAnim(false);
+      paintDx(-direction * d.width * 0.14);
+      enterFrame.current = requestAnimationFrame(() => {
+        enterFrame.current = requestAnimationFrame(() => {
+          setAnim(true);
+          paintDx(0);
+          settleTimer.current = setTimeout(() => { settling.current = false; }, 240);
+        });
+      });
+    }, 150);
   };
 
   return (
@@ -94,8 +171,8 @@ export function PremiumCard({ account, index, total, onNext, onPrev, onShowAll, 
         }}
         onPointerDown={(e) => { startPress(); onSwipeDown(e); }}
         onPointerMove={onSwipeMove}
-        onPointerUp={() => { endPress(); onSwipeEnd(); }}
-        onPointerCancel={() => { endPress(); onSwipeEnd(); }}
+        onPointerUp={(e) => onSwipeEnd(e)}
+        onPointerCancel={(e) => onSwipeEnd(e, true)}
         onPointerLeave={endPress}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -110,9 +187,11 @@ export function PremiumCard({ account, index, total, onNext, onPrev, onShowAll, 
           boxShadow: `0 26px 60px -28px color-mix(in oklab, ${accent} 60%, #000), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.4)`,
           aspectRatio: "1.6 / 1",
           touchAction: "pan-y",
-          transform: `translate3d(${dx}px,0,0) rotate(${dx / 60}deg)`,
-          opacity: 1 - Math.min(Math.abs(dx) / 900, 0.35),
-          transition: anim ? "transform 260ms cubic-bezier(.22,1,.36,1), opacity 260ms ease" : "none",
+          transform: `translate3d(${dx}px,0,0) rotate(${dx / 110}deg)`,
+          opacity: 1 - Math.min(Math.abs(dx) / 1100, 0.24),
+          transition: anim ? "transform 230ms cubic-bezier(.22,1,.36,1), opacity 230ms ease" : "none",
+          willChange: "transform",
+          backfaceVisibility: "hidden",
         }}
       >
         {/* reflets premium */}

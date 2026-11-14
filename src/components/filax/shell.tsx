@@ -47,6 +47,7 @@ export function BottomNav() {
         <Link
           key={to}
           to={to}
+          preload="intent"
           activeOptions={{ exact: to === "/" }}
           className="press flex flex-1 flex-col items-center gap-0.5 rounded-full py-2 text-[0.6rem] font-semibold text-muted-foreground data-[status=active]:bg-accent data-[status=active]:text-brand-blue"
         >
