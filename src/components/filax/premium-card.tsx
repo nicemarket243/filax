@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as RPointerEvent } from "react";
 import { Lock, Plus, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,13 +16,14 @@ interface Props {
   index: number;
   total: number;
   onNext: () => void;
+  onPrev?: () => void;
   onShowAll: () => void;
   onCreate: () => void;
   onChangeVisual: () => void;
 }
 
 /** Carte bancaire premium FILAX — une seule carte à la fois. */
-export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate, onChangeVisual }: Props) {
+export function PremiumCard({ account, index, total, onNext, onPrev, onShowAll, onCreate, onChangeVisual }: Props) {
   const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -43,6 +44,45 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
     if (pressTimer.current) clearTimeout(pressTimer.current);
   };
 
+  // Balayage horizontal fluide pour changer de compte
+  const drag = useRef<{ x: number; y: number; id: number; horizontal: boolean | null } | null>(null);
+  const [dx, setDx] = useState(0);
+  const [anim, setAnim] = useState(false);
+  const onSwipeDown = (e: RPointerEvent) => {
+    drag.current = { x: e.clientX, y: e.clientY, id: e.pointerId, horizontal: null };
+    setAnim(false);
+  };
+  const onSwipeMove = (e: RPointerEvent) => {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId || total < 2) return;
+    const mx = e.clientX - d.x, my = e.clientY - d.y;
+    if (d.horizontal === null && (Math.abs(mx) > 8 || Math.abs(my) > 8)) {
+      d.horizontal = Math.abs(mx) > Math.abs(my);
+      if (d.horizontal) { endPress(); (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId); }
+    }
+    if (d.horizontal) setDx(mx);
+  };
+  const onSwipeEnd = () => {
+    const d = drag.current;
+    drag.current = null;
+    if (!d?.horizontal) return;
+    const w = 360;
+    if (Math.abs(dx) > 60) {
+      const dir = dx < 0 ? -1 : 1;
+      setAnim(true);
+      setDx(dir * w);
+      setTimeout(() => {
+        if (dir < 0) onNext(); else (onPrev ?? onNext)();
+        setAnim(false);
+        setDx(-dir * w * 0.6);
+        requestAnimationFrame(() => requestAnimationFrame(() => { setAnim(true); setDx(0); }));
+      }, 180);
+    } else {
+      setAnim(true);
+      setDx(0);
+    }
+  };
+
   return (
     <div className="relative">
       <article
@@ -52,8 +92,10 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
         onDoubleClick={() => {
           if (total > 1) onNext();
         }}
-        onPointerDown={startPress}
-        onPointerUp={endPress}
+        onPointerDown={(e) => { startPress(); onSwipeDown(e); }}
+        onPointerMove={onSwipeMove}
+        onPointerUp={() => { endPress(); onSwipeEnd(); }}
+        onPointerCancel={() => { endPress(); onSwipeEnd(); }}
         onPointerLeave={endPress}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -67,6 +109,10 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
           background: `linear-gradient(140deg, color-mix(in oklab, ${accent} 62%, var(--premium-base)) 0%, color-mix(in oklab, ${accent} 48%, var(--premium-base)) 42%, color-mix(in oklab, ${accent} 26%, var(--premium-deep)) 78%, var(--premium-base) 100%)`,
           boxShadow: `0 26px 60px -28px color-mix(in oklab, ${accent} 60%, #000), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.4)`,
           aspectRatio: "1.6 / 1",
+          touchAction: "pan-y",
+          transform: `translate3d(${dx}px,0,0) rotate(${dx / 60}deg)`,
+          opacity: 1 - Math.min(Math.abs(dx) / 900, 0.35),
+          transition: anim ? "transform 260ms cubic-bezier(.22,1,.36,1), opacity 260ms ease" : "none",
         }}
       >
         {/* reflets premium */}
@@ -111,7 +157,7 @@ export function PremiumCard({ account, index, total, onNext, onShowAll, onCreate
           <p className="text-[2rem] font-extrabold leading-none tracking-tight">
             {formatMoney(accountDisplayBalance(account), account.currency)}
           </p>
-          <p className="mt-1 text-[0.82rem] font-bold uppercase tracking-tight text-white/70">
+          <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-white/70">
             {locked ? t("Solde inactif") : t("Solde actif")}
           </p>
         </div>

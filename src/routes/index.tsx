@@ -141,6 +141,7 @@ function HomePage() {
           index={activeIndex}
           total={accounts.length}
           onNext={() => setActiveIndex((i) => (i + 1) % accounts.length)}
+          onPrev={() => setActiveIndex((i) => (i - 1 + accounts.length) % accounts.length)}
           onShowAll={() => setModal("all")}
           onCreate={() => setModal("account")}
           onChangeVisual={() => setModal("visual")}
