@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { BadgeCheck, Copy, MessageCircle, MessageSquare, Landmark, Languages, Lock, LogOut, Moon, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
+import { Copy, MessageCircle, MessageSquare, Landmark, Languages, Lock, LogOut, Moon, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import avatarImg from "@/assets/profile-avatar.jpg";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,50 +26,13 @@ import {
   saveDbProfile,
   setDbPin,
   setDbTwoFactor,
-  setPartnerBank,
   submitDbKyc,
   useDbProfile,
   useDbUser,
   useIsAdmin,
 } from "@/lib/filax-db";
 
-const PARTNER_BANKS = [
-  {
-    id: "equity-bcdc",
-    name: "Equity BCDC",
-    desc: "Banque commerciale panafricaine",
-    title: "Partenariat Officiel - Equity BCDC",
-    security: "En choisissant Equity BCDC comme institution partenaire, vous bénéficiez d'un ancrage bancaire solide en République Démocratique du Congo. Vos fonds sont stockés et sécurisés sur un sous-compte institutionnel dédié, adossé aux normes de conformité et de protection des actifs d'Equity BCDC. Ce choix est définitif pour garantir la traçabilité et la sécurité juridique de vos transactions sur FILAX.",
-  },
-  {
-    id: "uba-rdc",
-    name: "UBA RDC",
-    desc: "United Bank for Africa",
-    title: "Partenariat Officiel - UBA RDC",
-    security: "En sélectionnant UBA RDC, vos avoirs financiers sont gérés à travers un cadre de sécurité bancaire panafricain de premier plan. L'infrastructure d'UBA garantit l'intégrité de vos dépôts et la conformité stricte avec les régulations monétaires en vigueur. Une fois validé, ce choix de domiciliation bancaire devient définitif.",
-  },
-  {
-    id: "bcc",
-    name: "Banque Centrale du Congo (BCC)",
-    desc: "Institution de régulation",
-    title: "Référencement Monétaire - Banque Centrale du Congo",
-    security: "Le référencement auprès de la Banque Centrale du Congo (BCC) garantit que les flux et les réserves de la plateforme respectent les orientations de supervision macroéconomique nationales. Vos transactions et conversions de devises s'effectuent sous la haute rigueur des normes de régulation émises par l'institution d'émission. Ce choix institutionnel est définitif.",
-  },
-  {
-    id: "rawbank",
-    name: "Rawbank",
-    desc: "Banque commerciale en RDC",
-    title: "Partenariat Officiel - Rawbank",
-    security: "En optant pour Rawbank, première banque de la RDC en termes de fonds propres et de services technologiques, vos capitaux profitent d'un standard de sécurité bancaire ultra-rigoureux. Les fonds sont protégés et isolés conformément aux protocoles de conformité de Rawbank. Ce choix de banque partenaire est irréversible et définitif.",
-  },
-  {
-    id: "tmb",
-    name: "TMB",
-    desc: "Trust Merchant Bank",
-    title: "Partenariat Officiel - TMB",
-    security: "En choisissant la TMB, vous confiez la garde de vos liquidités à un réseau bancaire d'envergure nationale reconnu pour sa fiabilité et sa proximité. Vos sous-comptes bénéficient des protocoles de sécurité renforcés de la TMB contre tout risque systémique. La sélection de cette banque est définitive et sécurise l'ensemble de vos opérations sur l'application.",
-  },
-] as const;
+import { BankOpeningPanel } from "@/components/filax/bank-opening";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -107,19 +70,11 @@ function ProfilPage() {
   const [kycStep, setKycStep] = useState(0);
   const { lang, setLang, t } = useI18n();
   const [code2fa, setCode2fa] = useState("");
-  const [bank, setBank] = useState<string | null>(null);
-  const [faqBank, setFaqBank] = useState<(typeof PARTNER_BANKS)[number] | null>(null);
-  const [bankBusy, setBankBusy] = useState(false);
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);
   const drawer = (name: string) => ({
     open: openDrawer === name,
     onOpenChange: (open: boolean) => setOpenDrawer(open ? name : null),
   });
-
-  useEffect(() => {
-    if (dbProfile?.partnerBank) setBank(dbProfile.partnerBank);
-    else if (!userId) setBank(localStorage.getItem("filax-partner-bank"));
-  }, [dbProfile?.partnerBank, userId]);
 
   const verified = !!profile.verified;
 
@@ -227,97 +182,16 @@ function ProfilPage() {
       </section>
 
       <div className="mt-4 space-y-3">
-        {/* Banque partenaire — bien visible, au-dessus des informations personnelles */}
+        {/* Banque partenaire — demande traçable, sans confirmation bancaire fictive */}
         <Coffre
           {...drawer("bank")}
           title={t("Choisissez votre banque")}
           subtitle={t("Banque partenaire et sécurité des fonds")}
           icon={<Landmark className="h-4 w-4" />}
-          badge={bank ? "✓" : "!"}
+          badge="i"
         >
-          <div className="space-y-3">
-            {bank ? (
-              <div className="flex items-center gap-3 rounded-2xl border border-brand-green/40 bg-brand-green/[0.08] px-3.5 py-3">
-                <BadgeCheck className="h-5 w-5 shrink-0 text-brand-green" />
-                <span className="min-w-0 flex-1 leading-tight">
-                  <span className="block text-[0.8rem] font-bold text-foreground">{bank}</span>
-                  <span className="block text-[0.62rem] text-muted-foreground">{t("Banque validée — choix définitif")}</span>
-                </span>
-              </div>
-            ) : (
-              <p className="rounded-2xl bg-brand-blue/[0.07] px-3 py-2.5 text-[0.7rem] leading-relaxed text-muted-foreground">
-                {t("Touchez une banque pour lire la FAQ et la valider.")}
-              </p>
-            )}
-            <div className="space-y-2">
-              {PARTNER_BANKS.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  disabled={!!bank}
-                  onClick={() => setFaqBank(b)}
-                  className={`press flex w-full items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition disabled:cursor-default ${
-                    bank === b.name ? "border-brand-green/50 bg-brand-green/[0.08]" : bank ? "border-border bg-background opacity-50" : "border-border bg-background"
-                  }`}
-                >
-                  <span
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[0.62rem] font-black text-white"
-                    style={{ background: "var(--gradient-blue)" }}
-                  >
-                    {b.name.slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="min-w-0 flex-1 leading-tight">
-                    <span className="block truncate text-[0.8rem] font-bold text-foreground">{b.name}</span>
-                    <span className="block text-[0.62rem] text-muted-foreground">{b.desc}</span>
-                  </span>
-                  {bank === b.name && <BadgeCheck className="h-4 w-4 shrink-0 text-brand-green" />}
-                </button>
-              ))}
-            </div>
-          </div>
+          <BankOpeningPanel userId={userId} kycStatus={kycStatus} previousBank={dbProfile?.partnerBank} />
         </Coffre>
-
-        <Modal
-          open={!!faqBank}
-          onOpenChange={(o) => !o && setFaqBank(null)}
-          title={faqBank?.title ?? ""}
-          subtitle={t("FAQ & Sécurité")}
-          display="responsive"
-        >
-          {faqBank && (
-            <div className="space-y-5">
-              <div className="rounded-2xl bg-muted/50 p-4 sm:p-5">
-                <p className="text-sm font-extrabold text-foreground">FAQ & Sécurité</p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">{faqBank.security}</p>
-              </div>
-              <p className="text-center text-xs font-semibold text-brand-red">Attention : ce choix est irréversible.</p>
-              <PrimaryButton
-                className="mt-1"
-                disabled={bankBusy}
-                onClick={async () => {
-                  const chosen = faqBank.name;
-                  setBankBusy(true);
-                  try {
-                    if (userId) {
-                      await setPartnerBank(chosen);
-                      await refreshProfile();
-                    }
-                    localStorage.setItem("filax-partner-bank", chosen);
-                    setBank(chosen);
-                    setFaqBank(null);
-                    toast.success(t("Banque enregistrée"), { description: chosen });
-                  } catch (e) {
-                    toast.error(e instanceof Error ? e.message : "Enregistrement impossible");
-                  } finally {
-                    setBankBusy(false);
-                  }
-                }}
-              >
-                {bankBusy ? "…" : t("Valider ma banque")}
-              </PrimaryButton>
-            </div>
-          )}
-        </Modal>
 
         {/* Paramètres du compte : informations, KYC et sécurité dans un seul tiroir */}
         <Coffre {...drawer("settings")} title="Paramètres du compte" subtitle="Informations, vérification d'identité, sécurité" icon={<User className="h-4 w-4" />} badge={verified ? "OK" : "!"}>

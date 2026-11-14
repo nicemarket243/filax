@@ -478,15 +478,6 @@ export async function fundGoalDb(goalId: string, amount: number, accountId: stri
   await outflow({ _operation: "goal", _related: goalId, _account: accountId, _amount: amount, _pin: pin }, operationKey);
 }
 
-/** Enregistre la banque partenaire choisie par l'utilisateur. */
-export async function setPartnerBank(bank: string) {
-  const { error } = await supabase
-    .from("profiles")
-    .update({ partner_bank: bank })
-    .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "");
-  if (error) throw new Error(error.message);
-}
-
 /** Crée un compte réel (épargne libre ou bloquée). */
 export const subaccountSchema = z.object({
   parentAccountId: z.string().uuid(), name: z.string().trim().min(2).max(80),

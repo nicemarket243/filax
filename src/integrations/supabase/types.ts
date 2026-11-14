@@ -17,26 +17,59 @@ export type Database = {
       account_opening_requests: {
         Row: {
           bank_code: string
+          client_key: string | null
+          consent_accepted_at: string | null
+          consent_text: string | null
+          consent_version: string | null
           created_at: string
           currencies: string[]
+          custody_acknowledged: boolean
+          external_reference: string | null
           id: string
+          integration_status: string
+          privacy_accepted: boolean
+          request_reference: string
+          request_terms_accepted: boolean
           status: string
+          updated_at: string
           user_id: string
         }
         Insert: {
           bank_code: string
+          client_key?: string | null
+          consent_accepted_at?: string | null
+          consent_text?: string | null
+          consent_version?: string | null
           created_at?: string
           currencies: string[]
+          custody_acknowledged?: boolean
+          external_reference?: string | null
           id?: string
+          integration_status?: string
+          privacy_accepted?: boolean
+          request_reference?: string
+          request_terms_accepted?: boolean
           status?: string
+          updated_at?: string
           user_id?: string
         }
         Update: {
           bank_code?: string
+          client_key?: string | null
+          consent_accepted_at?: string | null
+          consent_text?: string | null
+          consent_version?: string | null
           created_at?: string
           currencies?: string[]
+          custody_acknowledged?: boolean
+          external_reference?: string | null
           id?: string
+          integration_status?: string
+          privacy_accepted?: boolean
+          request_reference?: string
+          request_terms_accepted?: boolean
           status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -1306,6 +1339,18 @@ export type Database = {
         Returns: undefined
       }
       set_pin: { Args: { _pin: string }; Returns: undefined }
+      submit_bank_opening_request: {
+        Args: {
+          _bank_code: string
+          _client_key: string
+          _consent_version: string
+          _currencies: string[]
+          _custody_acknowledged: boolean
+          _privacy_accepted: boolean
+          _request_terms_accepted: boolean
+        }
+        Returns: Json
+      }
       submit_kyc: {
         Args: { _doc_path: string; _doc_type: string; _selfie_path: string }
         Returns: undefined

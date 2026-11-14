@@ -1,5 +1,12 @@
 # FILAX roadmap
 
+## 14 nov. — Préparation de l’intégration bancaire
+- [x] Remplacer les affirmations de partenariat officiel par les statuts administrables réels
+- [x] Ajouter consentement, référence unique, idempotence et contrôle KYC aux demandes d’ouverture USD/CDF
+- [x] Brancher le Profil sur les banques administrables et les demandes privées, sans appel bancaire fictif
+- [ ] Vérifier le parcours sur un nouveau compte isolé et conserver ce compte test
+- [ ] Connecter les API, limites et documents contractuels après accords et autorisations des partenaires
+
 ## 12 nov. — Stabilisation du moteur financier interne
 - [x] Journal à double entrée équilibré, chaîné et interdit en modification/suppression
 - [x] Soldes disponible, réservé et en attente sans changer les soldes existants

@@ -183,6 +183,13 @@
       "when": 1794667432104,
       "tag": "0025_release_expired_savings_reservations",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794668070652,
+      "tag": "0026_secure_bank_opening_consent_requests",
+      "breakpoints": true
     }
   ]
 }

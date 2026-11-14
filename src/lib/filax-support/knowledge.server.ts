@@ -158,12 +158,12 @@ export const SUPPORT_TOPICS = [
   {
     question: "Comment choisir ma banque ?",
     answer:
-      "Dans Profil, ouvrez Choisissez votre banque, lisez les conditions et validez. Le choix enregistré est définitif dans l’application.",
+      "Après validation de votre identité, ouvrez Choisissez votre banque dans Profil. Sélectionnez USD, CDF ou les deux, lisez l’information sur la conservation des fonds et confirmez les consentements. La demande reçoit une référence unique ; elle ne prouve pas l’ouverture d’un compte bancaire.",
   },
   {
     question: "Quelles banques sont présentées dans FILAX ?",
     answer:
-      "La liste fournie par FILAX contient Equity BCDC, UBA RDC, Banque Centrale du Congo (BCC), Rawbank et TMB. Cette liste ne prouve pas une connexion bancaire active ou une garantie de dépôt.",
+      "La liste administrable contient Equity BCDC, Rawbank, Ecobank, Sofibanque, UBA et Access Bank, actuellement en préparation. Cette liste ne prouve ni partenariat validé, ni connexion bancaire active, ni garantie de dépôt.",
   },
   {
     question: "Un sous-compte bancaire réel est-il créé automatiquement ?",

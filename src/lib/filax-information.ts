@@ -36,11 +36,11 @@ export const FILAX_INFORMATION = [
       ],
       [
         "Les banques présentées par FILAX",
-        "Equity BCDC, UBA RDC, Banque Centrale du Congo (BCC), Rawbank et TMB constituent la liste communiquée par FILAX. Le choix s’effectue dans le Profil après lecture des conditions ; sa validation est définitive dans l’application.",
+        "Equity BCDC, Rawbank, Ecobank, Sofibanque, UBA et Access Bank sont présentées comme banques en préparation, sans annoncer de partenariat validé. Après vérification de l’identité, le Profil permet d’enregistrer une demande pour les comptes principaux USD, CDF ou les deux.",
       ],
       [
         "Ouverture bancaire : confirmation nécessaire",
-        "Le parcours annoncé prévoit un sous-compte auprès d’une banque partenaire. Toutefois, un choix de banque ou une référence affichée ne prouve pas l’ouverture d’un compte bancaire réel. Une confirmation officielle de la banque et de FILAX est nécessaire ; les connexions bancaires réelles ne sont pas établies dans cet environnement de test.",
+        "Le parcours prévoit deux comptes principaux, USD et CDF, associés à une banque partenaire ; les sous-comptes restent internes à FILAX. Un choix ou une référence de demande ne prouve pas l’ouverture réelle. Le statut confirmé exige une confirmation de la banque avec sa référence ; aucune connexion bancaire réelle n’est établie dans cet environnement.",
       ],
       [
         "Carte et visuel du compte",
@@ -134,7 +134,7 @@ export const FILAX_INFORMATION = [
       ],
       [
         "Puis-je modifier ma banque après validation ?",
-        "Le choix validé est définitif dans l’application. Lisez les conditions avant de confirmer. Pour toute question sur la relation bancaire réelle ou une erreur, contactez le support officiel.",
+        "Tant qu’aucun compte bancaire n’est confirmé, vous pouvez enregistrer une nouvelle demande. Une relation bancaire réelle ne commence qu’après ouverture effective et confirmation avec référence de la banque. Pour toute erreur, contactez le support officiel.",
       ],
       [
         "Que peut faire l’assistant ?",
