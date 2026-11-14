@@ -83,6 +83,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "FILAX — Finance connectée" },
       { name: "description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
       { name: "author", content: "FILAX" },
+      { name: "application-name", content: "FILAX" },
+      { name: "color-scheme", content: "light dark" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "FILAX" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { property: "og:title", content: "FILAX — Finance connectée" },
       { property: "og:description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
       { property: "og:type", content: "website" },
@@ -100,6 +105,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap",
       },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/icons/filax-apple-touch-icon.png" },
     ],
 
   }),
@@ -113,6 +120,9 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
       <head>
+        {/* Deux balises distinctes : le navigateur choisit la couleur du téléphone. */}
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f8fc" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#11131a" />
         <HeadContent />
       </head>
       <body>
