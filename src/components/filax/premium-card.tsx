@@ -180,16 +180,13 @@ export function PremiumCard({ accounts, index, onIndexChange, onShowAll, onCreat
     if (emblaApi && emblaApi.selectedScrollSnap() !== index) emblaApi.scrollTo(index);
   }, [emblaApi, index]);
 
-  const activeAccent = accentVar(accounts[index]?.color ?? accounts[0].color);
-
   return (
-    <div className="relative">
+    <div>
       <div
         ref={emblaRef}
         className="overflow-hidden"
         aria-roledescription="carrousel"
         aria-label="Comptes FILAX"
-        style={{ filter: `drop-shadow(0 26px 30px color-mix(in oklab, ${activeAccent} 60%, #000))` }}
       >
         <div className="flex touch-pan-y">
           {accounts.map((account) => (
@@ -207,25 +204,6 @@ export function PremiumCard({ accounts, index, onIndexChange, onShowAll, onCreat
           ))}
         </div>
       </div>
-
-      {accounts.length > 1 && (
-        <div className="mt-3 flex items-center justify-center gap-1.5">
-          {accounts.map((account, i) => (
-            <button
-              type="button"
-              key={account.id}
-              aria-label={`Afficher ${account.name}`}
-              aria-current={i === index ? "true" : undefined}
-              onClick={() => emblaApi?.scrollTo(i)}
-              className="h-1.5 rounded-full transition-all duration-300"
-              style={{
-                width: i === index ? 18 : 6,
-                backgroundColor: i === index ? "var(--brand-blue)" : "var(--muted)",
-              }}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
