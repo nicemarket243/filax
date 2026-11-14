@@ -33,6 +33,7 @@ import {
 } from "@/lib/filax-db";
 
 import { BankOpeningPanel } from "@/components/filax/bank-opening";
+import { ShareAppButton } from "@/components/filax/share-app";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -449,6 +450,7 @@ function ProfilPage() {
 
       <div className="mt-4">
         <BankBadge />
+        <ShareAppButton filaxId={profile.filaxId} />
       </div>
 
       <Modal open={modal === "2fa"} onOpenChange={(o) => !o && setModal(null)} title={t("Vérification de sécurité")}>

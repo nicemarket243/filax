@@ -1,5 +1,10 @@
 # FILAX roadmap
 
+## 14 nov. — Partager l’application
+- [x] Ajouter le partage FILAX sous le slogan des Paramètres, sans modifier le design général
+- [x] Relier les canaux demandés à un lien d’invitation unique pointant vers l’accueil et l’inscription simplifiée
+- [x] Tester les liens, la copie, la fenêtre et le parcours filleul sans changer de compte ni de données : 69 tests, 7 canaux, Retour et inscription vérifiés sur mobile simulé
+
 ## 14 nov. — Carrousel, fenêtres et ouverture à 50 pays
 - [x] Rendre le passage entre comptes aussi naturel qu’un défilement de photos, sans gestes accidentels ni changement du design
 - [x] Garder tous les tiroirs fermés par défaut et faire fermer la fenêtre active par Retour avant de quitter la page
