@@ -20,6 +20,7 @@ const EN: Record<string, string> = {
   "Accès découverte indisponible": "Discovery access unavailable",
   "Vos coordonnées ne sont pas vérifiées et aucun compte n'est créé. Les soldes affichés sont des exemples.": "Your contact details are unverified and no account has been created. Balances shown are examples.",
   "Votre banque numérique dans la poche.": "Your digital bank in your pocket.",
+  "Déjà sur FILAX ? Ouvrir mon compte": "Already on FILAX? Open my account",
   "Validation de dépôt simulée": "Simulated deposit validation",
   "Post-nom": "Middle name",
   "S'inscrire": "Sign up",

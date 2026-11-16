@@ -75,11 +75,14 @@ function HomePage() {
   const [visualBusy, setVisualBusy] = useState(false);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [discovery, setDiscovery] = useState<Discovery | null | undefined>(undefined);
+  const [invited, setInvited] = useState(false);
   useEffect(() => {
     // An invitation link or QR code always starts a fresh signup: never reuse example data saved on this device.
     if (new URLSearchParams(window.location.search).has("ref")) {
       localStorage.removeItem(DISCOVERY_KEY);
       setDiscovery(null);
+      // Even on a phone already signed in, an invitation shows the empty signup page, never that account.
+      setInvited(true);
       return;
     }
     try { setDiscovery(JSON.parse(localStorage.getItem(DISCOVERY_KEY) ?? "null")); } catch { setDiscovery(null); }
@@ -110,6 +113,25 @@ function HomePage() {
 
   if (!ready || (!userId && discovery === undefined)) {
     return <main className="flex min-h-screen items-center justify-center bg-background"><span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-blue border-t-transparent" aria-label="Chargement" /></main>;
+  }
+
+  if (invited) {
+    const leaveInvitation = () => { window.history.replaceState(null, "", "/"); setInvited(false); };
+    return (
+      <>
+        <PublicWelcome
+          onAuthenticated={() => { window.location.replace("/"); }}
+          onDiscover={(d) => { localStorage.setItem(DISCOVERY_KEY, JSON.stringify(d)); setDiscovery(d); leaveInvitation(); }}
+        />
+        {userId && (
+          <div className="flex justify-center px-5 pb-8">
+            <button type="button" onClick={leaveInvitation} className="magnetide-tap rounded-full border border-border bg-card/90 px-4 py-2 text-xs font-semibold text-muted-foreground backdrop-blur">
+              Déjà sur FILAX ? Ouvrir mon compte
+            </button>
+          </div>
+        )}
+      </>
+    );
   }
 
   if (!userId && !discovery) return <PublicWelcome onAuthenticated={() => window.location.reload()} onDiscover={(d) => { localStorage.setItem(DISCOVERY_KEY, JSON.stringify(d)); setDiscovery(d); }} />;
