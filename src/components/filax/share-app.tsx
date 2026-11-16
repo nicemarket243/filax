@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Modal, PrimaryButton } from "@/components/filax/ui-kit";
+import { FilaxQR } from "@/components/filax/qr";
 import { useI18n } from "@/lib/i18n";
 import {
   buildAppInvitationLink,
@@ -136,12 +137,17 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
         subtitle={t("Votre lien ouvre directement l'inscription simplifiée FILAX.")}
         contentClassName="max-h-[76vh] p-4 pb-5"
       >
+        <div className="flex flex-col items-center">
+          {link ? <FilaxQR value={link} size={132} /> : <div className="h-[156px] w-[156px] rounded-2xl bg-muted" />}
+          <p className="mt-1.5 text-center text-[0.62rem] text-muted-foreground">{t("Votre proche scanne ce code pour ouvrir FILAX.")}</p>
+        </div>
+
         <button
           type="button"
           disabled={!link}
           onClick={() => void copyLink()}
           aria-label={t("Copier le lien d'invitation")}
-          className="magnetide-tap w-full rounded-2xl border border-brand-blue/20 bg-brand-blue/[0.06] p-2.5 text-left disabled:opacity-40"
+          className="magnetide-tap mt-3 w-full rounded-2xl border border-brand-blue/20 bg-brand-blue/[0.06] p-2.5 text-left disabled:opacity-40"
         >
           <span className="flex items-start gap-2">
             <span className="min-w-0 flex-1">
@@ -152,7 +158,7 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
           </span>
         </button>
 
-        <div className="mt-3 grid grid-cols-3 gap-1.5">
+        <div className="mt-3 grid grid-cols-7 gap-1">
           {channels.map(({ id, label, icon: Icon, direct }) => (
             <button
               key={id}
@@ -160,12 +166,12 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
               disabled={!link}
               aria-label={`${t("Partager sur")} ${label}`}
               onClick={() => direct ? openDirect(id as DirectShareChannel) : void openCopyFirst(id as CopyOpenShareChannel)}
-              className="magnetide-tap flex min-h-[4.5rem] flex-col items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-2 py-2 text-[0.66rem] font-bold text-foreground disabled:opacity-40"
+              title={label}
+              className="magnetide-tap flex items-center justify-center rounded-xl border border-border bg-surface py-2 disabled:opacity-40"
             >
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
                 <Icon className="h-[1.1rem] w-[1.1rem]" />
               </span>
-              {label}
             </button>
           ))}
         </div>
@@ -174,18 +180,20 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
           {t("Pour Messenger, Instagram et Snapchat, le lien est copié avant l'ouverture : collez-le dans votre message.")}
         </p>
 
+        <div className="mt-3 grid grid-cols-2 gap-2">
         <button
           type="button"
           disabled={!link}
           onClick={() => void copyLink()}
-          className="magnetide-tap mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-blue/30 bg-brand-blue/10 px-4 py-2.5 text-sm font-bold text-brand-blue disabled:opacity-40"
+          className="magnetide-tap flex w-full items-center justify-center gap-2 rounded-xl border border-brand-blue/30 bg-brand-blue/10 px-4 py-2.5 text-sm font-bold text-brand-blue disabled:opacity-40"
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           {t(copied ? "Lien copié" : "Copier le lien")}
         </button>
-        <PrimaryButton className="mt-2.5" disabled={!link} onClick={() => void nativeShare()}>
-          <span className="inline-flex items-center gap-2"><Share2 className="h-4 w-4" />{t("Autres applications")}</span>
+        <PrimaryButton disabled={!link} onClick={() => void nativeShare()}>
+          <span className="inline-flex items-center gap-2"><Share2 className="h-4 w-4" />{t("Partager")}</span>
         </PrimaryButton>
+        </div>
       </Modal>
     </>
   );
