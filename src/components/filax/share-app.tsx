@@ -53,7 +53,7 @@ async function copyText(value: string) {
   return copied;
 }
 
-export function ShareAppButton({ filaxId }: { filaxId: string }) {
+export function ShareAppButton() {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [link, setLink] = useState("");
@@ -61,8 +61,8 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
   const [view, setView] = useState<"main" | "qr" | "apps">("main");
 
   useEffect(() => {
-    setLink(buildAppInvitationLink(PUBLIC_SITE_ORIGIN, filaxId));
-  }, [filaxId]);
+    setLink(buildAppInvitationLink(PUBLIC_SITE_ORIGIN));
+  }, []);
 
   const message = t("Rejoignez-moi sur FILAX, votre banque numérique dans la poche.");
 

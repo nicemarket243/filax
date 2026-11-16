@@ -668,7 +668,7 @@ export function InviteModal({
   onAddMember?: (name: string) => void | Promise<void>;
 }) {
   const [name, setName] = useState("");
-  const link = buildAppInvitationLink(PUBLIC_SITE_ORIGIN, filaxId);
+  const link = buildAppInvitationLink(PUBLIC_SITE_ORIGIN);
 
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Inviter" subtitle="Partagez FILAX et cotisez ensemble">

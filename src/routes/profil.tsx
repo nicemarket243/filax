@@ -454,7 +454,7 @@ function ProfilPage() {
 
       <div className="mt-4">
         <BankBadge />
-        <ShareAppButton filaxId={profile.filaxId} />
+        <ShareAppButton />
       </div>
 
       <Modal open={modal === "2fa"} onOpenChange={(o) => !o && setModal(null)} title={t("Vérification de sécurité")}>

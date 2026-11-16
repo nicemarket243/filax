@@ -1,3 +1,4 @@
+import { isInvitationArrival } from "@/lib/app-share";
 import { useEffect, useState } from "react";
 import { FilaxLogo } from "@/components/filax-logo";
 
@@ -8,7 +9,7 @@ const INVITE_DURATION = 5000; // 5s pour chaque arrivée par lien, QR ou app ins
 // Lu au chargement du module, avant que la page n'efface ?ref de l'adresse.
 const INVITE_ARRIVAL =
   typeof window !== "undefined" &&
-  (new URLSearchParams(window.location.search).has("ref") ||
+  (isInvitationArrival(window.location.search) ||
     window.matchMedia?.("(display-mode: standalone)").matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true);
 

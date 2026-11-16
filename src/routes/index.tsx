@@ -1,3 +1,4 @@
+import { isInvitationArrival } from "@/lib/app-share";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -78,7 +79,7 @@ function HomePage() {
   const [invited, setInvited] = useState(false);
   useEffect(() => {
     // An invitation link or QR code always starts a fresh signup: never reuse example data saved on this device.
-    if (new URLSearchParams(window.location.search).has("ref")) {
+    if (isInvitationArrival(window.location.search)) {
       localStorage.removeItem(DISCOVERY_KEY);
       setDiscovery(null);
       // Even on a phone already signed in, an invitation shows the empty signup page, never that account.

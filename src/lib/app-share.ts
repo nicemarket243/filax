@@ -8,21 +8,29 @@ export const PUBLIC_SITE_ORIGIN = "https://filax.lovable.app";
 export const STORE_LINKS: { ios: string | null; android: string | null } = { ios: null, android: null };
 
 /** What the QR code opens: a store page when published, otherwise the public signup page. */
-export function buildQrTarget(filaxId: string, ua = "") {
+export function buildQrTarget(ua = "") {
   if (/iphone|ipad|ipod/i.test(ua) && STORE_LINKS.ios) return STORE_LINKS.ios;
   if (/android/i.test(ua) && STORE_LINKS.android) return STORE_LINKS.android;
-  return buildAppInvitationLink(PUBLIC_SITE_ORIGIN, filaxId);
+  return buildAppInvitationLink(PUBLIC_SITE_ORIGIN);
 }
 
 export type DirectShareChannel = "whatsapp" | "facebook" | "x" | "sms";
 export type CopyOpenShareChannel = "messenger" | "instagram" | "snapchat";
 
-/** A personal invitation points to FILAX home, which shows simplified signup to signed-out visitors. */
-export function buildAppInvitationLink(origin: string, filaxId: string) {
+/** Query flag marking an app-invitation arrival (splash + empty signup). Carries no personal data. */
+export const INVITE_PARAM = "invite";
+
+/** The shared app link: the same for everyone, never containing a FILAX ID or any personal data. */
+export function buildAppInvitationLink(origin: string) {
   const url = new URL("/", origin);
-  const referral = filaxId.trim();
-  if (referral) url.searchParams.set("ref", referral);
+  url.searchParams.set(INVITE_PARAM, "app");
   return url.toString();
+}
+
+/** True for an invitation arrival; old links with ?ref= keep working. */
+export function isInvitationArrival(search: string) {
+  const params = new URLSearchParams(search);
+  return params.has(INVITE_PARAM) || params.has("ref");
 }
 
 export function buildDirectShareUrl(channel: DirectShareChannel, link: string, message: string) {
