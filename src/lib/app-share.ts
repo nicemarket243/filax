@@ -1,3 +1,19 @@
+/** Public FILAX site: shared links and QR codes always point here, never to a preview address. */
+export const PUBLIC_SITE_ORIGIN = "https://filax.lovable.app";
+
+/**
+ * Store pages, filled in once FILAX is published on the App Store / Google Play.
+ * While both are null, the QR code opens the FILAX signup page on the public site.
+ */
+export const STORE_LINKS: { ios: string | null; android: string | null } = { ios: null, android: null };
+
+/** What the QR code opens: a store page when published, otherwise the public signup page. */
+export function buildQrTarget(filaxId: string, ua = "") {
+  if (/iphone|ipad|ipod/i.test(ua) && STORE_LINKS.ios) return STORE_LINKS.ios;
+  if (/android/i.test(ua) && STORE_LINKS.android) return STORE_LINKS.android;
+  return buildAppInvitationLink(PUBLIC_SITE_ORIGIN, filaxId);
+}
+
 export type DirectShareChannel = "whatsapp" | "facebook" | "x" | "sms";
 export type CopyOpenShareChannel = "messenger" | "instagram" | "snapchat";
 

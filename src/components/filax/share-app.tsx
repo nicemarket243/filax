@@ -19,6 +19,7 @@ import mark from "@/assets/filax-mark.png.asset.json";
 import { useI18n } from "@/lib/i18n";
 import {
   buildAppInvitationLink,
+  PUBLIC_SITE_ORIGIN,
   buildDirectShareUrl,
   COPY_OPEN_DESTINATIONS,
   type CopyOpenShareChannel,
@@ -60,7 +61,7 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
   const [view, setView] = useState<"main" | "qr" | "apps">("main");
 
   useEffect(() => {
-    setLink(buildAppInvitationLink(window.location.origin, filaxId));
+    setLink(buildAppInvitationLink(PUBLIC_SITE_ORIGIN, filaxId));
   }, [filaxId]);
 
   const message = t("Rejoignez-moi sur FILAX, votre banque numérique dans la poche.");

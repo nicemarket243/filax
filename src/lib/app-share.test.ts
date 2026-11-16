@@ -45,3 +45,11 @@ describe("FILAX app invitations", () => {
     }
   });
 });
+
+import { buildQrTarget, PUBLIC_SITE_ORIGIN } from "./app-share";
+import { describe as d2, expect as e2, it as i2 } from "vitest";
+d2("QR target", () => {
+  i2("opens the public FILAX signup page while no store link exists", () => {
+    e2(buildQrTarget("FLX-1", "iPhone")).toBe(`${PUBLIC_SITE_ORIGIN}/?ref=FLX-1`);
+  });
+});
