@@ -1,10 +1,32 @@
 import { useEffect, useId, useRef } from "react";
 
 type LayerState = { __filaxLayer?: string };
+type Layer = { token: string; close: () => void };
+
+/** Open layers, oldest first. Back only ever dismisses the topmost one. */
+const stack: Layer[] = [];
+/** history.back() calls we issued ourselves; their popstate must not close anything. */
+let pendingBacks = 0;
+let listening = false;
+
+function onPopState() {
+  if (pendingBacks > 0) {
+    pendingBacks--;
+    // A layer opened while our own back was in flight: restore its entry.
+    const top = stack[stack.length - 1];
+    const state = (window.history.state ?? {}) as LayerState;
+    if (top && state.__filaxLayer !== top.token) {
+      window.history.pushState({ ...state, __filaxLayer: top.token }, "", window.location.href);
+    }
+    return;
+  }
+  const top = stack.pop();
+  top?.close();
+}
 
 /**
  * Gives a controlled modal its own same-page history entry. Phone/browser Back
- * dismisses it first; an explicit close removes that entry without changing route.
+ * dismisses the topmost one; an explicit close removes its entry without changing route.
  */
 export function useLayerHistory(
   open: boolean,
@@ -14,31 +36,31 @@ export function useLayerHistory(
   const id = useId();
   const callback = useRef(onOpenChange);
   callback.current = onOpenChange;
-  const entry = useRef<string | null>(null);
 
   useEffect(() => {
     if (!controlled || !open || typeof window === "undefined") return;
+    if (!listening) {
+      window.addEventListener("popstate", onPopState);
+      listening = true;
+    }
     const token = `${id}:${Date.now()}`;
-    entry.current = token;
+    const layer: Layer = { token, close: () => callback.current?.(false) };
+    stack.push(layer);
     const current = (window.history.state ?? {}) as LayerState;
-    window.history.pushState(
-      { ...current, __filaxLayer: token },
-      "",
-      window.location.href,
-    );
+    if (pendingBacks === 0) {
+      window.history.pushState({ ...current, __filaxLayer: token }, "", window.location.href);
+    }
+    // else: the pending back's popstate handler will push the entry for the top layer.
 
-    const onPopState = () => {
-      if (entry.current !== token) return;
-      entry.current = null;
-      callback.current?.(false);
-    };
-    window.addEventListener("popstate", onPopState);
     return () => {
-      window.removeEventListener("popstate", onPopState);
-      if (entry.current !== token) return;
-      entry.current = null;
+      const i = stack.indexOf(layer);
+      if (i === -1) return; // already dismissed by Back
+      stack.splice(i, 1);
       const state = (window.history.state ?? {}) as LayerState;
-      if (state.__filaxLayer === token) window.history.back();
+      if (state.__filaxLayer === token) {
+        pendingBacks++;
+        window.history.back();
+      }
     };
   }, [controlled, id, open]);
 
