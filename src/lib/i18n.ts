@@ -234,7 +234,6 @@ const EN: Record<string, string> = {
   "Copier le lien": "Copy link",
   "Copier le lien d'invitation": "Copy invitation link",
   "Autres applications": "Other apps",
-  "Partager": "Share",
   "Votre proche scanne ce code pour ouvrir FILAX.": "Your friend scans this code to open FILAX.",
   "Ajouter un membre au groupe": "Add a member to the group",
   "Nom du membre": "Member name",
