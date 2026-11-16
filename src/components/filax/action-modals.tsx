@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { Check, Copy, QrCode, Search, Share2 } from "lucide-react";
 
 import {
-  ACCENTS,
   ACCOUNT_ICONS,
   GROUP_ICONS,
   METHOD_LABEL,
@@ -13,7 +12,6 @@ import {
   isLocked,
   useFilax,
   spendableBalance,
-  type AccentKey,
   type Account,
   type Currency,
   type Goal,
@@ -476,7 +474,6 @@ export function NewAccountModal({ open, onOpenChange, onConfirm, accounts, defau
   const [target, setTarget] = useState("");
   const [pin, setPin] = useState("");
   const [visualKey, setVisualKey] = useState("bank-modern");
-  const [color, setColor] = useState<AccentKey>("brand-blue");
   const [lockDays, setLockDays] = useState(0);
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [busy, setBusy] = useState(false);
@@ -488,7 +485,7 @@ export function NewAccountModal({ open, onOpenChange, onConfirm, accounts, defau
   const create = async () => {
     if (!parent || busy) return;
     setBusy(true);
-    try { const input = subaccountSchema.parse({ name, parentAccountId: parent.id, currency: parent.currency, target: Number(target), pin, visualKey, icon: "wallet", color, lockedUntil: lockEnd }); await onConfirm(input); setPin(""); onOpenChange(false); toast.success(lockEnd ? "Sous-compte créé et verrouillé" : "Sous-compte créé"); }
+    try { const input = subaccountSchema.parse({ name, parentAccountId: parent.id, currency: parent.currency, target: Number(target), pin, visualKey, icon: "wallet", lockedUntil: lockEnd }); await onConfirm(input); setPin(""); onOpenChange(false); toast.success(lockEnd ? "Sous-compte créé et verrouillé" : "Sous-compte créé"); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Création impossible"); setStep(0); }
     finally { setBusy(false); }
   };
@@ -517,7 +514,6 @@ export function NewAccountModal({ open, onOpenChange, onConfirm, accounts, defau
       <Field label="Objectif financier"><TextInput inputMode="decimal" placeholder={parent?.currency ?? "USD"} value={target} onChange={(e) => setTarget(e.target.value)} /></Field>
       <Field label="Code du sous-compte (4 chiffres)"><TextInput type="password" inputMode="numeric" autoComplete="new-password" maxLength={4} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} /></Field>
       <Field label="Visuel"><VisualPicker value={visualKey} onChange={setVisualKey} /></Field>
-      <Field label="Couleur"><div className="flex gap-2">{ACCENTS.map((c) => <button key={c} type="button" aria-label={c} onClick={() => setColor(c)} className={`press h-8 w-8 rounded-full ${color === c ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""}`} style={{ backgroundColor: accentVar(c) }} />)}</div></Field>
       <Field label="Durée de blocage"><select value={lockDays} onChange={(e) => setLockDays(Number(e.target.value))} className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground">
         {LOCK_OPTIONS.map(([d, l]) => <option key={d} value={d}>{l}</option>)}
       </select></Field>

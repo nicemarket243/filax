@@ -93,6 +93,38 @@
   --brand-violet: oklch(0.58 0.19 300);
   --brand-teal: oklch(0.66 0.12 200);
 
+  /* Palette interne des cartes : trente teintes sombres, choisies par FILAX. */
+  --account-card-garnet: oklch(0.43 0.14 18);
+  --account-card-burgundy: oklch(0.40 0.13 355);
+  --account-card-raspberry: oklch(0.46 0.15 345);
+  --account-card-plum: oklch(0.42 0.12 330);
+  --account-card-aubergine: oklch(0.39 0.11 315);
+  --account-card-violet: oklch(0.44 0.14 300);
+  --account-card-amethyst: oklch(0.48 0.14 290);
+  --account-card-orchid: oklch(0.49 0.12 285);
+  --account-card-mauve: oklch(0.47 0.09 320);
+  --account-card-terracotta: oklch(0.48 0.12 40);
+  --account-card-copper: oklch(0.47 0.12 50);
+  --account-card-bronze: oklch(0.45 0.10 70);
+  --account-card-amber: oklch(0.51 0.13 80);
+  --account-card-honey: oklch(0.53 0.12 90);
+  --account-card-olive: oklch(0.44 0.10 120);
+  --account-card-moss: oklch(0.41 0.10 135);
+  --account-card-forest: oklch(0.41 0.12 150);
+  --account-card-emerald: oklch(0.46 0.13 155);
+  --account-card-jade: oklch(0.47 0.11 165);
+  --account-card-sage: oklch(0.49 0.07 145);
+  --account-card-teal: oklch(0.44 0.10 185);
+  --account-card-lagoon: oklch(0.45 0.11 195);
+  --account-card-cyan: oklch(0.48 0.10 205);
+  --account-card-petrol: oklch(0.38 0.09 210);
+  --account-card-charcoal: oklch(0.35 0.015 260);
+  --account-card-graphite: oklch(0.40 0.02 260);
+  --account-card-cocoa: oklch(0.41 0.06 45);
+  --account-card-coffee: oklch(0.36 0.05 55);
+  --account-card-rosewood: oklch(0.41 0.10 20);
+  --account-card-mahogany: oklch(0.38 0.11 30);
+
   --gradient-blue: linear-gradient(140deg, oklch(0.62 0.2 254) 0%, oklch(0.5 0.23 262) 100%);
 
   --chart-1: var(--brand-blue);

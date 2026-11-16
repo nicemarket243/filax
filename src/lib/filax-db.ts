@@ -520,7 +520,7 @@ export const subaccountSchema = z.object({
   parentAccountId: z.string().uuid(), name: z.string().trim().min(2).max(80),
   target: z.number().finite().positive().max(1000000000000), pin: z.string().regex(/^\d{4}$/),
   visualKey: z.string().min(1).max(30), currency: z.enum(["USD", "CDF"]),
-  icon: z.string(), color: z.string(), lockedUntil: z.number().nullable().optional(),
+  icon: z.string(), lockedUntil: z.number().nullable().optional(),
 });
 export type SubaccountInput = z.infer<typeof subaccountSchema>;
 export async function createDbAccount(input: SubaccountInput) {

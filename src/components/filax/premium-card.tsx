@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent as RPointerEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { Lock, Plus, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -7,7 +7,7 @@ import { FilaxLogo } from "@/components/filax-logo";
 import { Glyph } from "@/components/filax/glyph";
 import { Button } from "@/components/ui/button";
 import { themeImageFor } from "@/components/filax/account-theme";
-import { accentVar } from "@/components/filax/ui-kit";
+import { accountCardColors } from "@/lib/account-card-colors";
 import { accountDisplayBalance, formatMoney, isLocked, type Account } from "@/lib/filax-store";
 import { useI18n } from "@/lib/i18n";
 
@@ -22,6 +22,7 @@ interface Props {
 
 interface CardFaceProps {
   account: Account;
+  accent: string;
   mounted: boolean;
   onShowAll: () => void;
   onCreate: () => void;
@@ -31,13 +32,12 @@ interface CardFaceProps {
 }
 
 /** Une face de carte ; le défilement physique entre faces est confié à Embla. */
-function CardFace({ account, mounted, onShowAll, onCreate, onChangeVisual, onNext, canSwipe }: CardFaceProps) {
+function CardFace({ account, accent, mounted, onShowAll, onCreate, onChangeVisual, onNext, canSwipe }: CardFaceProps) {
   const { t } = useI18n();
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const visualTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pressOrigin = useRef<{ x: number; y: number } | null>(null);
   const locked = mounted && isLocked(account);
-  const accent = accentVar(account.color);
   const themeImg = themeImageFor(account);
 
   const endPress = useCallback(() => {
@@ -180,7 +180,8 @@ export function PremiumCard({ accounts, index, onIndexChange, onShowAll, onCreat
     if (emblaApi && emblaApi.selectedScrollSnap() !== index) emblaApi.scrollTo(index);
   }, [emblaApi, index]);
 
-  const activeAccent = accentVar(accounts[index]?.color ?? accounts[0].color);
+  const cardColors = useMemo(() => accountCardColors(accounts), [accounts]);
+  const activeAccent = cardColors.get(accounts[index]?.id ?? accounts[0].id) ?? "var(--brand-blue)";
 
   return (
     <div className="relative">
@@ -205,6 +206,7 @@ export function PremiumCard({ accounts, index, onIndexChange, onShowAll, onCreat
             <div key={account.id} className="min-w-0 flex-[0_0_100%]" aria-roledescription="diapositive">
               <CardFace
                 account={account}
+                accent={cardColors.get(account.id) ?? "var(--brand-violet)"}
                 mounted={mounted}
                 onShowAll={onShowAll}
                 onCreate={onCreate}
