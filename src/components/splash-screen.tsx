@@ -3,6 +3,14 @@ import { FilaxLogo } from "@/components/filax-logo";
 
 const SESSION_KEY = "filax-splash-seen";
 const DURATION = 3500; // 3.5s — chargement fluide de 1% à 100%
+const INVITE_DURATION = 5000; // 5s pour chaque arrivée par lien, QR ou app installée
+
+// Lu au chargement du module, avant que la page n'efface ?ref de l'adresse.
+const INVITE_ARRIVAL =
+  typeof window !== "undefined" &&
+  (new URLSearchParams(window.location.search).has("ref") ||
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true);
 
 /**
  * Écran de démarrage FILAX — fond noir profond, lueur verte subtile en haut,
@@ -16,7 +24,9 @@ export function SplashScreen() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (sessionStorage.getItem(SESSION_KEY)) return;
+    const invite = INVITE_ARRIVAL;
+    if (!invite && sessionStorage.getItem(SESSION_KEY)) return;
+    const duration = invite ? INVITE_DURATION : DURATION;
 
     setVisible(true);
     const start = performance.now();
@@ -24,9 +34,9 @@ export function SplashScreen() {
 
     const tick = (t: number) => {
       const elapsed = t - start;
-      const pct = Math.min(100, Math.max(1, Math.round((elapsed / DURATION) * 100)));
+      const pct = Math.min(100, Math.max(1, Math.round((elapsed / duration) * 100)));
       setProgress(pct);
-      if (elapsed < DURATION) {
+      if (elapsed < duration) {
         raf = requestAnimationFrame(tick);
       } else {
         sessionStorage.setItem(SESSION_KEY, "1");
