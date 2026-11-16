@@ -76,6 +76,12 @@ function HomePage() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [discovery, setDiscovery] = useState<Discovery | null | undefined>(undefined);
   useEffect(() => {
+    // An invitation link or QR code always starts a fresh signup: never reuse example data saved on this device.
+    if (new URLSearchParams(window.location.search).has("ref")) {
+      localStorage.removeItem(DISCOVERY_KEY);
+      setDiscovery(null);
+      return;
+    }
     try { setDiscovery(JSON.parse(localStorage.getItem(DISCOVERY_KEY) ?? "null")); } catch { setDiscovery(null); }
   }, []);
   const exitDiscovery = () => { localStorage.removeItem(DISCOVERY_KEY); setDiscovery(null); };
