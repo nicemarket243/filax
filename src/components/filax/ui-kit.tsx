@@ -227,6 +227,7 @@ export function Modal({
   children,
   display = "sheet",
   contentClassName = "",
+  centered = false,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -235,6 +236,7 @@ export function Modal({
   children: ReactNode;
   display?: "sheet" | "responsive";
   contentClassName?: string;
+  centered?: boolean;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -244,7 +246,7 @@ export function Modal({
           : "bottom-0 top-auto max-h-[88vh] w-full max-w-md translate-y-0 gap-0 overflow-y-auto rounded-t-[2rem] rounded-b-none border-x-0 border-b-0 glass-ios p-5 pb-8 data-[state=open]:slide-in-from-bottom-full data-[state=open]:zoom-in-100 data-[state=closed]:slide-out-to-bottom-full data-[state=closed]:zoom-out-100"} ${contentClassName}`}
       >
         <div className="mx-auto -mt-1 mb-4 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/30" />
-        <div className="mb-4 pr-6">
+        <div className={centered ? "mb-4 px-6 text-center" : "mb-4 pr-6"}>
           <DialogTitle className="text-base font-bold tracking-tight text-foreground">{title}</DialogTitle>
           {subtitle && <p className="mt-0.5 text-[0.72rem] text-muted-foreground">{subtitle}</p>}
         </div>

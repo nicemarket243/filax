@@ -8,12 +8,14 @@ import {
   MessageCircle,
   MessageCircleMore,
   MessagesSquare,
+  QrCode,
   Share2,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Modal, PrimaryButton } from "@/components/filax/ui-kit";
+import { Modal } from "@/components/filax/ui-kit";
 import { FilaxQR } from "@/components/filax/qr";
+import mark from "@/assets/filax-mark.png.asset.json";
 import { useI18n } from "@/lib/i18n";
 import {
   buildAppInvitationLink,
@@ -55,6 +57,7 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
   const [open, setOpen] = useState(false);
   const [link, setLink] = useState("");
   const [copied, setCopied] = useState(false);
+  const [view, setView] = useState<"main" | "qr" | "apps">("main");
 
   useEffect(() => {
     setLink(buildAppInvitationLink(window.location.origin, filaxId));
@@ -98,7 +101,7 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
         if (error instanceof Error && error.name === "AbortError") return;
       }
     }
-    await copyLink();
+    setView("apps");
   };
 
   const channels: (
@@ -114,86 +117,85 @@ export function ShareAppButton({ filaxId }: { filaxId: string }) {
     { id: "sms", label: t("SMS / Messages"), icon: MessagesSquare, direct: true },
   ];
 
+  const closeAll = () => { setCopied(false); setView("main"); };
+
   return (
     <>
       <button
         type="button"
-        onClick={() => { setCopied(false); setOpen(true); }}
-        className="magnetide-tap mt-3 flex w-full items-center gap-3 rounded-2xl border border-brand-blue/20 bg-surface p-4 text-left soft-shadow"
+        onClick={() => { closeAll(); setOpen(true); }}
+        className="press mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-3 text-[0.78rem] font-bold text-brand-blue soft-shadow"
       >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-blue/10 text-brand-blue">
-          <Share2 className="h-5 w-5" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[0.82rem] font-bold text-foreground">{t("Partager l'application")}</span>
-          <span className="mt-0.5 block text-[0.66rem] text-muted-foreground">{t("Invitez vos proches à rejoindre FILAX.")}</span>
-        </span>
+        <Share2 className="h-4 w-4" /> {t("Partager l'application")}
       </button>
 
       <Modal
         open={open}
-        onOpenChange={(next) => { setOpen(next); if (!next) setCopied(false); }}
+        onOpenChange={(next) => { setOpen(next); if (!next) closeAll(); }}
         title={t("Partager l'application")}
         subtitle={t("Votre lien ouvre directement l'inscription simplifiée FILAX.")}
-        contentClassName="max-h-[76vh] p-4 pb-5"
+        centered
+        contentClassName="p-4 pb-5"
       >
-        <div className="flex flex-col items-center">
-          {link ? <FilaxQR value={link} size={132} /> : <div className="h-[156px] w-[156px] rounded-2xl bg-muted" />}
-          <p className="mt-1.5 text-center text-[0.62rem] text-muted-foreground">{t("Votre proche scanne ce code pour ouvrir FILAX.")}</p>
-        </div>
-
-        <button
-          type="button"
-          disabled={!link}
-          onClick={() => void copyLink()}
-          aria-label={t("Copier le lien d'invitation")}
-          className="magnetide-tap mt-3 w-full rounded-2xl border border-brand-blue/20 bg-brand-blue/[0.06] p-2.5 text-left disabled:opacity-40"
-        >
-          <span className="flex items-start gap-2">
-            <span className="min-w-0 flex-1">
-              <span className="block text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-brand-blue">{t("Votre lien d'invitation")}</span>
-              <span className="mt-1 block break-all text-[0.7rem] leading-relaxed text-foreground" data-testid="invitation-link">{link}</span>
-            </span>
-            {copied ? <Check className="mt-1 h-4 w-4 shrink-0 text-brand-green" /> : <Copy className="mt-1 h-4 w-4 shrink-0 text-brand-blue" />}
-          </span>
-        </button>
-
-        <div className="mt-3 grid grid-cols-7 gap-1">
-          {channels.map(({ id, label, icon: Icon, direct }) => (
+        {view === "qr" ? (
+          <div className="flex flex-col items-center">
+            <div className="relative">
+              {link ? <FilaxQR value={link} size={168} level="H" /> : <div className="h-[192px] w-[192px] rounded-2xl bg-muted" />}
+              <span className="pointer-events-none absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl bg-white p-1">
+                <img src={mark.url} alt="FILAX" className="h-full w-full object-contain" />
+              </span>
+            </div>
+            <button type="button" onClick={() => setView("main")} className="press mt-3 text-[0.72rem] font-bold text-brand-blue">
+              {t("Retour")}
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={!link}
+                onClick={() => setView("qr")}
+                className="press flex items-center justify-center gap-2 rounded-xl border border-border bg-surface py-2.5 text-[0.75rem] font-bold text-foreground disabled:opacity-40"
+              >
+                <QrCode className="h-4 w-4 text-brand-blue" /> {t("Scanner le QR")}
+              </button>
+              <button
+                type="button"
+                disabled={!link}
+                onClick={() => void copyLink()}
+                className="press flex items-center justify-center gap-2 rounded-xl border border-border bg-surface py-2.5 text-[0.75rem] font-bold text-foreground disabled:opacity-40"
+              >
+                {copied ? <Check className="h-4 w-4 text-brand-green" /> : <Copy className="h-4 w-4 text-brand-blue" />}
+                {t(copied ? "Lien copié" : "Copier le lien")}
+              </button>
+            </div>
             <button
-              key={id}
               type="button"
               disabled={!link}
-              aria-label={`${t("Partager sur")} ${label}`}
-              onClick={() => direct ? openDirect(id as DirectShareChannel) : void openCopyFirst(id as CopyOpenShareChannel)}
-              title={label}
-              className="magnetide-tap flex items-center justify-center rounded-xl border border-border bg-surface py-2 disabled:opacity-40"
+              onClick={() => void nativeShare()}
+              className="magnetide-tap mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-blue py-2.5 text-[0.78rem] font-bold text-primary-foreground disabled:opacity-40"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-blue/10 text-brand-blue">
-                <Icon className="h-[1.1rem] w-[1.1rem]" />
-              </span>
+              <Share2 className="h-4 w-4" /> {t("Partager")}
             </button>
-          ))}
-        </div>
-
-        <p className="mt-2 text-center text-[0.6rem] leading-relaxed text-muted-foreground">
-          {t("Pour Messenger, Instagram et Snapchat, le lien est copié avant l'ouverture : collez-le dans votre message.")}
-        </p>
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          disabled={!link}
-          onClick={() => void copyLink()}
-          className="magnetide-tap flex w-full items-center justify-center gap-2 rounded-xl border border-brand-blue/30 bg-brand-blue/10 px-4 py-2.5 text-sm font-bold text-brand-blue disabled:opacity-40"
-        >
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          {t(copied ? "Lien copié" : "Copier le lien")}
-        </button>
-        <PrimaryButton disabled={!link} onClick={() => void nativeShare()}>
-          <span className="inline-flex items-center gap-2"><Share2 className="h-4 w-4" />{t("Partager")}</span>
-        </PrimaryButton>
-        </div>
+            {view === "apps" && (
+              <div className="mt-3 grid grid-cols-4 gap-1.5">
+                {channels.map(({ id, label, icon: Icon, direct }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-label={`${t("Partager sur")} ${label}`}
+                    onClick={() => direct ? openDirect(id as DirectShareChannel) : void openCopyFirst(id as CopyOpenShareChannel)}
+                    className="magnetide-tap flex flex-col items-center gap-1 rounded-xl border border-border bg-surface py-2 text-[0.6rem] font-bold text-foreground"
+                  >
+                    <Icon className="h-4 w-4 text-brand-blue" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </Modal>
     </>
   );
