@@ -53,16 +53,20 @@ export function SplashScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#070707] transition-opacity duration-500 ${
+      data-testid="filax-splash"
+      className={`fixed inset-0 z-[100] flex h-dvh w-full flex-col items-center justify-center overflow-hidden bg-splash-base transition-opacity duration-500 ${
         leaving ? "opacity-0" : "opacity-100"
       }`}
     >
-      {/* Lueur verte subtile uniquement tout en haut de l'écran (réf. TrackFit) */}
+      {/* Fond plein écran : aucune zone fixe ne coupe la lueur sous l'encoche ou au-dessus du geste d'accueil. */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-56"
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
         style={{
-          background:
-            "radial-gradient(120% 100% at 50% 0%, oklch(0.72 0.22 140 / 0.28) 0%, oklch(0.72 0.22 140 / 0.08) 40%, transparent 70%)",
+          background: [
+            "radial-gradient(140% 62% at 50% -10%, color-mix(in oklab, var(--brand-green) 28%, transparent) 0%, color-mix(in oklab, var(--brand-green) 9%, transparent) 38%, transparent 72%)",
+            "linear-gradient(to bottom, transparent 46%, color-mix(in oklab, var(--splash-deep) 72%, transparent) 78%, var(--splash-deep) 100%)",
+          ].join(", "),
         }}
       />
 

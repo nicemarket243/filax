@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "FILAX — Finance connectée" },
       { name: "description", content: "\"Prenez le contrôle de votre vie dès aujourd'hui. Découvrez l'expérience Filax et passez au niveau supérieur." },
       { name: "author", content: "FILAX" },

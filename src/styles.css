@@ -46,6 +46,8 @@
   --color-brand-teal: var(--brand-teal);
   --color-surface: var(--surface);
   --color-photo-foreground: var(--photo-foreground);
+  --color-splash-base: var(--splash-base);
+  --color-splash-deep: var(--splash-deep);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -63,6 +65,8 @@
   --premium-base: #05070f;
   --premium-deep: #04060d;
   --premium-shadow: #000;
+  --splash-base: oklch(0.12 0.004 260);
+  --splash-deep: oklch(0.055 0.002 260);
   --gradient-magnetide: linear-gradient(140deg, color-mix(in oklab, var(--brand-blue) 62%, var(--premium-base)) 0%, color-mix(in oklab, var(--brand-blue) 48%, var(--premium-base)) 42%, color-mix(in oklab, var(--brand-blue) 26%, var(--premium-deep)) 78%, var(--premium-base) 100%);
 
   --background: oklch(0.985 0.002 250);

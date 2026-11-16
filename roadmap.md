@@ -1,5 +1,9 @@
 # FILAX roadmap
 
+## 16 nov. — Écran de démarrage plein cadre
+- [x] Étendre les dégradés vert et sombre derrière la barre d’état et la navigation, sans changer le logo ni la progression
+- [x] Vérifier le rendu mobile sur toute la hauteur et l’absence de régression de compilation : cadre et fond mesurés de 0 à 852 px, affichage derrière les zones système activé, build OK
+
 ## 16 nov. — Couleurs automatiques des cartes
 - [x] Garder Principal USD en bleu et Principal CDF en vert, avec le design et le balayage inchangés
 - [x] Attribuer automatiquement une teinte sombre distincte selon le nom et le visuel, avec 30 couleurs internes
