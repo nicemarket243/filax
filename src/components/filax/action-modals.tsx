@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { buildAppInvitationLink, PUBLIC_SITE_ORIGIN } from "@/lib/app-share";
 import { toast } from "sonner";
 import { Check, Copy, QrCode, Search, Share2 } from "lucide-react";
 
@@ -667,7 +668,7 @@ export function InviteModal({
   onAddMember?: (name: string) => void | Promise<void>;
 }) {
   const [name, setName] = useState("");
-  const link = typeof window !== "undefined" ? `${window.location.origin}/inscription?ref=${filaxId}` : "";
+  const link = buildAppInvitationLink(PUBLIC_SITE_ORIGIN, filaxId);
 
   return (
     <Modal open={open} onOpenChange={onOpenChange} title="Inviter" subtitle="Partagez FILAX et cotisez ensemble">
