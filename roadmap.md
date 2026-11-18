@@ -1,5 +1,10 @@
 # FILAX roadmap
 
+## 18 nov. — Balayage complet du nouvel espace
+- [ ] Empêcher les anciens soldes, cotisations, identités et photos sur Accueil, Analyse, Groupes, Profil et dans les fenêtres
+- [ ] Harmoniser l’ID, le pays et les comptes à zéro entre invitation, inscription complète, Google et création en base
+- [ ] Vérifier les deux cartes, toutes les pages et la photo sur mobile et ordinateur, en clair et sombre, sans modifier les anciennes données
+
 ## 18 nov. — Nouvel espace client vierge
 - [x] Empêcher toute reprise des soldes, cartes, messages et profil de démonstration après une inscription par invitation
 - [x] Préremplir le pays autorisé, attribuer l’ID FLX-1234-XY dès l’inscription et garder les nouveaux comptes USD/CDF à zéro
