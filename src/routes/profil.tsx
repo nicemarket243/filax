@@ -40,6 +40,7 @@ import { AddPhotoMenu } from "@/components/add-photo-menu";
 import { DISCOVERY_KEY, type Discovery } from "@/components/filax/public-welcome";
 import { discoveryProfile } from "@/lib/discovery-data";
 import { avatarFileError, fileToAvatarDataUrl } from "@/lib/profile-avatar";
+import { COUNTRY_CODES, countryFlag, type CountryCode } from "@/lib/countries";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -90,6 +91,8 @@ function ProfilPage() {
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [kycStep, setKycStep] = useState(0);
   const { lang, setLang, t } = useI18n();
+  const profileCountry = COUNTRY_CODES.includes(profile.country as CountryCode) ? profile.country as CountryCode : "CD";
+  const profileCountryName = new Intl.DisplayNames([lang], { type: "region" }).of(profileCountry) ?? profileCountry;
   const [code2fa, setCode2fa] = useState("");
   const [openDrawer, setOpenDrawer] = useState<string | null>(null);
   const drawer = (name: string) => ({
@@ -288,7 +291,7 @@ function ProfilPage() {
             </Field>
             <Field label="Pays de résidence">
               <div className="flex items-center justify-between rounded-2xl bg-muted px-3.5 py-3 text-[0.8rem] font-semibold text-foreground">
-                <span>🇨🇩 Congo-Kinshasa (RDC)</span>
+                <span>{countryFlag(profileCountry)} {profileCountryName}</span>
                 <span className="text-[0.58rem] font-bold text-brand-green">Détecté automatiquement</span>
               </div>
             </Field>

@@ -1,10 +1,10 @@
 # FILAX roadmap
 
 ## 18 nov. — Nouvel espace client vierge
-- [ ] Empêcher toute reprise des soldes, cartes, messages et profil de démonstration après une inscription par invitation
-- [ ] Préremplir le pays autorisé, attribuer l’ID FLX-1234-XY dès l’inscription et garder les nouveaux comptes USD/CDF à zéro
-- [ ] Permettre le choix et le remplacement de la photo de profil depuis la galerie, sans toucher aux anciens comptes
-- [ ] Tester le parcours invité et les règles automatisées sans modifier les comptes existants
+- [x] Empêcher toute reprise des soldes, cartes, messages et profil de démonstration après une inscription par invitation
+- [x] Préremplir le pays autorisé, attribuer l’ID FLX-1234-XY dès l’inscription et garder les nouveaux comptes USD/CDF à zéro
+- [x] Permettre le choix et le remplacement de la photo de profil depuis la galerie, sans toucher aux anciens comptes
+- [x] Tester le parcours invité et les règles automatisées sans modifier les comptes existants : 91 tests, deux soldes à zéro, ID visible, photo conservée après rechargement et aucune erreur navigateur ; création d’un compte réel de test non autorisée
 
 ## 16 nov. — Écran de démarrage plein cadre
 - [x] Étendre les dégradés vert et sombre derrière la barre d’état et la navigation, sans changer le logo ni la progression

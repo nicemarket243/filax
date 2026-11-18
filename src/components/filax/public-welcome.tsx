@@ -110,7 +110,6 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
         },
       });
       onDiscover(r.discovery);
-      toast.success(`Bienvenue sur FILAX — ${r.discovery.filaxId}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Inscription impossible pour le moment");
     } finally {
