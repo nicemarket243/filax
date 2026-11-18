@@ -122,7 +122,15 @@ function HomePage() {
       <>
         <PublicWelcome
           onAuthenticated={() => { window.location.replace("/"); }}
-          onDiscover={(d) => { localStorage.setItem(DISCOVERY_KEY, JSON.stringify(d)); setDiscovery(d); leaveInvitation(); }}
+          onDiscover={(d) => {
+            if (userId) {
+              toast.error("Ce navigateur est déjà connecté à un compte FILAX. Ouvrez ce lien sur l’appareil du nouvel utilisateur.");
+              return;
+            }
+            localStorage.setItem(DISCOVERY_KEY, JSON.stringify(d));
+            setDiscovery(d);
+            leaveInvitation();
+          }}
         />
         {userId && (
           <div className="flex justify-center px-5 pb-8">
@@ -148,15 +156,6 @@ function HomePage() {
           filax.markNotificationsRead();
         }}
       />
-      {!userId && discovery && (
-        <div role="status" className="mt-3 rounded-xl border border-brand-gold/40 bg-brand-gold/10 p-3 text-xs text-foreground">
-          <p className="font-semibold">Mode découverte — données fictives</p>
-          <p className="mt-1 text-muted-foreground">Bonjour {discovery.name}. Vos coordonnées ne sont pas vérifiées et aucun compte n'est créé. Les soldes affichés sont des exemples.</p>
-          <button type="button" onClick={exitDiscovery} className="mt-2 font-semibold text-brand-blue underline-offset-2 hover:underline">Créer mon vrai compte</button>
-        </div>
-      )}
-
-
       <PageTitle
         title="Prenez le contrôle de vos finances"
         subtitle="Votre banque numérique dans la poche."

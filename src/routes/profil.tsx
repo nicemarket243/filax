@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Copy, MessageCircle, MessageSquare, Landmark, Languages, Lock, LogOut, Moon, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
+import { Camera, Copy, MessageCircle, MessageSquare, Landmark, Languages, Lock, LogOut, Moon, QrCode, Share2, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import avatarImg from "@/assets/profile-avatar.jpg";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +28,7 @@ import {
   setDbPin,
   setDbTwoFactor,
   submitDbKyc,
+  uploadDbAvatar,
   useDbProfile,
   useDbUser,
   useIsAdmin,
@@ -35,6 +36,10 @@ import {
 
 import { BankOpeningPanel } from "@/components/filax/bank-opening";
 import { ShareAppButton } from "@/components/filax/share-app";
+import { AddPhotoMenu } from "@/components/add-photo-menu";
+import { DISCOVERY_KEY, type Discovery } from "@/components/filax/public-welcome";
+import { discoveryProfile } from "@/lib/discovery-data";
+import { avatarFileError, fileToAvatarDataUrl } from "@/lib/profile-avatar";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -55,20 +60,34 @@ function ProfilPage() {
   const userId = useDbUser();
   const isAdmin = useIsAdmin(userId);
   const { profile: dbProfile, refresh: refreshProfile } = useDbProfile(userId);
-  // Données réelles si connecté, démonstration sinon.
-  const profile = dbProfile ?? filax.data.profile;
-  const kycStatus = dbProfile?.kycStatus ?? (filax.data.profile.verified ? "verified" : "not_started");
+  const [discovery, setDiscovery] = useState<Discovery | null>(null);
+  // Un nouvel espace ne doit jamais hériter du profil ou de la photo du compte vitrine.
+  const profile = dbProfile ?? discoveryProfile(userId ? null : discovery);
+  const kycStatus = dbProfile?.kycStatus ?? "not_started";
   const [modal, setModal] = useState<string | null>(null);
   const [firstName, setFirstName] = useState(profile.firstName);
   const [lastName, setLastName] = useState(profile.lastName);
   const [phone, setPhone] = useState(profile.phone);
   const [email, setEmail] = useState(profile.email ?? "");
   const [birthDate, setBirthDate] = useState(profile.birthDate ?? "");
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DISCOVERY_KEY) ?? "null") as Discovery | null;
+      setDiscovery(saved);
+      if (saved) {
+        setFirstName(saved.prenom ?? "");
+        setLastName(saved.nom ?? "");
+        setPhone(saved.phone ?? "");
+        setEmail(saved.email ?? "");
+      }
+    } catch { setDiscovery(null); }
+  }, []);
   const [pin, setPin] = useState("");
   const [kycDocType, setKycDocType] = useState("cni");
   const [kycDoc, setKycDoc] = useState<File | null>(null);
   const [kycSelfie, setKycSelfie] = useState<File | null>(null);
   const [kycBusy, setKycBusy] = useState(false);
+  const [avatarBusy, setAvatarBusy] = useState(false);
   const [kycStep, setKycStep] = useState(0);
   const { lang, setLang, t } = useI18n();
   const [code2fa, setCode2fa] = useState("");
@@ -79,6 +98,37 @@ function ProfilPage() {
   });
 
   const verified = !!profile.verified;
+
+  const changeAvatar = async (file: File) => {
+    const invalid = avatarFileError(file);
+    if (invalid) return void toast.error(invalid);
+    setAvatarBusy(true);
+    try {
+      if (userId) {
+        await uploadDbAvatar(userId, file);
+        await refreshProfile();
+      } else {
+        const photo = await fileToAvatarDataUrl(file);
+        const next: Discovery = {
+          name: discovery?.name ?? `${profile.lastName} ${profile.firstName}`.trim(),
+          nom: discovery?.nom ?? profile.lastName,
+          prenom: discovery?.prenom ?? profile.firstName,
+          phone: discovery?.phone ?? profile.phone,
+          email: discovery?.email ?? profile.email,
+          country: discovery?.country ?? profile.country,
+          filaxId: discovery?.filaxId ?? profile.filaxId,
+          photo,
+        };
+        localStorage.setItem(DISCOVERY_KEY, JSON.stringify(next));
+        setDiscovery(next);
+      }
+      toast.success("Photo de profil mise à jour");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Impossible d'enregistrer cette photo");
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
 
   const [shareOpen, setShareOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"personal" | "kyc" | "security">("personal");
@@ -136,13 +186,26 @@ function ProfilPage() {
 
       {/* Bloc identité compact */}
       <section className="mt-5 flex items-center gap-3 rounded-3xl border border-border bg-surface p-3.5 soft-shadow">
-        <img
-          src={profile.photo && !profile.photo.includes("pravatar") ? profile.photo : avatarImg}
-          alt={profile.firstName}
-          width={56}
-          height={56}
-          className="h-14 w-14 rounded-full object-cover ring-2 ring-brand-blue/25"
-        />
+        <AddPhotoMenu onFile={(file) => void changeAvatar(file)}>
+          <button type="button" aria-label="Changer ma photo de profil" disabled={avatarBusy} className="press relative h-14 w-14 shrink-0 rounded-full disabled:opacity-60">
+            {profile.photo || dbProfile?.isDemo ? (
+              <img
+                src={profile.photo && !profile.photo.includes("pravatar") ? profile.photo : avatarImg}
+                alt={profile.firstName ? `Photo de ${profile.firstName}` : "Photo de profil"}
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-full object-cover ring-2 ring-brand-blue/25"
+              />
+            ) : (
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground ring-2 ring-brand-blue/25">
+                <User className="h-6 w-6" />
+              </span>
+            )}
+            <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-surface text-brand-blue soft-shadow">
+              <Camera className="h-3 w-3" />
+            </span>
+          </button>
+        </AddPhotoMenu>
         <div className="min-w-0 flex-1 leading-tight">
           <p className="truncate text-[0.95rem] font-extrabold tracking-tight text-foreground">
             {profile.firstName} {profile.lastName}

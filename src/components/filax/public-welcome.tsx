@@ -24,7 +24,7 @@ const REMEMBER_MS = 30 * 86_400_000;
 type Remembered = { name: string; identifier: string; country?: CountryCode; expires: number };
 
 export const DISCOVERY_KEY = "filax-discovery";
-export type Discovery = { name: string; phone: string; email?: string };
+export type Discovery = { name: string; phone: string; email?: string; country?: string; filaxId?: string; photo?: string | null; nom?: string; prenom?: string };
 
 export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthenticated: () => void; onDiscover?: (d: Discovery) => void }) {
   const [mode, setMode] = useState<Mode>("signup");
@@ -45,12 +45,6 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
   const resolveChannels = useServerFn(resolveLoginChannels);
   const sendCode = useServerFn(sendLoginCode);
   const verifyCode = useServerFn(verifyLoginCode);
-
-  const discover = () => {
-    if (name.trim().length < 2) return void toast.error("Indiquez votre nom");
-    if (phone.replace(/\D/g, "").length < 6) return void toast.error("Entrez un numéro de téléphone valide");
-    onDiscover?.({ name: name.trim().slice(0, 80), phone: phone.trim().slice(0, 20) });
-  };
 
   // Appareil reconnu : profil mémorisé (jamais de code ni de mot de passe), effacé après 1 mois.
   useEffect(() => {
@@ -110,12 +104,13 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
           firstName: name.trim(),
           postNom: postNom.trim(),
           channel: contact,
+          country,
           email: contact === "email" ? email.trim() : undefined,
           phone: contact === "phone" ? normalized ?? undefined : undefined,
         },
       });
       onDiscover(r.discovery);
-      toast.success("Mode découverte — données fictives");
+      toast.success(`Bienvenue sur FILAX — ${r.discovery.filaxId}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Inscription impossible pour le moment");
     } finally {
@@ -241,7 +236,7 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
               <div className="space-y-1.5">
                 <label htmlFor="filax-name" className={LABEL}>Nom</label>
                 <input id="filax-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Kabasele" autoComplete="family-name" maxLength={80} className={FIELD} />
-                <label htmlFor="filax-postnom" className={`${LABEL} pt-3`}>Post-nom</label>
+                <label htmlFor="filax-postnom" className={`${LABEL} pt-3`}>Prénom</label>
                 <input id="filax-postnom" value={postNom} onChange={(e) => setPostNom(e.target.value)} placeholder="Mukendi" autoComplete="additional-name" maxLength={80} className={FIELD} />
               </div>
 
@@ -276,14 +271,8 @@ export function PublicWelcome({ onAuthenticated: done, onDiscover }: { onAuthent
                 disabled={busy}
                 className="press flex w-full items-center justify-center gap-2 rounded-xl bg-filax-blue py-4 text-sm font-semibold text-primary-foreground shadow-[0_14px_34px_-12px_var(--brand-blue)] transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
               >
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continuer en découverte"}
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Créer mon espace FILAX"}
               </button>
-
-              {onDiscover && (
-                <button type="button" onClick={discover} disabled={busy} className="press w-full rounded-xl border border-border/70 py-3.5 text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-50">
-                  Découvrir l'app sans compte (nom et numéro)
-                </button>
-              )}
             </>
           ) : (
             <>

@@ -98,6 +98,11 @@ export function useDbProfile(userId: string | null) {
     if (!userId) return;
     const { data } = await supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle();
     if (!data) return;
+    let photo: string | null = null;
+    if (data.avatar_path) {
+      const { data: signed } = await supabase.storage.from("avatars").createSignedUrl(data.avatar_path, 3600);
+      photo = signed?.signedUrl ?? null;
+    }
     setProfile(userId, {
       userId: data.user_id,
       firstName: data.first_name ?? "",
@@ -109,7 +114,7 @@ export function useDbProfile(userId: string | null) {
       username: data.username,
       partnerBank: data.partner_bank,
       partnerSubaccount: data.partner_subaccount,
-      photo: null,
+      photo,
       verified: data.kyc_status === "verified",
       verifiedAt: data.kyc_validated_at ? new Date(data.kyc_validated_at).getTime() : undefined,
       birthDate: data.birth_date ?? "",
@@ -140,6 +145,25 @@ export async function saveDbProfile(
   if (updates.birthDate !== undefined) payload.birth_date = updates.birthDate || null;
   const { error } = await supabase.from("profiles").update(payload).eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "");
   if (error) throw new Error(error.message);
+}
+
+/** Photo personnelle dans un dossier privé réservé à son propriétaire. */
+export async function uploadDbAvatar(userId: string, file: File) {
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user || authData.user.id !== userId) throw new Error("Session invalide");
+  const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const path = `${userId}/avatar-${Date.now()}.${extension}`;
+  const { data: current } = await supabase.from("profiles").select("avatar_path").eq("user_id", userId).maybeSingle();
+  const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { contentType: file.type });
+  if (uploadError) throw new Error(uploadError.message);
+  const { error: updateError } = await supabase.from("profiles").update({ avatar_path: path }).eq("user_id", userId);
+  if (updateError) {
+    await supabase.storage.from("avatars").remove([path]);
+    throw new Error(updateError.message);
+  }
+  if (current?.avatar_path && current.avatar_path !== path) {
+    await supabase.storage.from("avatars").remove([current.avatar_path]);
+  }
 }
 
 /** KYC réel : envoi des documents dans le coffre sécurisé puis soumission. */
